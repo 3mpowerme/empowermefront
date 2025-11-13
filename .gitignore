@@ -1,0 +1,69 @@
+# --- Dependencies ---
+node_modules/
+package-lock.json
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# --- Build output ---
+dist/
+build/
+*.local
+*.cache
+.cache/
+.tmp/
+out/
+
+# --- Environment variables ---
+.env
+.env.*
+!.env.example
+
+# --- Logs ---
+logs/
+*.log
+*.log.*
+*.out
+*.err
+
+# --- Editor & OS files ---
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# --- Testing ---
+coverage/
+jest-report/
+cypress/videos/
+cypress/screenshots/
+test-results/
+.nyc_output/
+
+# --- Vite specific cache ---
+.vite/
+vite.config.ts.timestamp*
+vite.config.js.timestamp*
+
+# --- ESLint / Prettier / Stylelint ---
+.eslintcache
+.stylelintcache
+
+# --- Optional: if using Storybook or similar ---
+storybook-static/
+.out/
+
+# --- Misc ---
+*.pid
+*.seed
+*.tgz
+*.bak
+*.orig
+*.rej
+
+# --- Cloud / Hosting ---
+.vercel/
+.netlify/

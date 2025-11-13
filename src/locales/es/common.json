@@ -1,0 +1,13 @@
+{
+  "welcome": "Bienvenido a mi aplicación",
+  "login": "Iniciar sesión",
+  "logout": "Cerrar sesión",
+  "editAccount": "Editar Cuenta",
+  "language": "Idioma",
+  "appointments": "Citas",
+  "contact": "Contacto",
+  "update": "Update",
+  "account": "Cuenta",
+  "spanish": "Español",
+  "english": "Inglés"
+}

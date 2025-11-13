@@ -1,0 +1,116 @@
+@import url('https://fonts.googleapis.com/css2?family=Lexend+Deca:wght@300;400;500;600;700&display=swap');
+
+@import 'tailwindcss';
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+@theme {
+  --color-body: #6c6b71;
+  --color-primary: #8347cc;
+  --color-secondary: #787676;
+  --color-opaque: #d4d4d4;
+  --color-primary-opaque: #f6efff;
+  --color-orange-strong: #ff8f5f;
+  --color-blue-strong: #16113a;
+}
+
+body {
+  font-family: 'Lexend Deca', Helvetica, Arial, sans-serif;
+}
+
+@keyframes slide-in {
+  0% {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fade-in {
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-slide-in {
+  animation: slide-in 0.3s ease-out;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-in-out forwards;
+}
+
+.direction-ltr {
+  direction: ltr;
+}
+.direction-rtl {
+  direction: rtl;
+}
+
+.box {
+  border-radius: 8px;
+  border: 1px solid rgb(204, 204, 204);
+  box-shadow: rgba(20, 20, 20, 0.08) 0px 1px 8px 0px;
+}
+
+@media print {
+  /* Oculta las barras de scroll en impresión */
+  ::-webkit-scrollbar {
+    display: none;
+  }
+
+  html,
+  body {
+    overflow: visible !important;
+  }
+
+  /* Evita que se corten elementos */
+  * {
+    overflow: visible !important;
+  }
+
+  /* opcional: eliminar paddings del contenedor */
+  body {
+    padding: 0 !important;
+    margin: 0 !important;
+    color: #111 !important;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  p,
+  div,
+  span {
+    color: #111 !important;
+  }
+
+  @page {
+    size: A4;
+    margin: 5mm 0mm;
+  }
+
+  .print-container {
+    padding: 0 0mm;
+  }
+
+  .no-rounded-print {
+    border-radius: 0 !important;
+  }
+
+  .no-shadow-print {
+    box-shadow: none !important;
+  }
+}

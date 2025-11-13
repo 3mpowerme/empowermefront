@@ -1,0 +1,13 @@
+{
+  "welcome": "Welcome to my app",
+  "login": "Login",
+  "logout": "Logout",
+  "editAccount": "Edit Account",
+  "language": "Language",
+  "appointments": "Appointments",
+  "contact": "Contact",
+  "update": "Update",
+  "account": "Account",
+  "spanish": "Spanish",
+  "english": "English"
+}
