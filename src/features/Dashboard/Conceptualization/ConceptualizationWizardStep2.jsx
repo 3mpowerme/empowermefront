@@ -33,7 +33,7 @@ const ConceptualizationWizardStep2 = () => {
     <div className="flex flex-col items-center gap-y-8 sm:gap-y-10 w-full max-w-5xl mx-auto px-4 sm:px-6 md:px-8 lg:px-12">
       <div>
         <h1 className="font-bold text-2xl sm:text-3xl md:text-4xl text-center mb-2">
-          ¿Qué tipo de servicio ofreces?
+          ¿Qué tipo de producto o servicio ofrece tu negocio (o tu idea de negocio)?
         </h1>
         <p className="text-base sm:text-lg text-center">Elige solo una opción</p>
       </div>

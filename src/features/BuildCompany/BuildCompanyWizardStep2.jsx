@@ -13,7 +13,7 @@ const BuildCompanyWizardStep2 = () => {
   const { step2: { todayFocus: todayFocusFromStorage } = {} } = buildCompanyFromStorage;
 
   const handleCardChange = (ids) => {
-    setStepState(2, { todayFocus: ids });
+    setStepState(2, { todayFocus: ids, canContinue: true });
   };
 
   if (isLoading) {
@@ -21,7 +21,7 @@ const BuildCompanyWizardStep2 = () => {
   }
 
   return (
-    <div className="flex flex-col items-center w-full px-4 sm:px-6 md:px-10 lg:px-16 py-10 sm:py-14 md:py-20 gap-8">
+    <div className="flex flex-col items-center w-full px-4 sm:px-6 md:px-10 lg:px-16 py-5 gap-8">
       <div className="max-w-3xl text-center">
         <h1 className="font-bold text-2xl sm:text-3xl md:text-4xl mb-2 text-black">
           ¿Algo específico en lo que quieras enfocarte hoy?

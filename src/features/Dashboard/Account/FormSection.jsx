@@ -10,7 +10,7 @@ import Navigation from '../../../components/WizardForm/Navigation';
 import { WizardProvider } from '../../../context/WizardContext/WizardProvider';
 import { useWizard } from '../../../hooks/useWizard';
 
-export default function LegalRepresentativeSection() {
+export default function FormSection() {
   const { steps, currentStep, setCurrentStep, finish } = useWizard();
   const step = steps[currentStep];
   return (

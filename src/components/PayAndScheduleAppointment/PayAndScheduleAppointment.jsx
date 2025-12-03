@@ -16,7 +16,7 @@ import { loadStripe } from '@stripe/stripe-js';
 import { useServicePlan } from '../../hooks/useServicePlan';
 import Select from '../Select/Select';
 import StripeSubscribeModal from '../stripe/StripeSubscribeModal';
-import SuccessfullSubscription from './SuccessfullSubscription';
+import SuccessfulSubscriptionMonthlyAccounting from './SuccessfullSubscription';
 
 const LOADING_VIEW = 'loading-view';
 const ERROR_VIEW = 'error-view';
@@ -38,6 +38,7 @@ const PayAndScheduleAppointment = forwardRef(
     const [planName, setPlanName] = useState('');
     const [priceSummary, setPriceSummary] = useState('');
     const [subscriptionId, setSubscriptionId] = useState('');
+    const [includeShareholdersRegistry, setIncludeShareholdersRegistry] = useState(false);
 
     const { account, activeCompany: companyId } = useAccount();
     const { email = '', name = '' } = account || {};
@@ -48,10 +49,26 @@ const PayAndScheduleAppointment = forwardRef(
 
     const ensureServiceOrder = async () => {
       if (ref.current?.serviceOrderId) return ref.current.serviceOrderId;
-      const res = await privateService.create('/payments/service-order', {
+      const payload = {
         serviceCode: ref.current.serviceType,
         companyId,
-      });
+      };
+
+      if (
+        type !== 'subscription' &&
+        ref.current?.serviceType === 'dissolution_of_spa' &&
+        includeShareholdersRegistry
+      ) {
+        payload.items = [
+          {
+            serviceCode: 'shareholders_registry',
+            quantity: 1,
+          },
+        ];
+      }
+
+      const res = await privateService.create('/payments/service-order', payload);
+
       if (res?.serviceOrderId) {
         ref.current = { ...(ref.current || {}), serviceOrderId: res.serviceOrderId };
         return res.serviceOrderId;
@@ -102,7 +119,7 @@ const PayAndScheduleAppointment = forwardRef(
     const onStripeSuccess = () => {
       setToast({
         show: true,
-        message: 'Se realizó tu pago con exito, por favor agenda tu cita',
+        message: 'Se realizó tu pago con exito',
         button: {},
         type: 'success',
       });
@@ -156,8 +173,8 @@ const PayAndScheduleAppointment = forwardRef(
 
     const planOptions = [
       { value: 'month-1', label: 'Mensual' },
-      { value: 'month-6', label: 'Semestral' },
-      { value: 'year', label: 'Anual' },
+      { value: 'month-6', label: 'Semestral (¡Ahora un 10%!)' },
+      { value: 'year', label: 'Anual (¡Ahora un 20%!)' },
     ];
 
     const [optionSelected, setOptionSelected] = useState('month-1');
@@ -181,6 +198,23 @@ const PayAndScheduleAppointment = forwardRef(
                 setSelectedPlan(it);
                 setOpenMethodModal(true);
               },
+              discountLabel: it.interval_count === 6 ? '¡Ahorra un 10%!' : '',
+              include: [
+                'Servicio de consultas permanente en materia contable vía WhatsApp exclusivamente',
+                'Creación y envío de Formulario 29 (F29) mensual',
+                'Envío de informes de compra venta mensual',
+                'Ingreso de importaciones como compras en la contabilidad (con declaración de ingreso de Aduana)',
+                'Ingreso de compras a proveedores de servicios internacionales que no tributan en Chile en la contabilidad (con factura de compra, compras de publicidad en meta, Google Ads y similares)',
+                'Asistencia en presentación de todo tipo de peticiones administrativas al SII (redacción y presentación de solicitudes al SII)',
+                'Asistencia en modificación de actividades económicas y su respectiva acreditación',
+                'Asistencia en modificación de domicilios tributarios y su respectiva acreditación',
+                'Asistencia en habilitación de facturas de exportación',
+                'Asistencia en ingreso de vehículos a la contabilidad de la empresa',
+                'Orientación en emisión, modificación y anulación de todo tipo de documentos tributarios (boletas de venta, facturas de venta, facturas de compra, guías de despacho, notas de crédito y notas de débito)',
+                'Orientación en uso y entendimiento de la plataforma del SII',
+                'Participación en charlas, seminarios, capacitaciones y eventos gratuitos exclusivos para clientes de contabilidad de Alpha Consulting',
+                'Descuentos especiales para clientes de contabilidad de Alpha Consulting en charlas, seminarios, capacitaciones y eventos pagados',
+              ],
             }))
         : plan
             .filter((p) => p.how_often === 'year')
@@ -190,10 +224,12 @@ const PayAndScheduleAppointment = forwardRef(
                 setSelectedPlan(it);
                 setOpenMethodModal(true);
               },
+              discountLabel: '¡Ahorra un 20%!',
             }));
     }, [optionSelected, plan]);
 
     useEffect(() => {
+      //setView(SUCCESSFULL_SUBSCRIPTION_VIEW);
       setView(PAY_APPOINTMENT_VIEW);
     }, [filteredPlans.length]);
 
@@ -216,13 +252,43 @@ const PayAndScheduleAppointment = forwardRef(
                 Elija el plan perfecto para poner en marcha tu Empresa
               </h1>
               <p className="text-md font-semibold text-center">
-                Elige el paquete que mejor se adapte a las necesidades de tu negocio.
+                Escoge si quieres contratar mensual, semestra o anual (Obtén un descuento en planes
+                semestrales y anuales)
               </p>
-              <div className="w-1/2: md:1/3">
+              {type !== 'subscription' && ref.current?.serviceType === 'dissolution_of_spa' && (
+                <div className="w-full max-w-xl mt-4 border rounded-xl p-4 bg-white shadow-sm">
+                  <p className="text-md font-semibold mb-2">Agregar servicios adicionales</p>
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      className="w-4 h-4"
+                      checked={includeShareholdersRegistry}
+                      onChange={(e) => setIncludeShareholdersRegistry(e.target.checked)}
+                    />
+                    <div className="flex flex-col">
+                      <span className="text-sm font-semibold">
+                        Registro de accionistas (apertura de libro)
+                      </span>
+                      <span className="text-xs text-gray-600">x1 (+$19.990)</span>
+                    </div>
+                  </label>
+                </div>
+              )}
+              <p>
+                * Si contratas contabilidad en modalidad semestral o anual (no mensual) y requieres
+                inicio de actividades y asistencia en procesos para que tu empresa quede facturando,
+                incluimos todo esto gratuitamente. Esto es: Inicio de actividades Acreditación de
+                domicilio Acreditación de actividades económicas Obtención de ERUT Inscripción en el
+                sistema de emisión de boletas de venta electrónica Inscripción en el sistema de
+                emisión de facturación electrónica Obtención de clave tributaria de la empresa
+                Instalación y centralización del certificado digital para firma de documentos
+                tributarios que lo requieren
+              </p>
+              <div className="w-1/2">
                 <Select options={planOptions} onChange={handleChange} value={optionSelected} />
               </div>
 
-              <PlanSelector plans={filteredPlans} />
+              <PlanSelector plans={filteredPlans} showInclude={false} />
 
               <Modal
                 open={openMethodModal}
@@ -293,7 +359,8 @@ const PayAndScheduleAppointment = forwardRef(
             />
           </Switch.Item>
           <Switch.Item case={SUCCESSFULL_SUBSCRIPTION_VIEW}>
-            <SuccessfullSubscription
+            <SuccessfulSubscriptionMonthlyAccounting
+              companyId={companyId}
               serviceId={ref.current.serviceType}
               showRequiredDocuments
               onSchedule={() => {

@@ -15,7 +15,7 @@ const BuildCompanyWizardStep6 = () => {
   ];
 
   const handleCardChange = (ids) => {
-    setStepState(6, { hasEmployees: ids });
+    setStepState(6, { hasEmployees: ids, canContinue: true });
   };
 
   return (

@@ -31,6 +31,15 @@ export const privateService = {
       throw error.response?.data || error;
     }
   },
+  async patch(path, body) {
+    try {
+      const { data } = await api.patch(path, body);
+      return data;
+    } catch (error) {
+      console.error('privateService update error', error);
+      throw error.response?.data || error;
+    }
+  },
   async delete(path, body) {
     try {
       const { data } = await api.delete(path, body);

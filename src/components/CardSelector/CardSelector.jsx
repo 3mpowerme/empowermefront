@@ -13,6 +13,7 @@ export default function CardSelector({
     'sm:grid-cols-2': columns === 2,
     'sm:grid-cols-1': columns === 1,
     'md:grid-cols-3': columns === 3,
+    'md:grid-cols-4': columns === 4,
   });
 
   const [cardSelected, setCardSelected] = useState([]);

@@ -16,14 +16,14 @@ export default function WizardList({ wizards, columns = 3 }) {
       })}>
       {wizards.map((wizard) => (
         <div
-          key={wizard.id}
+          key={`${wizard.name}-${wizard.id}`}
           className={classNames(
             'flex box bg-white overflow-auto w-full',
             'flex-col md:flex-row',
             'p-4 md:p-5 gap-4 md:gap-5 md:h-61',
             'rounded-xl shadow-sm'
           )}>
-          <div className="bg-primary-opaque flex items-center justify-center rounded-lg md:rounded-none md:rounded-l-lg w-full md:w-auto md:min-w-36 md:max-w-40">
+          <div className="bg-primary-opaque flex items-center justify-center rounded-lg md:rounded-none md:rounded-l-lg w-full md:w-auto md:min-w-30 md:max-w-40">
             {wizard.image && (
               <img
                 src={wizard.image}
@@ -39,7 +39,7 @@ export default function WizardList({ wizards, columns = 3 }) {
               className={classNames(
                 'font-semibold text-slate-900',
                 'text-base sm:text-lg',
-                'mb-2',
+                'mb-1',
                 { 'text-start md:pl-5': columns === 1 }
               )}>
               <Link to={defineWizardLink(wizard.link)} className="hover:underline">
@@ -48,7 +48,7 @@ export default function WizardList({ wizards, columns = 3 }) {
             </h3>
 
             {wizard.description && (
-              <p className="text-sm sm:text-[0.95rem] text-slate-600 leading-6 line-clamp-3 sm:line-clamp-none">
+              <p className="text-xs text-slate-600 leading-6 line-clamp-3 sm:line-clamp-none">
                 {wizard.description}
               </p>
             )}

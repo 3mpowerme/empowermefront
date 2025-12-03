@@ -11,7 +11,7 @@ export default function TextArea({ label, maxLength = 500, ...props }) {
   return (
     <div className="w-full">
       {label && (
-        <label htmlFor={props.id} className="block mb-2 text-gray-700 font-medium">
+        <label htmlFor={props.id} className="block mb-2 text-black ">
           {label}
         </label>
       )}

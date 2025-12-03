@@ -15,11 +15,11 @@ const BuildCompanyWizardStep7 = () => {
   ];
 
   const handleCardChange = (ids) => {
-    setStepState(7, { isRegisteredCompany: ids });
+    setStepState(7, { isRegisteredCompany: ids, canContinue: true });
   };
 
   return (
-    <div className="w-full px-4 sm:px-6 md:px-10 lg:px-16 py-10 sm:py-14 md:py-20 flex flex-col items-center gap-8">
+    <div className="w-full px-4 sm:px-6 md:px-10 lg:px-16 py-10 sm:py-10 md:py-10 flex flex-col items-center gap-8">
       <img
         className="w-36 sm:w-44 md:w-56 h-auto"
         src="/images/wizard/thumbnail_Group-1.png"
@@ -29,9 +29,8 @@ const BuildCompanyWizardStep7 = () => {
         ¿Está formalizado como empresa?
       </h1>
       <p className="text-center text-base sm:text-lg text-secondary max-w-4xl leading-relaxed px-4">
-        Estar “formalizado como empresa” significa que tu negocio ya existe legalmente, tiene RUT,
-        declaró inicio de actividades ante el SII y cumple con las reglas básicas tributarias,
-        municipales, laborales y sanitarias, si aplican.
+        Estar formalizado como empresa significa que creaste una persona jurídica con un RUT
+        diferente al tuyo para iniciar actividades ante el Servio de Impuestos Interno (SII)
       </p>
 
       <div className="w-full max-w-3xl">

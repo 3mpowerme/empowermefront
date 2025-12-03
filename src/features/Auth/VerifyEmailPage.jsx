@@ -4,6 +4,7 @@ import Input from '../../components/Input/Input';
 import Button from '../../components/Button/Button';
 import { verifyEmail } from '../../services/authService';
 import { useNavigate } from 'react-router';
+import { useApp } from '../../hooks/useApp';
 
 const VerifyEmailPage = () => {
   const navigate = useNavigate();
@@ -12,6 +13,7 @@ const VerifyEmailPage = () => {
     handleSubmit,
     formState: { errors },
   } = useForm();
+  const { setToast } = useApp();
 
   const onSubmit = async (data) => {
     try {
@@ -22,6 +24,11 @@ const VerifyEmailPage = () => {
       }
     } catch (err) {
       console.error('Error verifyEmail:', err);
+      if (err?.error) {
+        setToast({ show: true, message: err.error, type: 'error' });
+      } else {
+        setToast({ show: true, message: err.message, type: 'error' });
+      }
     }
   };
 
@@ -56,7 +63,6 @@ const VerifyEmailPage = () => {
 
             <Input
               label="Código"
-              type="password"
               placeholder="Ingresa el código enviado por correo"
               {...register('code', {
                 required: 'El código es obligatorio',

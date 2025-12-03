@@ -4,7 +4,7 @@ import { storage } from '../../utils/storage';
 
 export function BuildCompanyProvider({ children }) {
   const buildCompanyFromStorage = storage.getItem('buildCompany');
-  const { step0, step1, step2, step3, step4, step5, step6, step7, step8 } =
+  const { step0, step1, step2, step3, step4, step5, step6, step7, step8, step9 } =
     buildCompanyFromStorage || {};
   const initialState = {
     step0: step0 ?? {},
@@ -16,6 +16,7 @@ export function BuildCompanyProvider({ children }) {
     step6: step6 ?? {},
     step7: step7 ?? {},
     step8: step8 ?? {},
+    step9: step9 ?? {},
   };
   const [state, setState] = useState(initialState);
 

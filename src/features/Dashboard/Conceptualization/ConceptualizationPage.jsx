@@ -17,6 +17,8 @@ import ConceptualizationWizardStep6 from './ConceptualizationWizardStep6';
 import { mapArrayToColorimetry, mapArrayToOptions } from '../../../utils/catalogs';
 import ConceptualizationDetails from './ConceptualizationDetails';
 import classNames from 'classnames';
+import { useCompanySetup } from '../../../hooks/useCompanySetup';
+import { storage } from '../../../utils/storage';
 
 const LOADING_VIEW = 'loading-view';
 const ERROR_VIEW = 'error-view';
@@ -74,12 +76,24 @@ const ConceptualizationPage = ({ showWelcomeMessage = false }) => {
   const brandBookIdRef = useRef(null);
   const [view, setView] = useState(LOADING_VIEW);
   const [selectedConceptualization, setSelectedConceptualization] = useState(null);
-
   useEffect(() => {
     setView(conceptualizations.length === 0 ? NEW_CONCEPTUALIZATION_VIEW : CONCEPTUALIZATIONS_VIEW);
     if (conceptualizations[0]?.conceptualization_id)
       setSelectedConceptualization(conceptualizations[0].conceptualization_id);
   }, [conceptualizations.length]);
+
+  /*
+  useEffect(() => {
+    const conceptualizationFromLocalStroage = storage.getItem('conceptualization') || {};
+    storage.setItem('conceptualization', {
+      ...conceptualizationFromLocalStroage,
+      step3: {
+        region: `${account?.region_id}`,
+        business_sectors: `${account?.business_sector_id}`,
+      },
+    });
+  }, [account]);
+  */
 
   const steps = [
     { id: 1, component: <ConceptualizationWizardStep1 /> },
@@ -116,11 +130,16 @@ const ConceptualizationPage = ({ showWelcomeMessage = false }) => {
     if (stepNumber === 3) {
       if (step2?.offeringServiceType && step3?.about && step3?.business_sectors && step3?.region) {
         setIsMarketAnalysisLoading(true);
+
+        const parsedId = Number(step3.business_sectors);
+        const isNumericId = !Number.isNaN(parsedId);
+
         privateService
           .create('/conceptualization', {
             offering_service_type_id: step2.offeringServiceType,
             about: step3.about,
-            business_sector_id: step3.business_sectors,
+            business_sector_id: isNumericId ? parsedId : 11,
+            business_sector_other: step3?.business_sector_other || '',
             region_id: step3.region,
           })
           .then((conceptualization) => {
@@ -211,7 +230,9 @@ const ConceptualizationPage = ({ showWelcomeMessage = false }) => {
           <div className="mx-auto w-full sm:px-6 md:px-8 lg:px-12 py-6 sm:py-8 md:py-10">
             <Wizard
               onClose={() => {
-                setView(CONCEPTUALIZATIONS_VIEW);
+                refetch().finally(() => {
+                  setView(CONCEPTUALIZATIONS_VIEW);
+                });
               }}
               showProgress={false}
               steps={steps}
@@ -279,19 +300,21 @@ const ConceptualizationPage = ({ showWelcomeMessage = false }) => {
               )}
             </div>
 
-            <div className="w-full">
-              <ConceptualizationDetails
-                hideTitle
-                companyName={companyName}
-                goBack={handleGoBack}
-                conceptualization={
-                  conceptualizations?.filter(
-                    (it) => it.conceptualization_id === selectedConceptualization
-                  )[0]
-                }
-                refetchConceptualizations={refetch}
-              />
-            </div>
+            {conceptualizations.length !== 0 && (
+              <div className="w-full">
+                <ConceptualizationDetails
+                  hideTitle
+                  companyName={companyName}
+                  goBack={handleGoBack}
+                  conceptualization={
+                    conceptualizations?.filter(
+                      (it) => it.conceptualization_id === selectedConceptualization
+                    )[0]
+                  }
+                  refetchConceptualizations={refetch}
+                />
+              </div>
+            )}
           </div>
         </Switch.Item>
 

@@ -14,7 +14,6 @@ import { storage } from '../../utils/storage';
 import { useDashboard } from '../../hooks/useDashboard';
 import Switch from '../../components/Switch/Switch';
 import PayAndScheduleAppointment from '../../components/PayAndScheduleAppointment/PayAndScheduleAppointment';
-import { useAppointment } from '../../hooks/useAppointment';
 import { normalizeAppointmentStatus } from '../../utils/utils';
 
 const LOADING_VIEW = 'loading-view';
@@ -41,7 +40,6 @@ export default function DashboardHomePage() {
   });
   const { currentWizardConfig, globalAPI, successMessage, errorMessage, successButton } = state;
   const currentServiceOrderIdRef = useRef({ serviceOrderId: null, serviceType: null });
-  const { appointment, refetch: appointmentRefetch } = useAppointment();
 
   const setServiceType = (st) => {
     currentServiceOrderIdRef.current.serviceType = st;
@@ -50,9 +48,7 @@ export default function DashboardHomePage() {
   const mapWizards = (ws) => {
     return ws.map((w) => {
       w.buttonType = undefined;
-      const appointmentFiltered = appointment?.find((it) => {
-        return w?.link?.includes(it?.service_code);
-      });
+      const appointmentFiltered = [];
       if (appointmentFiltered?.appointment_status === null) {
         w.buttonType = 'to-schedule';
         currentServiceOrderIdRef.current.serviceOrderId = appointmentFiltered?.service_order_id;
@@ -162,41 +158,15 @@ export default function DashboardHomePage() {
 
   const wizards = useMemo(() => {
     if (!Array.isArray(ws)) return [];
-    const hasCompanyInfo = Object.keys(companyTaxInfoRef.current).length > 0;
-    const hasLegalRepresentative = Object.keys(companyLegalRepresentativeRef.current).length > 0;
-    const wizardsToAdd = [];
-    if (!hasCompanyInfo) {
-      wizardsToAdd.push({
-        description: 'Para Facturas y Contabilidad debes tener completo tu perfil tributario',
-        id: 4,
-        image: '/images/dashboard/setup_company/setup_company.jpg',
-        name: 'Completa tu perfil tributario',
-        link: 'tax-info',
-      });
-    }
-    if (!hasLegalRepresentative) {
-      wizardsToAdd.push({
-        description: 'Para Facturas y Contabilidad debes tener un representante legal',
-        id: 5,
-        image: '/images/dashboard/setup_company/setup_company.jpg',
-        name: 'Agrega a tu representante legal',
-        link: 'legal-representative',
-      });
-    }
-    return mapWizards([...wizardsToAdd, ...ws]);
-  }, [ws, companyTaxInfoRef.current, companyLegalRepresentativeRef.current, appointment]);
+
+    return mapWizards([...ws]);
+  }, [ws]);
 
   const fetchData = async () => {
     try {
       setIsLoading(true);
       const commercialMovementsResult = await genericService.getAll('/commercial-movements');
       commercialMovementRef.current = commercialMovementsResult;
-      const companyTaxInfoResponse = await privateService.get(`/company-tax-info/${companyId}`);
-      const companyLegalRepresentativeResponse = await privateService.get(
-        `/company-legal-representative/${companyId}`
-      );
-      companyTaxInfoRef.current = companyTaxInfoResponse;
-      companyLegalRepresentativeRef.current = companyLegalRepresentativeResponse;
       setView(HOME_VIEW);
     } catch (error) {
       console.error('Error getting data in taxes and accounting', error);
@@ -473,7 +443,7 @@ export default function DashboardHomePage() {
           <PayAndScheduleAppointment
             ref={currentServiceOrderIdRef}
             onComplete={() => {
-              fetchData().finally(() => appointmentRefetch().finally(() => setView(HOME_VIEW)));
+              fetchData().finally(() => setView(HOME_VIEW));
             }}
           />
         </Switch.Item>

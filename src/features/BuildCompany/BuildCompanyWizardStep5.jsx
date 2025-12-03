@@ -34,6 +34,8 @@ const BuildCompanyWizardStep5 = ({ name }) => {
       street: state.streetText,
       zip_code: state.zipCodeText,
       phone_number: state.phoneNumberText,
+      canContinue:
+        state.regionSelected && state.streetText && state.zipCodeText && state.phoneNumberText,
     });
   }, [state.regionSelected, state.streetText, state.zipCodeText, state.phoneNumberText]);
 
@@ -44,7 +46,7 @@ const BuildCompanyWizardStep5 = ({ name }) => {
   if (isLoading) return <FullScreenSpinner />;
 
   return (
-    <div className="w-full px-4 sm:px-6 md:px-10 lg:px-16 py-10 sm:py-14 md:py-20 flex flex-col items-center gap-6 sm:gap-8">
+    <div className="w-full px-4 sm:px-6 md:px-10 lg:px-16 py-5 sm:py-5 md:py-5 flex flex-col items-center gap-6 sm:gap-8">
       <img
         className="w-36 sm:w-44 md:w-56 h-auto"
         src="/images/wizard/thumbnail_Group.png"

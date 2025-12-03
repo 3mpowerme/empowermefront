@@ -45,7 +45,8 @@ const SignUpPage = () => {
           step5: { phone_number, region_id, zip_code, street } = {},
           step6: { hasEmployees } = {},
           step7: { isRegisteredCompany } = {},
-          step8: { marketingSource: marketing_source } = {},
+          step8: { hasStartedActivities } = {},
+          step9: { marketingSource: marketing_source } = {},
         } = buildCompany;
 
         const parsedId = Number(business_sectors?.[0]);
@@ -56,11 +57,12 @@ const SignUpPage = () => {
           today_focus,
           company_offering,
           marketing_source,
-          business_sector_id: isNumericId ? parsedId : 14,
-          business_sector_other: business_sector_other || null,
+          business_sector_id: isNumericId ? parsedId : 11,
+          business_sector_other: business_sector_other || '',
           customer_service_channel,
           phone_number,
           is_registered_company: isRegisteredCompany?.[0],
+          hasStartedActivities: hasStartedActivities?.[0],
           has_employees: hasEmployees?.[0],
           region_id,
           zip_code,
@@ -172,15 +174,8 @@ const SignUpPage = () => {
               </Link>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-between mt-6 md:mt-8">
-              <Button
-                type="button"
-                onClick={() => navigate('/login')}
-                className="w-full sm:w-auto justify-center"
-                variant="secondary">
-                Iniciar sesión
-              </Button>
-              <Button type="submit" className="w-full sm:w-auto justify-center">
+            <div className="flex flex-col gap-3 sm:gap-4 justify-between mt-6 md:mt-8 px-0 sm:px-30">
+              <Button variant="primary" type="submit" className="w-full sm:w-auto justify-center">
                 Registrarse
               </Button>
             </div>

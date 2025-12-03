@@ -20,12 +20,30 @@ const BuildCompanyWizardStep4 = ({ name }) => {
   const { setStepState } = useBuildCompany();
 
   useEffect(() => {
+    if (business_sectorsFromStorage) {
+      const parsedId = Number(business_sectorsFromStorage);
+      const isNumericId = !Number.isNaN(parsedId);
+      if (!isNumericId) {
+        setTimeout(() => {
+          setStepState(4, {
+            business_sectors: '',
+            about: text,
+            business_sector_other: '',
+            canContinue: false,
+          });
+        }, 100);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
     setStepState(4, {
       business_sectors: value,
       about: text,
       business_sector_other: businessSectorOther,
+      canContinue: !!value && !!text,
     });
-  }, [text, value]);
+  }, [text, value, businessSectorOther]);
 
   if (isLoading) {
     return <FullScreenSpinner />;
@@ -45,7 +63,7 @@ const BuildCompanyWizardStep4 = ({ name }) => {
   };
 
   return (
-    <div className="w-full px-4 sm:px-6 md:px-10 lg:px-16 py-10 sm:py-14 md:py-20 flex flex-col items-center gap-6 sm:gap-8">
+    <div className="w-full px-4 sm:px-6 md:px-10 lg:px-16 flex flex-col items-center gap-5 sm:gap-5">
       <img
         className="w-36 sm:w-44 md:w-56 h-auto"
         src="/images/wizard/thumbnail_Frame.png"

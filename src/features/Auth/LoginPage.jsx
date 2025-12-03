@@ -19,14 +19,13 @@ const LoginPage = () => {
     formState: { errors },
   } = useForm();
   const { setIsLoading, setToast } = useApp();
-  const { setAuthState, isAuthenticated } = useAuth();
+  const { setAuthState, isAuthenticated, auth } = useAuth();
 
   const onSubmit = async (data) => {
     try {
       setIsLoading(true);
       const loginResponse = await login(data);
       setAuthState({ auth: loginResponse, status: AUTHENTICATED });
-      navigate(`/dashboard`);
     } catch (err) {
       console.error('Login error:', err);
       if (err?.error) {
@@ -48,7 +47,7 @@ const LoginPage = () => {
 
   useEffect(() => {
     if (isAuthenticated) {
-      navigate('/dashboard', { replace: true });
+      navigate(`/dashboard`, { replace: true });
     }
   }, [isAuthenticated]);
 
@@ -109,7 +108,7 @@ const LoginPage = () => {
               error={errors.password?.message}
             />
 
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-between mt-6 md:mt-8">
+            <div className="flex flex-col gap-3 sm:gap-4 justify-between mt-6 md:mt-8 px-0 sm:px-30">
               <Button type="submit" className="w-full sm:w-auto justify-center">
                 Iniciar sesión
               </Button>

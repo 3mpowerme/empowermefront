@@ -45,13 +45,11 @@ const AppRoutes = () => {
           path="/dashboard/*"
           element={
             <DashboardProvider>
-              <ShareholderProvider>
-                <PrivateRoute>
-                  <AccountProvider>
-                    <DashboardPage />
-                  </AccountProvider>
-                </PrivateRoute>
-              </ShareholderProvider>
+              <PrivateRoute>
+                <AccountProvider>
+                  <DashboardPage />
+                </AccountProvider>
+              </PrivateRoute>
             </DashboardProvider>
           }>
           <Route index element={<DashboardHomePage />} />

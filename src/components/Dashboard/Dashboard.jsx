@@ -13,11 +13,13 @@ import {
   ChevronLeft,
   ChevronUp,
   ChevronDown,
+  Bell,
 } from 'lucide-react';
 import { logout } from '../../services/authService';
 import { useAuth } from '../../hooks/useAuth';
 import { useAccount } from '../../hooks/useAccount';
 import { useDashboard } from '../../hooks/useDashboard';
+import { privateService } from '../../services/privateService';
 
 export default function Dashboard({ menuItems: mi = [] }) {
   const menuItems = mi.map((it) => {
@@ -34,12 +36,15 @@ export default function Dashboard({ menuItems: mi = [] }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState('');
   const [openSectionId, setOpenSectionId] = useState(null);
+  const [notifications, setNotifications] = useState([]);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [loadingNotifications, setLoadingNotifications] = useState(false);
 
   const langRef = useRef(null);
   const accountRef = useRef(null);
+  const notificationsRef = useRef(null);
 
   const { logout: authLogout, auth } = useAuth();
-
   const { account, activeCompany, setActiveCompany, activeCompanyInfo } = useAccount();
 
   const companies = account?.companies || [];
@@ -72,6 +77,12 @@ export default function Dashboard({ menuItems: mi = [] }) {
   );
 
   useEffect(() => {
+    if (auth?.todayFocusUrl && account) {
+      setTimeout(() => navigate(auth.todayFocusUrl, { replace: true }), 100);
+    }
+  }, [auth?.todayFocusUrl, account]);
+
+  useEffect(() => {
     function onDocPointerDown(e) {
       if (dropdownOpen === 'lang' && langRef.current && !langRef.current.contains(e.target)) {
         setDropdownOpen('');
@@ -83,10 +94,17 @@ export default function Dashboard({ menuItems: mi = [] }) {
       ) {
         setDropdownOpen('');
       }
+      if (
+        notificationsOpen &&
+        notificationsRef.current &&
+        !notificationsRef.current.contains(e.target)
+      ) {
+        setNotificationsOpen(false);
+      }
     }
     document.addEventListener('pointerdown', onDocPointerDown, { capture: true });
     return () => document.removeEventListener('pointerdown', onDocPointerDown, { capture: true });
-  }, [dropdownOpen]);
+  }, [dropdownOpen, notificationsOpen]);
 
   useEffect(() => {
     setMobileOpen(false);
@@ -98,6 +116,7 @@ export default function Dashboard({ menuItems: mi = [] }) {
       if (e.key === 'Escape') {
         setDropdownOpen('');
         setMobileOpen(false);
+        setNotificationsOpen(false);
       }
     }
     document.addEventListener('keydown', onKeyDown);
@@ -121,6 +140,38 @@ export default function Dashboard({ menuItems: mi = [] }) {
     }
   }, [location.pathname, menuItems, openSectionId]);
 
+  useEffect(() => {
+    if (!activeCompany) {
+      setNotifications([]);
+      return;
+    }
+    let cancelled = false;
+
+    async function loadNotifications() {
+      try {
+        setLoadingNotifications(true);
+        const data = await privateService.get(
+          `/company-notifications/${activeCompany}?onlyUnread=true&limit=10`
+        );
+        if (cancelled) return;
+        setNotifications(data?.notifications || []);
+      } catch (e) {
+        if (cancelled) return;
+        setNotifications([]);
+      } finally {
+        if (!cancelled) setLoadingNotifications(false);
+      }
+    }
+
+    loadNotifications();
+    const intervalId = setInterval(loadNotifications, 10000);
+
+    return () => {
+      cancelled = true;
+      clearInterval(intervalId);
+    };
+  }, [activeCompany]);
+
   const handleLogout = async () => {
     try {
       const accessToken = auth?.accessToken;
@@ -136,12 +187,30 @@ export default function Dashboard({ menuItems: mi = [] }) {
     setDropdownOpen('');
   };
 
+  const handleNotificationClick = async (notification) => {
+    const route =
+      notification?.metadata?.route ||
+      notification?.metadata?.path ||
+      notification?.metadata?.url ||
+      '/dashboard';
+
+    if (activeCompany && notification?.id) {
+      setNotifications((prev) => prev.filter((n) => n.id !== notification.id));
+      try {
+        await privateService.patch(
+          `/company-notifications/${activeCompany}/${notification.id}/read`
+        );
+      } catch (e) {}
+    }
+
+    setNotificationsOpen(false);
+    navigate(route);
+  };
+
   const asideWidth = isCollapsed ? 'w-16' : 'w-[200px] sm:w-[280px]';
-  const langLabel = (i18n.language || 'en').slice(0, 2).toUpperCase();
 
   return (
     <div className="min-h-screen bg-gray-100 flex">
-      {/* Sidebar */}
       <aside
         className={classNames(
           'flex flex-col bg-black text-white transition-all duration-300 rounded-r-2xl z-20 print:hidden',
@@ -323,7 +392,6 @@ export default function Dashboard({ menuItems: mi = [] }) {
                 </button>
               </div>
 
-              {/* Nav desktop */}
               <nav className="hidden md:flex items-center gap-2">
                 <NavLink
                   to="/dashboard/appointments"
@@ -338,55 +406,57 @@ export default function Dashboard({ menuItems: mi = [] }) {
                   <CalendarDays size={18} />
                   {t('appointments')}
                 </NavLink>
-                {/*
-                <a
-                  href="#contact"
-                  className="text-gray-700 hover:text-primary bg-gray-100 hover:bg-gray-200 rounded-lg px-3 py-2 flex items-center gap-2">
-                  <Phone size={18} />
-                  {t('contact')}
-                </a>
 
-                <a
-                  href="#update"
-                  className="text-gray-700 hover:text-primary bg-gray-100 hover:bg-gray-200 rounded-lg px-3 py-2 flex items-center gap-2">
-                  <Gem size={18} />
-                  {t('update')}
-                </a>
-                
-                <div className="relative" ref={langRef}>
+                <div className="relative" ref={notificationsRef}>
                   <button
-                    onClick={() => setDropdownOpen((v) => (v === 'lang' ? '' : 'lang'))}
-                    className="flex items-center gap-2 px-3 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-primary"
-                    aria-haspopup="menu"
-                    aria-expanded={dropdownOpen === 'lang'}>
-                    <Globe size={18} />
-                    <span className="text-sm font-medium uppercase">
-                      {(i18n.language || 'en').slice(0, 2).toUpperCase()}
-                    </span>
+                    type="button"
+                    onClick={() => setNotificationsOpen((v) => !v)}
+                    className="relative flex items-center justify-center bg-gray-100 hover:bg-gray-200 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-primary">
+                    <Bell size={18} className="text-gray-700" />
+                    {notifications.length > 0 && (
+                      <span className="absolute -top-1 -right-1 inline-flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] leading-none px-1.5 py-0.5">
+                        {notifications.length > 9 ? '9+' : notifications.length}
+                      </span>
+                    )}
                   </button>
-                  {dropdownOpen === 'lang' && (
-                    <div
-                      role="menu"
-                      className="absolute right-0 mt-2 w-32 bg-white border rounded-lg shadow-lg z-10 overflow-hidden">
-                      <button
-                        onClick={() => changeLanguage('es')}
-                        role="menuitem"
-                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-primary/10">
-                        {t('spanish')}
-                      </button>
-                      <button
-                        onClick={() => changeLanguage('en')}
-                        role="menuitem"
-                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-primary/10">
-                        {t('english')}
-                      </button>
+                  {notificationsOpen && (
+                    <div className="absolute right-0 mt-2 w-80 bg-white border rounded-lg shadow-lg z-20 overflow-hidden">
+                      <div className="px-3 py-2 border-b flex items-center justify-between">
+                        <span className="text-sm font-semibold text-gray-800">
+                          {'Notificaciones'}
+                        </span>
+                        {loadingNotifications && (
+                          <span className="text-xs text-gray-500">{'Cargando...'}</span>
+                        )}
+                      </div>
+                      <div className="max-h-80 overflow-y-auto">
+                        {(!notifications || notifications.length === 0) &&
+                          !loadingNotifications && (
+                            <div className="px-4 py-3 text-sm text-gray-500">
+                              {'Sin notificaciones'}
+                            </div>
+                          )}
+                        {notifications.map((n) => (
+                          <button
+                            key={n.id}
+                            type="button"
+                            onClick={() => handleNotificationClick(n)}
+                            className="w-full text-left px-4 py-3 border-b last:border-b-0 hover:bg-gray-50">
+                            <div className="text-sm font-medium text-gray-800 truncate">
+                              {n.title}
+                            </div>
+                            {n.message && (
+                              <div className="text-xs text-gray-600 mt-1 line-clamp-2">
+                                {n.message}
+                              </div>
+                            )}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>
-                
-                */}
 
-                {/* Account */}
                 <div className="relative" ref={accountRef}>
                   <button
                     onClick={() => setDropdownOpen((v) => (v === 'account' ? '' : 'account'))}
@@ -421,7 +491,6 @@ export default function Dashboard({ menuItems: mi = [] }) {
             </div>
           </div>
 
-          {/* Mobile menu */}
           {mobileOpen && (
             <div id="mobile-menu" className="md:hidden border-t bg-white">
               <div className="px-4 py-3 space-y-2">
@@ -450,22 +519,7 @@ export default function Dashboard({ menuItems: mi = [] }) {
                   <CalendarDays size={18} />
                   {t('appointments')}
                 </NavLink>
-                {/*
-                <a
-                  href="#contact"
-                  onClick={() => setMobileOpen(false)}
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100">
-                  <Phone size={18} />
-                  {t('contact')}
-                </a>
-                <a
-                  href="#update"
-                  onClick={() => setMobileOpen(false)}
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100">
-                  <Gem size={18} />
-                  {t('update')}
-                </a>
-                */}
+
                 <div className="relative" ref={accountRef}>
                   <button
                     onClick={() => setDropdownOpen((v) => (v === 'account' ? '' : 'account'))}

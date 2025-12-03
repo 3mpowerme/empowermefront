@@ -21,6 +21,7 @@ const ConceptualizationWizardStep3 = () => {
   const [text, setText] = useState(aboutFromStorage ?? '');
   const [value, setValue] = useState(business_sectorsFromStorage ?? '');
   const { businessSectors, isLoadingBusinessSectors } = useBusinessSectors();
+  const [businessSectorOther, setBusinessSectorOther] = useState('');
   const { region, isLoading: isLoadingRegion } = useRegion();
   const options = mapCatalogToOptions(businessSectors);
   const { setStepState } = useConceptualization();
@@ -29,9 +30,28 @@ const ConceptualizationWizardStep3 = () => {
   });
 
   useEffect(() => {
+    if (business_sectorsFromStorage) {
+      const parsedId = Number(business_sectorsFromStorage);
+      const isNumericId = !Number.isNaN(parsedId);
+      if (!isNumericId) {
+        setTimeout(() => {
+          setStepState(3, {
+            business_sectors: '',
+            about: text,
+            business_sector_other: '',
+            region: state.regionSelected,
+            canContinue: false,
+          });
+        }, 100);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
     setStepState(3, {
       business_sectors: value,
       about: text,
+      business_sector_other: businessSectorOther,
       region: state.regionSelected,
       canContinue: value && text && state.regionSelected,
     });
@@ -41,8 +61,21 @@ const ConceptualizationWizardStep3 = () => {
     return <FullScreenSpinner />;
   }
 
+  const handleNewOptionAdded = (newOptionName) => {
+    setBusinessSectorOther(newOptionName);
+  };
+
   const handleChange = (option) => {
     setState((prevState) => ({ ...prevState, regionSelected: option }));
+  };
+
+  const handleBusinessSectorChange = (val) => {
+    setValue(val);
+    if (val && isNaN(Number(val))) {
+      setBusinessSectorOther(val);
+    } else {
+      setBusinessSectorOther('');
+    }
   };
 
   return (
@@ -59,9 +92,10 @@ const ConceptualizationWizardStep3 = () => {
       <CreatableSelect
         options={options}
         value={value}
-        onChange={setValue}
+        onChange={handleBusinessSectorChange}
         placeholder="Selecciona el sector al que perteneces"
-        enableAddItem={false}
+        enableAddItem={true}
+        onNewOptionAdded={handleNewOptionAdded}
       />
       <Select
         placeholder="Seleccionar región para establecer tu empresa"
@@ -72,7 +106,7 @@ const ConceptualizationWizardStep3 = () => {
       <TextArea
         id="aboutYou"
         name="aboutYou"
-        placeholder="Describe detalladamente cual es tu negocio para que nuestra IA pueda realizar un análisis de posibles competidores y de mercardo"
+        placeholder="Cuéntanos brevemente tu negocio, siendo lo más específico posible. Nuestra IA evaluará la probabilidad de éxito de tu idea o negocio"
         maxLength={500}
         rows={6}
         value={text}

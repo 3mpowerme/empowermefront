@@ -9,6 +9,7 @@ import BuildCompanyWizardStep5 from './BuildCompanyWizardStep5';
 import BuildCompanyWizardStep6 from './BuildCompanyWizardStep6';
 import BuildCompanyWizardStep7 from './BuildCompanyWizardStep7';
 import BuildCompanyWizardStep8 from './BuildCompanyWizardStep8';
+import BuildCompanyWizardStep9 from './BuildCompanyWizardStep9';
 import { useBuildCompany } from '../../hooks/useBuildCompany';
 import globalConstants from '../../constants/global';
 
@@ -27,6 +28,7 @@ const BuildCompanyWizardPage = () => {
     { id: 6, component: <BuildCompanyWizardStep6 /> },
     { id: 7, component: <BuildCompanyWizardStep7 /> },
     { id: 8, component: <BuildCompanyWizardStep8 /> },
+    { id: 9, component: <BuildCompanyWizardStep9 /> },
   ];
 
   const handleComplete = () => {
@@ -39,6 +41,7 @@ const BuildCompanyWizardPage = () => {
 
   return (
     <Wizard
+      withCanContinueBuildCompany
       steps={steps}
       onComplete={handleComplete}
       className="bg-gradient-to-b from-[#FFFFFF] to-[#FDECDA]"

@@ -32,7 +32,9 @@ const LogoDesignWizardStep1 = () => {
   return (
     <div className="flex flex-col gap-y-10 items-center w-xl">
       <div>
-        <h1 className="font-bold text-4xl text-center mb-2">¿Qué tipo de servicio ofreces?</h1>
+        <h1 className="font-bold text-4xl text-center mb-2">
+          ¿Qué tipo de producto o servicio ofrece tu negocio (o tu idea de negocio)?
+        </h1>
         <p className="text-lg text-center">Elige solo una opción</p>
       </div>
       <ListSelector

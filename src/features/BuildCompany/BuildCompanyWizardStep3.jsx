@@ -24,12 +24,12 @@ const BuildCompanyWizardStep3 = ({ name }) => {
 
   const handleCardChangeCompanyOffering = (ids) => {
     currentOptionRef.current = { ...currentOptionRef.current, companyOffering: ids };
-    setStepState(3, { ...currentOptionRef.current });
+    setStepState(3, { ...currentOptionRef.current, canContinue: true });
   };
 
   const handleCardChangeCustomerServiceChannel = (ids) => {
     currentOptionRef.current = { ...currentOptionRef.current, customerServiceChannel: ids };
-    setStepState(3, { ...currentOptionRef.current });
+    setStepState(3, { ...currentOptionRef.current, canContinue: true });
   };
 
   if (isLoadingCustomerService && isLoadingCompanyOffering) {
@@ -37,9 +37,9 @@ const BuildCompanyWizardStep3 = ({ name }) => {
   }
 
   return (
-    <div className="w-full px-4 sm:px-6 md:px-10 lg:px-16 py-10 sm:py-14 md:py-20 flex flex-col items-center gap-10">
+    <div className="w-full px-4 sm:px-6 md:px-10 lg:px-16 flex flex-col items-center">
       <div className="w-full max-w-4xl text-center">
-        <h1 className="font-bold text-2xl sm:text-3xl md:text-4xl mb-2 text-black">
+        <h1 className="font-bold text-2xl sm:text-3xl md:text-3xl text-black">
           ¿Qué ofrece {name}?
         </h1>
         <p className="text-base sm:text-lg text-gray-700">Elige todas las que correspondan</p>
@@ -56,7 +56,7 @@ const BuildCompanyWizardStep3 = ({ name }) => {
       </div>
 
       <div className="w-full max-w-4xl text-center mt-6">
-        <h1 className="font-bold text-2xl sm:text-3xl md:text-4xl mb-2 text-black">
+        <h1 className="font-bold text-2xl sm:text-3xl md:text-3xl text-black">
           ¿Dónde atenderás a tus clientes?
         </h1>
         <p className="text-base sm:text-lg text-gray-700">Elige todas las que correspondan</p>

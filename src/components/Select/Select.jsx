@@ -48,7 +48,7 @@ export default function Select({
             <li
               key={opt.value}
               onClick={() => handleSelect(opt.value)}
-              className="px-4 py-2 cursor-pointer hover:bg-primary">
+              className="px-4 py-2 cursor-pointer hover:bg-primary hover:text-white">
               {opt.label}
             </li>
           ))}

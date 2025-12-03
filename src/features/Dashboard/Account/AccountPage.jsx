@@ -13,6 +13,9 @@ import FormSection from './FormSection';
 import { useSearchParams } from 'react-router';
 import { useAccount } from '../../../hooks/useAccount';
 import SubscriptionsList from './SubscriptionsList';
+import AccountInfo from './AccountInfo';
+import { useRegion } from '../../../hooks/useRegion';
+import { mapCatalogToOptions } from '../../../utils/catalogs';
 
 export default function AccountPage() {
   const { refetch } = useShareholder();
@@ -23,6 +26,8 @@ export default function AccountPage() {
     errorMessage: 'La solicitud no pudo ser procesada',
     successButton: {},
   });
+  const { region } = useRegion();
+  const regions = mapCatalogToOptions(region);
   const [searchParams] = useSearchParams();
   const sub = searchParams.get('sub');
   const { currentWizardConfig, globalAPI, successMessage, errorMessage, successButton } = state;
@@ -168,224 +173,7 @@ export default function AccountPage() {
     {
       id: 'general',
       label: 'General',
-      content: (
-        <WizardProvider
-          stepsConfig={[
-            {
-              id: 'step-1',
-              fields: [
-                {
-                  name: 'business_name',
-                  label: 'Razón Social de la Empresa*',
-                  placeHolder: 'Ingresa Razón Social de la Empresa',
-                  type: 'text',
-                  required: true,
-                },
-                {
-                  name: 'email',
-                  label: 'Email de la Empresa*',
-                  placeHolder: 'Ingresa el Email de la Empresa',
-                  type: 'email',
-                  required: true,
-                },
-                {
-                  name: 'phone',
-                  label: 'Teléfono de contacto de la empresa*',
-                  placeHolder: 'Ingresa teléfono de contacto de la empresa',
-                  type: 'text',
-                  required: true,
-                },
-                {
-                  name: 'rut',
-                  label: 'RUT de la empresa*',
-                  placeHolder: 'Ingresa RUT de la empresa',
-                  type: 'text',
-                  required: true,
-                },
-                {
-                  name: 'address',
-                  label: 'Dirección Tributaria de la Empresa*',
-                  placeHolder: 'Dirección Tributaria de la Empresa',
-                  type: 'text',
-                  required: true,
-                },
-                {
-                  name: 'password',
-                  label: 'Clave tributaria de la Empresa*',
-                  placeHolder: 'Ingresa Clave tributaria de la Empresa',
-                  type: 'text',
-                  required: true,
-                },
-                {
-                  name: 'previred_password',
-                  label: 'Clave Previred de la Empresa*',
-                  placeHolder: 'Ingresa Clave Previred de la Empresa',
-                  type: 'text',
-                  required: true,
-                },
-                {
-                  name: 'mutual_password',
-                  label: 'Clave Mutual de la Empresa*',
-                  placeHolder: 'Ingresa Clave Mutual de la Empresa',
-                  type: 'text',
-                  required: true,
-                },
-              ],
-            },
-          ]}
-          globalSubmitApi={{ method: 'POST', url: `/build-company/${companyId}` }}
-          successMessage={'La información se guardo correctamente'}
-          successButton={{}}
-          errorMessage={'La solicitud no pudo ser procesada'}
-          loadPrefillAfterFinish
-          persistData={false}>
-          <div className="w-1/2">
-            <FormSection />
-          </div>
-        </WizardProvider>
-      ),
-    },
-    {
-      id: 'tax-info',
-      label: 'Información tributaria',
-      content: (
-        <WizardProvider
-          stepsConfig={[
-            {
-              id: 'step-1',
-              fields: [
-                {
-                  name: 'business_name',
-                  label: 'Razón Social de la Empresa*',
-                  placeHolder: 'Ingresa Razón Social de la Empresa',
-                  type: 'text',
-                  required: true,
-                },
-                {
-                  name: 'email',
-                  label: 'Email de la Empresa*',
-                  placeHolder: 'Ingresa el Email de la Empresa',
-                  type: 'email',
-                  required: true,
-                },
-                {
-                  name: 'phone',
-                  label: 'Teléfono de contacto de la empresa*',
-                  placeHolder: 'Ingresa teléfono de contacto de la empresa',
-                  type: 'text',
-                  required: true,
-                },
-                {
-                  name: 'rut',
-                  label: 'RUT de la empresa*',
-                  placeHolder: 'Ingresa RUT de la empresa',
-                  type: 'text',
-                  required: true,
-                },
-                {
-                  name: 'address',
-                  label: 'Dirección Tributaria de la Empresa*',
-                  placeHolder: 'Dirección Tributaria de la Empresa',
-                  type: 'text',
-                  required: true,
-                },
-                {
-                  name: 'password',
-                  label: 'Clave tributaria de la Empresa*',
-                  placeHolder: 'Ingresa Clave tributaria de la Empresa',
-                  type: 'text',
-                  required: true,
-                },
-                {
-                  name: 'previred_password',
-                  label: 'Clave Previred de la Empresa*',
-                  placeHolder: 'Ingresa Clave Previred de la Empresa',
-                  type: 'text',
-                  required: true,
-                },
-                {
-                  name: 'mutual_password',
-                  label: 'Clave Mutual de la Empresa*',
-                  placeHolder: 'Ingresa Clave Mutual de la Empresa',
-                  type: 'text',
-                  required: true,
-                },
-              ],
-            },
-          ]}
-          globalSubmitApi={{ method: 'POST', url: `/company-tax-info/${companyId}` }}
-          successMessage={'La información se guardo correctamente'}
-          successButton={{}}
-          errorMessage={'La solicitud no pudo ser procesada'}
-          loadPrefillAfterFinish
-          persistData={false}>
-          <div className="w-1/2">
-            <FormSection />
-          </div>
-        </WizardProvider>
-      ),
-    },
-    {
-      id: 'legal-representative',
-      label: 'Representante Legal',
-      content: (
-        <WizardProvider
-          stepsConfig={[
-            {
-              id: 'step-1',
-              fields: [
-                {
-                  name: 'name',
-                  label: 'Nombre de representante legal de la empresa*',
-                  placeHolder: 'Ingresa nombre de representante legal de la empresa',
-                  type: 'text',
-                  required: true,
-                },
-                {
-                  name: 'rut',
-                  label: 'RUT representante legal*',
-                  placeHolder: 'Ingresa RUT del representante legal',
-                  type: 'text',
-                  required: true,
-                },
-                {
-                  name: 'phone',
-                  label: 'Teléfono del representante legal*',
-                  placeHolder: 'Ingresa teléfono del representante legal',
-                  type: 'text',
-                  required: true,
-                },
-                {
-                  name: 'password',
-                  label: 'Clave tributaria del representante legal*',
-                  placeHolder: 'Ingresa clave tributaria del representante legal',
-                  type: 'text',
-                  required: true,
-                },
-              ],
-            },
-          ]}
-          globalSubmitApi={{ method: 'POST', url: `/company-legal-representative/${companyId}` }}
-          successMessage={'La información se guardo correctamente'}
-          successButton={{}}
-          errorMessage={'La solicitud no pudo ser procesada'}
-          loadPrefillAfterFinish
-          persistData={false}>
-          <div className="w-1/2">
-            <FormSection />
-          </div>
-        </WizardProvider>
-      ),
-    },
-    {
-      id: 'shareholders',
-      label: 'Accionistas',
-      content: (
-        <ShareholderSection
-          onAddShareholder={openShareholderWizard}
-          onDeleteShareholder={deleteShareholder}
-        />
-      ),
+      content: regions.length > 0 ? <AccountInfo companyId={companyId} regions={regions} /> : null,
     },
     {
       id: 'subscriptions',

@@ -3,6 +3,7 @@ import Button from '../Button/Button';
 import classNames from 'classnames';
 import { useConceptualization } from '../../hooks/useConceptualization';
 import { X } from 'lucide-react';
+import { useBuildCompany } from '../../hooks/useBuildCompany';
 
 export default function Wizard({
   steps,
@@ -13,17 +14,25 @@ export default function Wizard({
   onContinue = () => {},
   hidePreviousStepInStep = [],
   withCanContinue = false,
+  withCanContinueBuildCompany = false,
   onClose,
 }) {
   const [currentStep, setCurrentStep] = useState(0);
   const { state = {} } = useConceptualization();
-
+  const { state: buildCompanyState = {} } = useBuildCompany();
   const totalSteps = steps.length;
   const isFirstStep = currentStep === 0;
   const isLastStep = currentStep === totalSteps - 1;
 
   const nextStep = () => {
     onContinue(currentStep + 1);
+    if (withCanContinueBuildCompany) {
+      if (buildCompanyState[`step${currentStep + 1}`]?.canContinue) {
+        if (!isLastStep) setCurrentStep(currentStep);
+      } else {
+        return;
+      }
+    }
     if (withCanContinue) {
       if (state[`step${currentStep + 1}`]?.canContinue) {
         if (!isLastStep) setCurrentStep((prev) => prev + 1);
@@ -66,10 +75,10 @@ export default function Wizard({
         </div>
       )}
 
-      <div className="flex-1 w-full flex flex-col items-center justify-center py-10">
-        <div className="max-w-6xl mx-auto mt-8 sm:mt-10">
+      <div className="flex-1 w-full flex flex-col items-center justify-center py-5">
+        <div className="max-w-6xl mx-auto">
           {steps[currentStep].component}
-          <div className="mt-10 sm:mt-14 flex flex-col sm:flex-row gap-3 sm:gap-6 justify-center mx-5">
+          <div className="mt-5 sm:mt-5 flex flex-col sm:flex-row gap-3 sm:gap-6 justify-center mx-5">
             {!isFirstStep && shouldShowPreviousStep && (
               <Button
                 onClick={prevStep}
