@@ -88,12 +88,12 @@ const ConceptualizationWizardStep5 = () => {
       <Switch.Item case={false}>
         <div className="flex flex-row flex-wrap h-full w-full">
           {/* Brand name */}
-          <div className="w-2/5 p-5">
+          <div className="w-1/2 p-5">
             <p className="text-2xl font-bold mb-2.5">Seleciona un nombre para tu marca</p>
             <div className="box flex flex-row flex-wrap">
               {brandNames?.map((opt) => (
-                <label key={opt.value} className="flex items-center space-x-1 w-1/3 p-2">
-                  <span className="text-sm font-medium mr-5 max-w-20 break-words">{opt.label}</span>
+                <label key={opt.value} className="flex items-center space-x-1 w-1/2 p-2">
+                  <span className="text-sm font-medium mr-2 max-w-30 break-words">{opt.label}</span>
                   <input
                     type="radio"
                     value={opt.value}
@@ -128,12 +128,12 @@ const ConceptualizationWizardStep5 = () => {
           </div>
 
           {/* slogan */}
-          <div className="w-3/5 p-5">
+          <div className="w-1/2 p-5">
             <p className="text-2xl font-bold mb-2.5">Seleciona una frase para tu marca</p>
             <div className="box flex flex-row flex-wrap">
               {slogans?.map((opt) => (
                 <label key={opt.value} className="flex items-center space-x-1 w-1/3 p-2">
-                  <span className="text-sm font-medium mr-5 max-w-40 break-words">{opt.label}</span>
+                  <span className="text-sm font-medium mr-2 max-w-30 break-words">{opt.label}</span>
                   <input
                     type="radio"
                     value={opt.value}

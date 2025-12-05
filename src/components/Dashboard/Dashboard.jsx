@@ -188,11 +188,20 @@ export default function Dashboard({ menuItems: mi = [] }) {
   };
 
   const handleNotificationClick = async (notification) => {
-    const route =
-      notification?.metadata?.route ||
-      notification?.metadata?.path ||
-      notification?.metadata?.url ||
-      '/dashboard';
+    const meta = notification?.metadata || {};
+
+    let route = meta.route || meta.path || meta.url || '/dashboard';
+
+    if (meta.type === 'document' && meta.documentId) {
+      const search = new URLSearchParams({ fileId: String(meta.documentId) }).toString();
+      route = `/dashboard/taxes_and_accounting/monthly_accounting?${search}`;
+    } else if (meta.type === 'comment' && meta.documentId && meta.commentId) {
+      const search = new URLSearchParams({
+        fileId: String(meta.documentId),
+        highlightComment: String(meta.commentId),
+      }).toString();
+      route = `/dashboard/taxes_and_accounting/monthly_accounting?${search}`;
+    }
 
     if (activeCompany && notification?.id) {
       setNotifications((prev) => prev.filter((n) => n.id !== notification.id));
@@ -452,6 +461,14 @@ export default function Dashboard({ menuItems: mi = [] }) {
                             )}
                           </button>
                         ))}
+                      </div>
+                      <div className="px-3 py-2 border-t bg-gray-50 flex justify-end">
+                        <Link
+                          to="/dashboard/notifications"
+                          className="text-xs font-semibold text-purple-600 hover:text-purple-800 hover:underline"
+                          onClick={() => setNotificationsOpen(false)}>
+                          Ver todas
+                        </Link>
                       </div>
                     </div>
                   )}

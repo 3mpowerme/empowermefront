@@ -79,7 +79,7 @@ const ConceptualizationWizardStep3 = () => {
   };
 
   return (
-    <div className="flex flex-col items-center gap-y-8 sm:gap-y-10 w-full max-w-3xl mx-auto px-4 sm:px-6">
+    <div className="flex flex-col items-center gap-y-5 w-full max-w-3xl mx-auto px-4 sm:px-6">
       <img
         className="w-48 sm:w-60 max-w-full h-auto"
         src="/images/wizard/thumbnail_Frame.png"

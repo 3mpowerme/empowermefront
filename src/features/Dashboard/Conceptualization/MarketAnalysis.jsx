@@ -41,16 +41,22 @@ import {
 import CardSection from '../../../components/CardSection/CardSection';
 import Button from '../../../components/Button/Button';
 
+const SafeHtml = ({ html, className = '', fallback = '—' }) => {
+  if (!html) return <p className={className}>{fallback}</p>;
+  return <div className={className} dangerouslySetInnerHTML={{ __html: html }} />;
+};
+
 const getCurrencyFormatter = (meta) => {
   const locale = meta?.locale || 'es-MX';
   const currency = meta?.currency || 'MXN';
   try {
-    return (n) =>
+    return (n, options) =>
       typeof n === 'number'
         ? new Intl.NumberFormat(locale, {
             style: 'currency',
             currency,
             maximumFractionDigits: 0,
+            ...options,
           }).format(n)
         : '—';
   } catch {
@@ -58,6 +64,42 @@ const getCurrencyFormatter = (meta) => {
       typeof n === 'number' ? `${currency} ${Math.round(n).toLocaleString(locale)}` : '—';
   }
 };
+
+const getNumberFormatter = (meta) => {
+  const locale = meta?.locale || 'es-MX';
+  try {
+    return (n, options) => {
+      if (typeof n === 'number') {
+        return new Intl.NumberFormat(locale, { maximumFractionDigits: 0, ...options }).format(n);
+      }
+      if (typeof n === 'string' && !Number.isNaN(Number(n))) {
+        return new Intl.NumberFormat(locale, {
+          maximumFractionDigits: 0,
+          ...options,
+        }).format(Number(n));
+      }
+      return '—';
+    };
+  } catch {
+    return (n) => {
+      if (typeof n === 'number') return Math.round(n).toLocaleString(locale);
+      if (typeof n === 'string' && !Number.isNaN(Number(n))) {
+        return Math.round(Number(n)).toLocaleString(locale);
+      }
+      return '—';
+    };
+  }
+};
+
+function formatMetaText(metaText, fmtNumber) {
+  if (typeof metaText !== 'string') return metaText;
+
+  return metaText.replace(/\d[\d.,]*/g, (raw) => {
+    const num = Number(raw.replace(/[.,]/g, ''));
+    if (isNaN(num)) return raw;
+    return fmtNumber(num);
+  });
+}
 
 const COLOR_MAP = {
   slate: 'bg-white text-black ring-gray-300',
@@ -76,6 +118,7 @@ const badge = (text, color = 'slate') => (
     {text}
   </span>
 );
+
 const chipList = (items, color = 'slate') => (
   <div className="flex flex-wrap gap-2">
     {(items || []).slice(0, 6).map((t, i) => (
@@ -127,31 +170,37 @@ const Donut = ({ data, fmtCurrency }) => (
             <Cell key={i} fill={COLORS[i % COLORS.length]} />
           ))}
         </Pie>
-        <ReTooltip />
+        <ReTooltip formatter={(value) => fmtCurrency(Number(value))} />
       </PieChart>
     </ResponsiveContainer>
   </div>
 );
 
-const Bars = ({ data }) => (
+const Bars = ({ data, fmtCurrency, fmtNumber }) => (
   <ResponsiveContainer width="100%" height={240}>
     <BarChart data={data}>
       <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
       <XAxis dataKey="name" tick={{ fontSize: 12, fill: '#000' }} />
-      <YAxis tick={{ fontSize: 12, fill: '#000' }} />
-      <ReTooltip />
+      <YAxis
+        tick={{ fontSize: 12, fill: '#000' }}
+        tickFormatter={(value) => fmtNumber(Number(value))}
+      />
+      <ReTooltip formatter={(value) => fmtCurrency(Number(value))} />
       <Bar dataKey="value" radius={[10, 10, 10, 10]} fill="#06b6d4" isAnimationActive={false} />
     </BarChart>
   </ResponsiveContainer>
 );
 
-const Linea = ({ data }) => (
+const Linea = ({ data, fmtNumber }) => (
   <ResponsiveContainer width="100%" height={240}>
     <LineChart data={data}>
       <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
       <XAxis dataKey="name" tick={{ fontSize: 12, fill: '#000' }} />
-      <YAxis tick={{ fontSize: 12, fill: '#000' }} />
-      <ReTooltip />
+      <YAxis
+        tick={{ fontSize: 12, fill: '#000' }}
+        tickFormatter={(value) => fmtNumber(Number(value))}
+      />
+      <ReTooltip formatter={(value) => fmtNumber(Number(value))} />
       <Line
         type="monotone"
         dataKey="value"
@@ -211,6 +260,7 @@ const TabButton = ({ active, onClick, icon, label }) => (
 export default function MarketAnalysis({ data, showDownloadPDF = false }) {
   const d = data || {};
   const fmtCurrency = React.useMemo(() => getCurrencyFormatter(d.meta_moneda), [d.meta_moneda]);
+  const fmtNumber = React.useMemo(() => getNumberFormatter(d.meta_moneda), [d.meta_moneda]);
 
   const fin = d.finanzas || {};
   const inv = fin.inversion_inicial || {};
@@ -289,9 +339,7 @@ export default function MarketAnalysis({ data, showDownloadPDF = false }) {
     <div className="relative w-full mx-auto max-w-7xl print-container py-5 text-black bg-transparent">
       <style>{`
         .allow-overflow .recharts-wrapper { overflow: visible !important; }
-        /* Forzar texto negro dentro de SVG de Recharts (pantalla/impresión) */
         .print-container .recharts-surface text { fill: #000000 !important; }
-
         html:has(.print-container) { scroll-behavior: smooth; }
         .section-anchor { scroll-margin-top: 96px; }
         @page { margin: 16mm; }
@@ -305,7 +353,6 @@ export default function MarketAnalysis({ data, showDownloadPDF = false }) {
             backdrop-filter: none !important;
             background: transparent !important;
           }
-          /* Permite mantener cards con fondo blanco cuando sea necesario */
           .card-white { background: #ffffff !important; }
           .print\\:hidden { display: none !important; }
           .print\\:block { display: block !important; }
@@ -328,7 +375,7 @@ export default function MarketAnalysis({ data, showDownloadPDF = false }) {
         )}
       </div>
 
-      <nav className="mb-6 flex flex-wrap gap-2 sticky top-[56px] z-20  px-1 py-2 print:hidden">
+      <nav className="mb-6 flex flex-wrap gap-2 sticky top-[56px] z-20 px-1 py-2 print:hidden">
         <TabButton
           active={activeTab === 'resumen'}
           onClick={() => scrollTo(resumenRef, 'resumen')}
@@ -373,8 +420,7 @@ export default function MarketAnalysis({ data, showDownloadPDF = false }) {
         />
       </nav>
 
-      <div className="rounded-3xl p-5 space-y-10 ">
-        {/* Resumen */}
+      <div className="rounded-3xl p-5 space-y-10">
         <section ref={resumenRef} className="section-anchor">
           <motion.div
             initial={{ opacity: 0, y: 8 }}
@@ -389,9 +435,11 @@ export default function MarketAnalysis({ data, showDownloadPDF = false }) {
                 </div>
                 <h2 className="text-xl font-semibold">Resumen</h2>
               </div>
-              <p className="mb-4 text-base font-medium">
-                {d?.resumen?.idea || 'Idea no especificada'}
-              </p>
+              <SafeHtml
+                html={d?.resumen?.idea}
+                className="mb-4 text-base font-medium"
+                fallback="Idea no especificada"
+              />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <div className="text-xs font-semibold uppercase tracking-wide mb-2">
@@ -443,7 +491,6 @@ export default function MarketAnalysis({ data, showDownloadPDF = false }) {
           </motion.div>
         </section>
 
-        {/* Clientes */}
         <section ref={clientesRef} className="section-anchor">
           <motion.div
             initial={{ opacity: 0, y: 8 }}
@@ -505,7 +552,9 @@ export default function MarketAnalysis({ data, showDownloadPDF = false }) {
                     <div className="text-xs">
                       Estimación clientes:{' '}
                       {d?.clientes?.tamaño_mercado?.estimacion_clientes
-                        ? `${d.clientes.tamaño_mercado.estimacion_clientes.min}–${d.clientes.tamaño_mercado.estimacion_clientes.max}`
+                        ? `${fmtNumber(
+                            d.clientes.tamaño_mercado.estimacion_clientes.min
+                          )}–${fmtNumber(d.clientes.tamaño_mercado.estimacion_clientes.max)}`
                         : '—'}
                     </div>
                     <div className="text-xs">
@@ -535,7 +584,6 @@ export default function MarketAnalysis({ data, showDownloadPDF = false }) {
               </div>
             </CardSection>
 
-            {/* Volumen mensual */}
             <CardSection className="card-white">
               <div className="flex items-center gap-3 mb-5">
                 <div className="p-2 rounded-2xl bg-white ring-1 ring-gray-200">
@@ -543,12 +591,11 @@ export default function MarketAnalysis({ data, showDownloadPDF = false }) {
                 </div>
                 <h2 className="text-xl font-semibold">Volumen mensual estimado</h2>
               </div>
-              <Linea data={lineVolumen} />
+              <Linea data={lineVolumen} fmtNumber={fmtNumber} />
             </CardSection>
           </motion.div>
         </section>
 
-        {/* Competencia */}
         <section ref={competenciaRef} className="section-anchor">
           <motion.div
             initial={{ opacity: 0, y: 8 }}
@@ -626,7 +673,6 @@ export default function MarketAnalysis({ data, showDownloadPDF = false }) {
           </motion.div>
         </section>
 
-        {/* Canal */}
         <section ref={canalRef} className="section-anchor">
           <motion.div
             initial={{ opacity: 0, y: 8 }}
@@ -673,7 +719,6 @@ export default function MarketAnalysis({ data, showDownloadPDF = false }) {
           </motion.div>
         </section>
 
-        {/* Identidad */}
         <section ref={identidadRef} className="section-anchor">
           <motion.div
             initial={{ opacity: 0, y: 8 }}
@@ -689,9 +734,9 @@ export default function MarketAnalysis({ data, showDownloadPDF = false }) {
                 <h2 className="text-xl font-semibold">Propuesta & Promesa</h2>
               </div>
               <div className="text-sm font-semibold mb-1">Propuesta de valor</div>
-              <p>{d?.identidad_imagen?.propuesta_valor || '—'}</p>
+              <SafeHtml html={d?.identidad_imagen?.propuesta_valor} fallback="—" />
               <div className="text-sm font-semibold mt-3 mb-1">Promesa de marca</div>
-              <p>{d?.identidad_imagen?.promesa_marca || '—'}</p>
+              <SafeHtml html={d?.identidad_imagen?.promesa_marca} fallback="—" />
             </CardSection>
             <CardSection className="card-white">
               <div className="flex items-center gap-3 mb-5">
@@ -712,14 +757,13 @@ export default function MarketAnalysis({ data, showDownloadPDF = false }) {
           </motion.div>
         </section>
 
-        {/* Finanzas */}
         <section ref={finanzasRef} className="section-anchor">
           <motion.div
             initial={{ opacity: 0, y: 8 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.25 }}
-            className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+            className="lg:col-span-3 gap-5 mb-10">
             <CardSection className="card-white">
               <div className="flex items-center gap-3 mb-5">
                 <div className="p-2 rounded-2xl bg-white ring-1 ring-gray-200">
@@ -732,27 +776,46 @@ export default function MarketAnalysis({ data, showDownloadPDF = false }) {
                 Total: <span className="font-semibold">{fmtCurrency(inv.total)}</span>
               </div>
             </CardSection>
-
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.25 }}
+            className="lg:col-span-3 gap-5 mb-10">
             <CardSection className="card-white">
               <div className="flex items-center gap-3 mb-5">
                 <div className="p-2 rounded-2xl bg-white ring-1 ring-gray-200">
                   <DollarSign className="h-5 w-5" />
                 </div>
-                <h2 className="text-xl font-semibold">Costos fijos</h2>
+                <h2 className="text-xl font-semibold">Costos fijos mensuales</h2>
               </div>
-              <Bars data={barsCostosFijos} />
+              <div className="mx-10">
+                <Bars data={barsCostosFijos} fmtCurrency={fmtCurrency} fmtNumber={fmtNumber} />
+              </div>
             </CardSection>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.25 }}
+            className="grid grid-cols-1 lg:grid-cols-2 gap-5">
             <CardSection className="card-white">
               <div className="flex items-center gap-3 mb-5">
                 <div className="p-2 rounded-2xl bg-white ring-1 ring-gray-200">
                   <TrendingUp className="h-5 w-5" />
                 </div>
-                <h2 className="text-xl font-semibold">Punto de equilibrio</h2>
+                <h2 className="text-xl font-semibold">Punto de equilibrio mensual</h2>
               </div>
               <div className="text-sm space-y-1">
                 <div>
                   Unidades:{' '}
-                  <span className="font-semibold">{fin?.punto_equilibrio?.unidades ?? '—'}</span>
+                  <span className="font-semibold">
+                    {fin?.punto_equilibrio?.unidades != null
+                      ? fmtNumber(fin.punto_equilibrio.unidades)
+                      : '—'}
+                  </span>
                 </div>
                 <div>
                   Ventas:{' '}
@@ -764,23 +827,22 @@ export default function MarketAnalysis({ data, showDownloadPDF = false }) {
               </div>
             </CardSection>
 
-            {/* Gauge */}
-            <CardSection className="lg:col-span-3 card-white">
+            <CardSection className="card-white">
               <div className="flex items-center gap-3 mb-5">
                 <div className="p-2 rounded-2xl bg-white ring-1 ring-gray-200">
                   <DollarSign className="h-5 w-5" />
                 </div>
                 <h2 className="text-xl font-semibold">Margen operativo</h2>
               </div>
-              <div className="-mt-6">
-                <Gauge percent={Number.isFinite(margenOpPct) ? margenOpPct : 0} />
-              </div>
               <div className="text-center text-sm -mt-6">
-                {Number.isFinite(margenOpPct) ? `${margenOpPct}%` : '—'}
+                <h3 className="font-bold text-6xl pt-5">
+                  {Number.isFinite(margenOpPct) ? `${margenOpPct}%` : '—'}
+                </h3>
               </div>
             </CardSection>
           </motion.div>
         </section>
+
         <section ref={riesgosRef} className="section-anchor">
           <motion.div
             initial={{ opacity: 0, y: 8 }}
@@ -822,6 +884,7 @@ export default function MarketAnalysis({ data, showDownloadPDF = false }) {
                 </div>
                 <h2 className="text-xl font-semibold">KPIs sugeridos</h2>
               </div>
+
               <ul className="space-y-2">
                 {(d?.kpis_sugeridos || []).slice(0, 6).map((k, i) => (
                   <li
@@ -831,9 +894,10 @@ export default function MarketAnalysis({ data, showDownloadPDF = false }) {
                       <div className="font-medium">{k.nombre}</div>
                       <div className="text-xs text-gray-700">{k.periodicidad}</div>
                     </div>
+
                     <div className="ml-r font-semibold">
                       <LocateFixed size={15} className="inline mr-2" />
-                      {k.meta}
+                      {formatMetaText(k.meta, fmtNumber)}
                     </div>
                   </li>
                 ))}

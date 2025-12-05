@@ -480,7 +480,7 @@ export default function DashboardHomePage() {
             <h2 className="text-xl text-black font-bold">Próximos pasos</h2>
             <WizardList wizards={wizards} />
             <h2 className="text-xl text-black font-bold">Estatus de tu empresa</h2>
-            <div className="border rounded-xl border-opaque shadow-lg w-full h-50 flex justify-center items-center text-secondary">
+            <div className="border rounded-xl border-opaque shadow-lg w-full h-50 flex justify-center items-center text-secondary mb-5">
               Proximamente...
             </div>
           </div>

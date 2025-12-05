@@ -227,7 +227,7 @@ const ConceptualizationPage = ({ showWelcomeMessage = false }) => {
         <Switch.Item case={ERROR_VIEW}></Switch.Item>
 
         <Switch.Item case={NEW_CONCEPTUALIZATION_VIEW}>
-          <div className="mx-auto w-full sm:px-6 md:px-8 lg:px-12 py-6 sm:py-8 md:py-10">
+          <div className="mx-auto w-full px-5 py-6 sm:py-8 md:py-10">
             <Wizard
               onClose={() => {
                 refetch().finally(() => {

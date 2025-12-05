@@ -28,6 +28,7 @@ import AppointmentsPage from '../features/Dashboard/Appointments/AppointmentsPag
 import LogoDesignPage from '../features/Dashboard/GraphicDesign/LogoDesignPage';
 import MonthlyAccounting from '../features/Dashboard/TaxesAndAccounting/MonthlyAccounting';
 import { AccountProvider } from '../context/AccountContext/AccountProvider';
+import NotificationsPage from '../features/Dashboard/Notifications/NotificationsPage';
 
 const AppRoutes = () => {
   return (
@@ -53,6 +54,7 @@ const AppRoutes = () => {
             </DashboardProvider>
           }>
           <Route index element={<DashboardHomePage />} />
+          <Route path="notifications" element={<NotificationsPage />} />
           <Route path="account" element={<AccountPage />} />
           <Route path="appointments" element={<AppointmentsPage />} />
           <Route path="buildCompany" element={<DashboardBuildCompanyPage />} />
