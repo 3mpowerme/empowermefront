@@ -97,6 +97,7 @@ export function WizardProvider({
 
       storage.removeItem(STORAGE_KEY);
     } catch (err) {
+      console.error('HERE err', err);
       if (errorMessage) {
         setToast({
           show: true,

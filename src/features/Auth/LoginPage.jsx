@@ -26,6 +26,11 @@ const LoginPage = () => {
       setIsLoading(true);
       const loginResponse = await login(data);
       setAuthState({ auth: loginResponse, status: AUTHENTICATED });
+      if (loginResponse?.todayFocusUrl) {
+        setTimeout(() => {
+          navigate(loginResponse.todayFocusUrl, { replace: true });
+        }, 100);
+      }
     } catch (err) {
       console.error('Login error:', err);
       if (err?.error) {

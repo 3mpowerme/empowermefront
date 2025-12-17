@@ -97,17 +97,18 @@ export function normalizePaymentStatus(status) {
   }
 }
 
-export function formatAmount(amountCents, currency = 'CLP', locale = 'es-CL') {
-  if (typeof amountCents !== 'number' || isNaN(amountCents)) return '';
+export function formatAmount(amount, currency = 'CLP', locale = 'es-CL') {
+  if (typeof amount !== 'number' || isNaN(amount)) return '';
 
-  const amount = amountCents / 100;
+  const hasDecimals = currency !== 'CLP';
+
   return new Intl.NumberFormat(locale, {
     style: 'currency',
     currency,
     currencyDisplay: 'symbol',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(amount);
+    minimumFractionDigits: hasDecimals ? 2 : 0,
+    maximumFractionDigits: hasDecimals ? 2 : 0,
+  }).format(hasDecimals ? amount / 100 : amount);
 }
 
 export function formatBytesToMB(bytes) {

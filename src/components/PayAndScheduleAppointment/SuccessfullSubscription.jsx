@@ -3,7 +3,7 @@ import Button from '../Button/Button';
 import Switch from '../Switch/Switch';
 import { useEffect, useState } from 'react';
 import MonthlyAccountingRequiredDocumentsWizard from '../../features/Dashboard/TaxesAndAccounting/Wizards/MonthlyAccountingRequiredDocumentsWizard';
-import { useNavigate } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import { privateService } from '../../services/privateService';
 
 const WIZARD_VIEW = 'wizard-view';
@@ -14,6 +14,7 @@ export default function SuccessfulSubscriptionMonthlyAccounting({
   showRequiredDocuments = false,
   onSchedule = () => {},
   companyId,
+  folio,
 }) {
   const [needActivityStartSupport, setNeedActivityStartSupport] = useState(false);
   const navigate = useNavigate();
@@ -44,6 +45,9 @@ export default function SuccessfulSubscriptionMonthlyAccounting({
             <CheckCircle className="text-green-500 w-16 h-16 mb-4 animate-bounce" />
 
             <h2 className="text-2xl font-semibold text-gray-800 mb-2">¡Suscripción exitosa!</h2>
+            {folio && (
+              <h2 className="text-1xl font-semibold text-gray-800 mb-2">Folio: {`${folio}`}</h2>
+            )}
             {needActivityStartSupport && (
               <>
                 <p className="mb-10">para continuar requerimos completes el siguiente formulario</p>
@@ -59,6 +63,9 @@ export default function SuccessfulSubscriptionMonthlyAccounting({
               Recibirá una notificacion, si tiene algún mensaje o requiremos alguna información
               adicional
             </p>
+            <Link to={'/dashboard/taxes_and_accounting/accounting'}>
+              <Button className="mt-5">Ir a mi repositorio</Button>
+            </Link>
             {showRequiredDocuments && <></>}
           </div>
 
@@ -71,11 +78,12 @@ export default function SuccessfulSubscriptionMonthlyAccounting({
         </Switch.Item>
         <Switch.Item case={WIZARD_VIEW}>
           <MonthlyAccountingRequiredDocumentsWizard
+            needActivityStartSupport={needActivityStartSupport}
             handleWizardClose={() => {
               setView(SUCCESSFUL_SUBSCRIPTION_VIEW);
             }}
             handleWizardSuccess={() => {
-              navigate('/dashboard/taxes_and_accounting/monthly_accounting');
+              navigate('/dashboard/taxes_and_accounting/accounting');
             }}
           />
         </Switch.Item>

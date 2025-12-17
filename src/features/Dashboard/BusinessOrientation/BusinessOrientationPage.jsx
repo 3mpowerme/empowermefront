@@ -4,6 +4,7 @@ import FeatureCard from '../../../components/FeatureCard/FeatureCard';
 import classNames from 'classnames';
 import Switch from '../../../components/Switch/Switch';
 import PayAndScheduleAppointment from '../../../components/PayAndScheduleAppointment/PayAndScheduleAppointment';
+import PayPersonalizedAdvisory from '../../../components/PayAndScheduleAppointment/PayPersonalizedAdvisory';
 
 const LOADING_VIEW = 'loading-view';
 const ERROR_VIEW = 'error-view';
@@ -17,7 +18,7 @@ export default function BusinessOrientationPage() {
   const [view, setView] = useState(BUSINESS_PROFILE_VIEW);
   const currentServiceOrderIdRef = useRef({
     serviceOrderId: null,
-    serviceType: 'business_orientation',
+    serviceType: 'personalized_advice',
   });
 
   return (
@@ -27,7 +28,7 @@ export default function BusinessOrientationPage() {
         <Switch value={view}>
           <Switch.Item case={PAY_AND_SCHEDULE_APPOINTMENT_VIEW}>
             <div className="w-full">
-              <PayAndScheduleAppointment
+              <PayPersonalizedAdvisory
                 onComplete={() => setView(BUSINESS_PROFILE_VIEW)}
                 ref={currentServiceOrderIdRef}
               />

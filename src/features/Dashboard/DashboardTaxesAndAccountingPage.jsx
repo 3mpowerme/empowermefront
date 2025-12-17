@@ -12,6 +12,14 @@ import AuditWizard from './TaxesAndAccounting/Wizards/AuditWizard';
 import BalanceWizard from './TaxesAndAccounting/Wizards/BalanceWizard';
 import StartActivitiesWizard from './TaxesAndAccounting/Wizards/StartActivitiesWizard';
 import { storage } from '../../utils/storage';
+import { useRegisteredServies } from '../../hooks/useRegisteredServices';
+import PayMonthlyAccounting from '../../components/PayAndScheduleAppointment/PayMonthlyAccounting';
+import PayBalance from '../../components/PayAndScheduleAppointment/PayBalance';
+import PayAudit from '../../components/PayAndScheduleAppointment/PayAudit';
+import PayTaxPlanning from '../../components/PayAndScheduleAppointment/PayTaxPlanning';
+import VirtualOfficeWizard from './TaxesAndAccounting/Wizards/VirtualOfficeWizard';
+import PayVirtualOffice from '../../components/PayAndScheduleAppointment/PayVirtualOffice';
+import PayVirtualOfficePlusMiniStorage from '../../components/PayAndScheduleAppointment/PayVirtualOfficePlusMiniStorage';
 
 const LOADING_VIEW = 'loading-view';
 const ERROR_VIEW = 'error-view';
@@ -20,30 +28,32 @@ const TAXES_AND_ACCOUNTING_VIEW = 'taxes-and-accounting-view';
 const ACCOUNTING_WIZARD_VIEW = 'accounting-wizard-view';
 const AUDIT_WIZARD_VIEW = 'audit-wizard-view';
 const BALANCE_WIZARD_VIEW = 'balance-wizard-view';
+const VIRTUAL_OFFICE_WIZARD_VIEW = 'virtual-office-wizard-view';
+const VIRTUAL_OFFICE_PLUS_MINISTORAGE_WIZARD_VIEW = 'virtual-office-plus-ministorage-wizard-view';
 const START_ACTIVITIES_WIZARD = 'start-activities-wizard';
 
 export default function DashboardTaxesAndAccountingPage() {
   const { setIsLoading } = useApp();
   const {
-    activeCompanyInfo: { companyName } = {},
+    activeCompanyInfo: { companyName, info: { hasStartedActivities } = {} } = {},
     account: { email = '' } = {},
     activeCompany: companyId,
   } = useAccount();
+
   const { commercialMovement } = useCommercialMovement();
   const [view, setView] = useState(LOADING_VIEW);
   const currentServiceOrderIdRef = useRef({ serviceOrderId: null, serviceType: null });
-  const setServiceType = (st) => {
-    currentServiceOrderIdRef.current.serviceType = st;
-  };
+  const [serviceType, setServiceType] = useState('');
 
   const { wizards: ws } = useDashboard();
-
+  const { services, refetch } = useRegisteredServies('invoice_and_accounting');
+  console.log('HERE services', services);
   const mapWizards = (ws) => {
     return ws.map((w) => {
       w.buttonType = undefined;
-      w.onClick = (link) => {
+      w.onClick = (link, alreadyRegistered, needsDocuments) => {
         console.log('link', link);
-        if (link === 'monthly_accounting_wizard') {
+        if (link === 'accounting_wizard') {
           const info = storage.getItem(`wizard_form/monthly-accounting/${companyId}`) || {};
           storage.setItem(`wizard_form/monthly-accounting/${companyId}`, {
             ...info,
@@ -51,7 +61,7 @@ export default function DashboardTaxesAndAccountingPage() {
             company_name: companyName,
           });
           setServiceType('accounting');
-          setView(ACCOUNTING_WIZARD_VIEW);
+          setView(alreadyRegistered ? PAY_AND_SCHEDULE_APPOINTMENT_VIEW : ACCOUNTING_WIZARD_VIEW);
           //setView(PAY_AND_SCHEDULE_APPOINTMENT_VIEW);
         }
 
@@ -63,7 +73,8 @@ export default function DashboardTaxesAndAccountingPage() {
             company_name: companyName,
           });
           setServiceType('audit');
-          setView(AUDIT_WIZARD_VIEW);
+          //setView(PAY_AND_SCHEDULE_APPOINTMENT_VIEW);
+          setView(alreadyRegistered ? PAY_AND_SCHEDULE_APPOINTMENT_VIEW : AUDIT_WIZARD_VIEW);
         }
         if (link === 'balance_wizard') {
           const info = storage.getItem(`wizard_form/company-balance-request/${companyId}`) || {};
@@ -73,7 +84,8 @@ export default function DashboardTaxesAndAccountingPage() {
             company_name: companyName,
           });
           setServiceType('balance');
-          setView(BALANCE_WIZARD_VIEW);
+          //setView(PAY_AND_SCHEDULE_APPOINTMENT_VIEW);
+          setView(alreadyRegistered ? PAY_AND_SCHEDULE_APPOINTMENT_VIEW : BALANCE_WIZARD_VIEW);
         }
         if (link === 'remunerations_wizard') {
           setServiceType('remunerations');
@@ -85,7 +97,25 @@ export default function DashboardTaxesAndAccountingPage() {
         }
         if (link === 'start_activities_wizard') {
           setServiceType('start_activities');
-          setView(START_ACTIVITIES_WIZARD);
+          setView(alreadyRegistered ? PAY_AND_SCHEDULE_APPOINTMENT_VIEW : START_ACTIVITIES_WIZARD);
+        }
+        if (link === 'virtual_office_wizard') {
+          setServiceType('virtual_office');
+          setView(
+            alreadyRegistered ? PAY_AND_SCHEDULE_APPOINTMENT_VIEW : VIRTUAL_OFFICE_WIZARD_VIEW
+          );
+        }
+        if (link === 'virtual_office_plus_ministorage_wizard') {
+          setServiceType('virtual_office_plus_ministorage');
+          setView(
+            alreadyRegistered
+              ? PAY_AND_SCHEDULE_APPOINTMENT_VIEW
+              : VIRTUAL_OFFICE_PLUS_MINISTORAGE_WIZARD_VIEW
+          );
+        }
+        if (link === 'personalized_advisory_wizard') {
+          setServiceType('personalized_advisory');
+          setView(PAY_AND_SCHEDULE_APPOINTMENT_VIEW);
         }
       };
       console.log('w', w);
@@ -95,14 +125,19 @@ export default function DashboardTaxesAndAccountingPage() {
 
   const wizards = useMemo(() => {
     if (!Array.isArray(ws)) return [];
-    return mapWizards(ws);
-  }, [ws]);
+    return mapWizards(
+      ws.filter((it) => {
+        if (hasStartedActivities === 'SI') {
+          return it.link !== 'start_activities_wizard';
+        }
+        return it;
+      })
+    );
+  }, [ws, hasStartedActivities]);
 
   const fetchData = async () => {
     try {
       setIsLoading(true);
-      const currentSubscription = await privateService.get(`/subscription/${companyId}`);
-      console.log('currentSubscription', currentSubscription);
       setView(TAXES_AND_ACCOUNTING_VIEW);
     } catch (error) {
       console.error('Error getting data in taxes and accounting', error);
@@ -134,15 +169,82 @@ export default function DashboardTaxesAndAccountingPage() {
         <Switch.Item case={LOADING_VIEW}></Switch.Item>
         <Switch.Item case={ERROR_VIEW}></Switch.Item>
         <Switch.Item case={PAY_AND_SCHEDULE_APPOINTMENT_VIEW}>
-          <PayAndScheduleAppointment
-            ref={currentServiceOrderIdRef}
-            onComplete={() => {
-              fetchData().finally(() => setView(TAXES_AND_ACCOUNTING_VIEW));
-            }}
-          />
+          <Switch value={serviceType}>
+            <Switch.Item case="accounting">
+              <PayMonthlyAccounting
+                ref={currentServiceOrderIdRef}
+                onComplete={() => {
+                  refetch().finally(() => {
+                    fetchData().finally(() => setView(TAXES_AND_ACCOUNTING_VIEW));
+                  });
+                }}
+              />
+            </Switch.Item>
+            <Switch.Item case="audit">
+              <PayAudit
+                ref={currentServiceOrderIdRef}
+                onComplete={() => {
+                  refetch().finally(() => {
+                    fetchData().finally(() => setView(TAXES_AND_ACCOUNTING_VIEW));
+                  });
+                }}
+              />
+            </Switch.Item>
+            <Switch.Item case="balance">
+              <PayBalance
+                ref={currentServiceOrderIdRef}
+                onComplete={() => {
+                  refetch().finally(() => {
+                    fetchData().finally(() => setView(TAXES_AND_ACCOUNTING_VIEW));
+                  });
+                }}
+              />
+            </Switch.Item>
+            <Switch.Item case="tax_planning">
+              <PayTaxPlanning
+                ref={currentServiceOrderIdRef}
+                onComplete={() => {
+                  refetch().finally(() => {
+                    fetchData().finally(() => setView(TAXES_AND_ACCOUNTING_VIEW));
+                  });
+                }}
+              />
+            </Switch.Item>
+            <Switch.Item case="virtual_office">
+              <PayVirtualOffice
+                ref={currentServiceOrderIdRef}
+                onComplete={() => {
+                  refetch().finally(() => {
+                    fetchData().finally(() => setView(TAXES_AND_ACCOUNTING_VIEW));
+                  });
+                }}
+              />
+            </Switch.Item>
+            <Switch.Item case="virtual_office_plus_ministorage">
+              <PayVirtualOfficePlusMiniStorage
+                ref={currentServiceOrderIdRef}
+                onComplete={() => {
+                  refetch().finally(() => {
+                    fetchData().finally(() => setView(TAXES_AND_ACCOUNTING_VIEW));
+                  });
+                }}
+              />
+            </Switch.Item>
+            <Switch.Item case="personalized_advisory">
+              <PayTaxPlanning
+                ref={currentServiceOrderIdRef}
+                onComplete={() => {
+                  refetch().finally(() => {
+                    fetchData().finally(() => setView(TAXES_AND_ACCOUNTING_VIEW));
+                  });
+                }}
+              />
+            </Switch.Item>
+          </Switch>
         </Switch.Item>
         <Switch.Item case={ACCOUNTING_WIZARD_VIEW}>
           <MonthlyAccountingWizard
+            hasStartedActivities={hasStartedActivities}
             commercialMovements={commercialMovement}
             companyId={companyId}
             handleWizardClose={handleWizardClose}
@@ -157,6 +259,23 @@ export default function DashboardTaxesAndAccountingPage() {
             handleWizardSuccess={handleWizardSuccess}
           />
         </Switch.Item>
+        <Switch.Item case={VIRTUAL_OFFICE_WIZARD_VIEW}>
+          <VirtualOfficeWizard
+            companyId={companyId}
+            handleWizardClose={handleWizardClose}
+            handleWizardSuccess={handleWizardSuccess}
+            serviceCode="virtual_office"
+          />
+        </Switch.Item>
+        <Switch.Item case={VIRTUAL_OFFICE_PLUS_MINISTORAGE_WIZARD_VIEW}>
+          <VirtualOfficeWizard
+            companyId={companyId}
+            handleWizardClose={handleWizardClose}
+            handleWizardSuccess={handleWizardSuccess}
+            serviceCode="virtual_office_plus_ministorage"
+          />
+        </Switch.Item>
+
         <Switch.Item case={AUDIT_WIZARD_VIEW}>
           <AuditWizard
             companyId={companyId}
@@ -175,7 +294,7 @@ export default function DashboardTaxesAndAccountingPage() {
           <div className="flex flex-col h-full w-full gap-5 px-4 lg:px-10 animate-slide-in mt-10">
             <h1 className="text-2xl text-black font-bold">{`Bienvenido ${companyName}`} </h1>
             <h2 className="text-xl text-black font-bold">Facturas y Contabilidad</h2>
-            <WizardList wizards={wizards} />
+            <WizardList wizards={wizards} services={services} />
           </div>
         </Switch.Item>
       </Switch>

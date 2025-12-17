@@ -26,9 +26,11 @@ import BusinessOrientationPage from '../features/Dashboard/BusinessOrientation/B
 import { ConceptualizationProvider } from '../context/Conceptualization/ConceptualizationProvider';
 import AppointmentsPage from '../features/Dashboard/Appointments/AppointmentsPage';
 import LogoDesignPage from '../features/Dashboard/GraphicDesign/LogoDesignPage';
-import MonthlyAccounting from '../features/Dashboard/TaxesAndAccounting/MonthlyAccounting';
+import FileRepositoryWrapper from '../features/Dashboard/FileRepositoryWrapper';
 import { AccountProvider } from '../context/AccountContext/AccountProvider';
 import NotificationsPage from '../features/Dashboard/Notifications/NotificationsPage';
+import PageNotFound from '../components/PageNotFound/PageNotFound';
+import DashboardGate from '../features/Dashboard/DashboardGate';
 
 const AppRoutes = () => {
   return (
@@ -45,13 +47,15 @@ const AppRoutes = () => {
         <Route
           path="/dashboard/*"
           element={
-            <DashboardProvider>
-              <PrivateRoute>
+            <PrivateRoute>
+              <DashboardProvider>
                 <AccountProvider>
-                  <DashboardPage />
+                  <DashboardGate>
+                    <DashboardPage />
+                  </DashboardGate>
                 </AccountProvider>
-              </PrivateRoute>
-            </DashboardProvider>
+              </DashboardProvider>
+            </PrivateRoute>
           }>
           <Route index element={<DashboardHomePage />} />
           <Route path="notifications" element={<NotificationsPage />} />
@@ -59,8 +63,21 @@ const AppRoutes = () => {
           <Route path="appointments" element={<AppointmentsPage />} />
           <Route path="buildCompany" element={<DashboardBuildCompanyPage />} />
           <Route path="taxes_and_accounting" element={<DashboardTaxesAndAccountingPage />} />
-          <Route path="taxes_and_accounting/monthly_accounting" element={<MonthlyAccounting />} />
+
+          <Route
+            path="taxes_and_accounting/:serviceId"
+            element={<FileRepositoryWrapper parentPath="taxes_and_accounting" />}
+          />
+          <Route path=":serviceId" element={<FileRepositoryWrapper parentPath="/" />} />
+          <Route
+            path="buildCompany/:serviceId"
+            element={<FileRepositoryWrapper parentPath="buildCompany" />}
+          />
           <Route path="legal_services" element={<LegalServicesPage />} />
+          <Route
+            path="legal_services/:serviceId"
+            element={<FileRepositoryWrapper parentPath="legal_services" />}
+          />
           <Route
             path="conceptualization"
             element={
@@ -82,7 +99,7 @@ const AppRoutes = () => {
           <Route path="legal_and_tax_compliance" element={<DashboardLegalAndTaxCompliancePage />} />
           <Route path="business_profile" element={<DashboardBusinessProfilePage />} />
         </Route>
-        <Route path="*" element={<div>Page Not Found</div>} />
+        <Route path="*" element={<PageNotFound />} />
       </Routes>
     </BrowserRouter>
   );

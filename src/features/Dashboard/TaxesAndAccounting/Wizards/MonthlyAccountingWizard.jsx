@@ -8,6 +8,7 @@ export default function MonthlyAccountingWizard({
   handleWizardSuccess,
   companyId,
   commercialMovements,
+  hasStartedActivities,
 }) {
   const getTaxesAndAccountingWizardConfig = () => {
     return [
@@ -45,7 +46,7 @@ export default function MonthlyAccountingWizard({
             name: 'company_contact_phone',
             label: 'Teléfono de contacto de la empresa*',
             placeHolder: 'Ingresa teléfono de contacto de la empresa',
-            type: 'text',
+            type: 'phone',
             required: true,
           },
           {
@@ -76,25 +77,27 @@ export default function MonthlyAccountingWizard({
             name: 'legal_representative_phone',
             label: 'Teléfono del representante legal*',
             placeHolder: 'Ingresa teléfono del representante legal',
-            type: 'text',
+            type: 'phone',
             required: true,
           },
-          {
-            name: 'need_activity_start_support',
-            label: 'Necesitas apoyo con el inicio de actividades*',
-            type: 'radio',
-            options: [
-              {
-                value: 'SI',
-                label: 'Si',
-              },
-              {
-                value: 'NO',
-                label: 'No',
-              },
-            ],
-            required: true,
-          },
+          hasStartedActivities === 'NO'
+            ? {
+                name: 'need_activity_start_support',
+                label: 'Necesitas apoyo con el inicio de actividades*',
+                type: 'radio',
+                options: [
+                  {
+                    value: 'SI',
+                    label: 'Si',
+                  },
+                  {
+                    value: 'NO',
+                    label: 'No',
+                  },
+                ],
+                required: true,
+              }
+            : null,
           {
             name: 'commercial_movements',
             label:
@@ -104,7 +107,7 @@ export default function MonthlyAccountingWizard({
             required: true,
             multiple: true,
           },
-        ],
+        ].filter(Boolean),
       },
     ];
   };

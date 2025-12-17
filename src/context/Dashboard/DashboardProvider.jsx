@@ -8,6 +8,7 @@ export function DashboardProvider({ children }) {
   const initialState = {
     menu: [],
     wizards: [],
+    isReady: false,
   };
   const location = useLocation();
   const { pathname } = location || {};
@@ -52,6 +53,12 @@ export function DashboardProvider({ children }) {
       console.error('Error loading menu', err);
     } finally {
       setIsLoading(false);
+      setState((prevState) => {
+        return {
+          ...prevState,
+          isReady: true,
+        };
+      });
     }
   };
 
@@ -77,6 +84,7 @@ export function DashboardProvider({ children }) {
         setMenuState,
         setWizardsState,
         refetch: fetchData,
+        isReady: state.isReady,
       }}>
       {children}
     </DashboardContext.Provider>

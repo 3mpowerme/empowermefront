@@ -8,6 +8,7 @@ export function AccountProvider({ children }) {
   const initialState = {
     account: {},
     activeCompany: activeCompanyFromStorage,
+    isReady: false,
   };
   const [state, setState] = useState(initialState);
 
@@ -31,6 +32,14 @@ export function AccountProvider({ children }) {
       })
       .catch((error) => {
         console.error('Error getting account', error);
+      })
+      .finally(() => {
+        setState((prevState) => {
+          return {
+            ...prevState,
+            isReady: true,
+          };
+        });
       });
   }, []);
 
@@ -59,7 +68,14 @@ export function AccountProvider({ children }) {
 
   return (
     <AccountContext.Provider
-      value={{ account, setAccount, setActiveCompany, activeCompany, activeCompanyInfo }}>
+      value={{
+        account,
+        setAccount,
+        setActiveCompany,
+        activeCompany,
+        activeCompanyInfo,
+        isReady: state.isReady,
+      }}>
       {children}
     </AccountContext.Provider>
   );

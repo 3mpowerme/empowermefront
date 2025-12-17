@@ -6,6 +6,7 @@ import { useAccount } from '../../../../hooks/useAccount';
 export default function MonthlyAccountingRequiredDocumentsWizard({
   handleWizardClose,
   handleWizardSuccess,
+  needActivityStartSupport,
 }) {
   const { activeCompany: companyId } = useAccount();
   const getConfig = () => {
@@ -19,7 +20,7 @@ export default function MonthlyAccountingRequiredDocumentsWizard({
         fields: [
           {
             name: 'company_rut',
-            label: 'Rut de la empresa a la que se va a iniciar actividades.*',
+            label: 'Rut de la empresa a la que se va a iniciar actividades.',
             placeHolder: 'Ingresa RUT',
             tooltip:
               'en caso de haber sido creada en Empresa en 1 día, omitir esto si es que fue creada con el sistema tradicional ya que en ese caso el rut se obtendrá posterior al inicio de actividades',
@@ -83,26 +84,29 @@ export default function MonthlyAccountingRequiredDocumentsWizard({
             type: 'text',
             required: false,
           },
-          {
-            name: 'legal_representative_key',
-            label: 'Clave Tributaria*',
-            placeHolder: 'Ingresa Clave Tributaria',
-            tooltip:
-              'de la plataforma del Servicio de Impuestos Internos del representante legal y ante el SII de la empresa',
-            type: 'text',
-            required: false,
-          },
+          needActivityStartSupport
+            ? {
+                name: 'legal_representative_key',
+                label: 'Clave Tributaria*',
+                placeHolder: 'Ingresa Clave Tributaria',
+                tooltip:
+                  'de la plataforma del Servicio de Impuestos Internos del representante legal y ante el SII de la empresa',
+                type: 'text',
+                required: false,
+              }
+            : {},
           {
             name: 'activities',
             label: 'Indicar qué actividades económicas desea iniciar.*',
             tooltip:
               'recuerde que sólo puede agregar actividades que realmente comenzará a realizar inmediatamente, puesto que estas se deben acreditar a posterior y de no poderse ello generará problemas con el SII y la imposibilidad de que su empresa pueda operar con normalidad',
-            placeHolder: 'Ingresa teléfono del representante legal',
+            placeHolder:
+              'Puedes listar las actividades económicas codificadas del Servicio de Impuestos Internos (en caso de que ya las conozcas), o puedes describir a qué se dedicará tu empresa con tus propias palabras y presionar el botón actividades sugeridas y elegirlas desde ahí',
             type: 'intelligence-text-select',
             endpoint: '/ia',
             required: true,
           },
-        ],
+        ].filter(Boolean),
       },
     ];
   };

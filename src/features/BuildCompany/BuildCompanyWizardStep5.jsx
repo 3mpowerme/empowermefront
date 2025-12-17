@@ -6,6 +6,8 @@ import { mapCatalogToOptions } from '../../utils/catalogs';
 import FullScreenSpinner from '../../components/FullScreenSpinner/FullScreenSpinner';
 import { useBuildCompany } from '../../hooks/useBuildCompany';
 import { storage } from '../../utils/storage';
+import { useCountry } from '../../hooks/useCountry';
+import PhoneInputModern from '../../components/PhoneInputModern/PhoneInputModern';
 
 const BuildCompanyWizardStep5 = ({ name }) => {
   const buildCompanyFromStorage = storage.getItem('buildCompany') || {};
@@ -20,12 +22,12 @@ const BuildCompanyWizardStep5 = ({ name }) => {
 
   const { region, isLoading } = useRegion();
   const { setStepState } = useBuildCompany();
-
   const [state, setState] = useState({
     regionSelected: region_idFromStorage ?? '',
     streetText: streetFromStorage ?? '',
     zipCodeText: zip_codeFromStorage ?? '',
     phoneNumberText: phone_numberFromStorage ?? '',
+    countryCode: '',
   });
 
   useEffect(() => {
@@ -76,11 +78,17 @@ const BuildCompanyWizardStep5 = ({ name }) => {
           value={state.zipCodeText}
           onChange={(e) => setState((prev) => ({ ...prev, zipCodeText: e.target.value }))}
         />
-        <Input
-          placeholder="Número de teléfono"
-          value={state.phoneNumberText}
-          onChange={(e) => setState((prev) => ({ ...prev, phoneNumberText: e.target.value }))}
-          className="md:col-span-2"
+        <PhoneInputModern
+          label="Número de teléfono"
+          onChange={(data) => {
+            console.log('onChange data', data);
+
+            setState((prev) => ({
+              ...prev,
+              phoneNumberText: data.phone,
+              countryCode: data.countryCode,
+            }));
+          }}
         />
       </div>
     </div>

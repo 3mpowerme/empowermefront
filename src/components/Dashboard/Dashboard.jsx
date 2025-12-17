@@ -77,12 +77,6 @@ export default function Dashboard({ menuItems: mi = [] }) {
   );
 
   useEffect(() => {
-    if (auth?.todayFocusUrl && account) {
-      setTimeout(() => navigate(auth.todayFocusUrl, { replace: true }), 100);
-    }
-  }, [auth?.todayFocusUrl, account]);
-
-  useEffect(() => {
     function onDocPointerDown(e) {
       if (dropdownOpen === 'lang' && langRef.current && !langRef.current.contains(e.target)) {
         setDropdownOpen('');
@@ -194,13 +188,13 @@ export default function Dashboard({ menuItems: mi = [] }) {
 
     if (meta.type === 'document' && meta.documentId) {
       const search = new URLSearchParams({ fileId: String(meta.documentId) }).toString();
-      route = `/dashboard/taxes_and_accounting/monthly_accounting?${search}`;
+      route = `/dashboard/taxes_and_accounting/accounting?${search}`;
     } else if (meta.type === 'comment' && meta.documentId && meta.commentId) {
       const search = new URLSearchParams({
         fileId: String(meta.documentId),
         highlightComment: String(meta.commentId),
       }).toString();
-      route = `/dashboard/taxes_and_accounting/monthly_accounting?${search}`;
+      route = `/dashboard/taxes_and_accounting/accounting?${search}`;
     }
 
     if (activeCompany && notification?.id) {
