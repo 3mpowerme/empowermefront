@@ -438,7 +438,7 @@ export default function PlanNegociosView({ data }) {
             <thead>
               <tr className="bg-gray-50 text-left">
                 <th className="p-2 border">Concepto</th>
-                <th className="p-2 border">Monto</th>
+                <th className="p-2 border">Monto ({moneda?.currency})</th>
               </tr>
             </thead>
             <tbody>

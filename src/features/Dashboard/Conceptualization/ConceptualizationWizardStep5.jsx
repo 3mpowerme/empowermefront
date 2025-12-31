@@ -88,11 +88,11 @@ const ConceptualizationWizardStep5 = () => {
       <Switch.Item case={false}>
         <div className="flex flex-row flex-wrap h-full w-full">
           {/* Brand name */}
-          <div className="w-1/2 p-5">
+          <div className="w-full md:w-1/2 md:p-5">
             <p className="text-2xl font-bold mb-2.5">Seleciona un nombre para tu marca</p>
             <div className="box flex flex-row flex-wrap">
               {brandNames?.map((opt) => (
-                <label key={opt.value} className="flex items-center space-x-1 w-1/2 p-2">
+                <label key={opt.value} className="flex items-center space-x-1 w-full md:w-1/2 p-2">
                   <span className="text-sm font-medium mr-2 max-w-30 break-words">{opt.label}</span>
                   <input
                     type="radio"
@@ -128,11 +128,11 @@ const ConceptualizationWizardStep5 = () => {
           </div>
 
           {/* slogan */}
-          <div className="w-1/2 p-5">
+          <div className="w-full md:w-1/2 md:p-5">
             <p className="text-2xl font-bold mb-2.5">Seleciona una frase para tu marca</p>
             <div className="box flex flex-row flex-wrap">
               {slogans?.map((opt) => (
-                <label key={opt.value} className="flex items-center space-x-1 w-1/3 p-2">
+                <label key={opt.value} className="flex items-center space-x-1 w-full md:w-1/3 p-2">
                   <span className="text-sm font-medium mr-2 max-w-30 break-words">{opt.label}</span>
                   <input
                     type="radio"
@@ -168,15 +168,15 @@ const ConceptualizationWizardStep5 = () => {
           </div>
 
           {/* logo type */}
-          <div className="w-1/2 p-5">
+          <div className="w-full md:w-1/2 md:p-5">
             <p className="text-2xl font-bold mb-2.5">Seleciona el tipo de logo que te gustaría</p>
-            <div className="box grid grid-cols-3">
+            <div className="box grid grid-cols-2 md:grid-cols-3">
               {suggestedLogoTypes?.map((opt) => {
                 const isSelected = selectedLogoType === opt.value;
                 return (
                   <label
                     key={opt.value}
-                    className={`bg-white relative cursor-pointer border-2 rounded-2xl p-5 m-5 flex flex-col items-center transition-all duration-200
+                    className={`bg-white relative cursor-pointer border-2 rounded-2xl md:p-5 m-5 flex flex-col items-center transition-all duration-200
                       ${isSelected ? 'border-purple-600 shadow-lg bg-white' : 'border-opaque hover:border-gray-400'}
                     `}>
                     <input
@@ -198,11 +198,11 @@ const ConceptualizationWizardStep5 = () => {
           </div>
 
           {/* colometry */}
-          <div className="w-1/2 p-5 pl-0">
+          <div className="w-full md:w-1/2 md:p-5 pl-0">
             <p className="text-2xl font-bold mb-2.5">Seleciona colorimetría</p>
             <div className="box flex flex-row flex-wrap">
               {colorimetries?.map((opt) => (
-                <label key={opt.value} className="flex items-center space-x-1 w-1/2 p-2">
+                <label key={opt.value} className="flex items-center space-x-1 w-full md:w-1/2 p-2">
                   <span className="text-sm font-medium mr-2 max-w-24">{opt.label}</span>
                   <div className="flex flex-row mr-2">
                     {opt?.colors?.map((it) => (
