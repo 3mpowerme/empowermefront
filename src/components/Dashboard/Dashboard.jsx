@@ -21,7 +21,7 @@ import { useAccount } from '../../hooks/useAccount';
 import { useDashboard } from '../../hooks/useDashboard';
 import { privateService } from '../../services/privateService';
 
-export default function Dashboard({ menuItems: mi = [] }) {
+export default function Dashboard({ menuItems: mi = [], showAppointments = false }) {
   const menuItems = mi.map((it) => {
     if (it.name === 'Diseño Gráfico') {
       delete it.link;
@@ -396,19 +396,21 @@ export default function Dashboard({ menuItems: mi = [] }) {
               </div>
 
               <nav className="hidden md:flex items-center gap-2">
-                <NavLink
-                  to="/dashboard/appointments"
-                  className={({ isActive }) =>
-                    classNames(
-                      'rounded-lg px-3 py-2 flex items-center gap-2',
-                      isActive
-                        ? 'text-purple-500 bg-gray-200'
-                        : 'text-gray-700 hover:text-primary bg-gray-100 hover:bg-gray-200'
-                    )
-                  }>
-                  <CalendarDays size={18} />
-                  {t('appointments')}
-                </NavLink>
+                {showAppointments && (
+                  <NavLink
+                    to="/dashboard/appointments"
+                    className={({ isActive }) =>
+                      classNames(
+                        'rounded-lg px-3 py-2 flex items-center gap-2',
+                        isActive
+                          ? 'text-purple-500 bg-gray-200'
+                          : 'text-gray-700 hover:text-primary bg-gray-100 hover:bg-gray-200'
+                      )
+                    }>
+                    <CalendarDays size={18} />
+                    {t('appointments')}
+                  </NavLink>
+                )}
 
                 <div className="relative" ref={notificationsRef}>
                   <button
@@ -523,13 +525,15 @@ export default function Dashboard({ menuItems: mi = [] }) {
                   </select>
                 </div>
 
-                <NavLink
-                  to="/dashboard/appointments"
-                  onClick={() => setMobileOpen(false)}
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100">
-                  <CalendarDays size={18} />
-                  {t('appointments')}
-                </NavLink>
+                {showAppointments && (
+                  <NavLink
+                    to="/dashboard/appointments"
+                    onClick={() => setMobileOpen(false)}
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100">
+                    <CalendarDays size={18} />
+                    {t('appointments')}
+                  </NavLink>
+                )}
 
                 <div className="relative" ref={accountRef}>
                   <button

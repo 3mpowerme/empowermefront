@@ -26,7 +26,7 @@ export default function CardSelector({
 
         'sm:min-w-60 sm:w-1/2 sm:px-10': columns === 2,
         'md:min-w-50 md:min-h-50 md:flex-col md:px-2': columns === 3,
-        'min-w-60 w-full px-10 h-full': columns === 1,
+        'min-w-60 w-full px-10 h-full flex-wrap md:flex-nowrap': columns === 1,
 
         'sm:justify-self-end': columns < 3 && index % 2 === 0,
         'sm:justify-self-start': columns < 3 && index % 2 !== 0,

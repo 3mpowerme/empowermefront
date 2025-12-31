@@ -28,7 +28,7 @@ const SUCCESSFULL_SUBSCRIPTION_VIEW = 'successfull-subscription-view';
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
-const PayMonthlyAccounting = forwardRef(({ onComplete = () => {} }, ref) => {
+const PayStartActivities = forwardRef(({ onComplete = () => {} }, ref) => {
   const [openMethodModal, setOpenMethodModal] = useState(false);
   const [openStripeModal, setOpenStripeModal] = useState(false);
   const [view, setView] = useState(LOADING_VIEW);
@@ -302,6 +302,7 @@ const PayMonthlyAccounting = forwardRef(({ onComplete = () => {} }, ref) => {
             folio={subscriptionId}
             companyId={companyId}
             serviceId={ref.current.serviceType}
+            showRequiredDocuments
             onSchedule={() => {
               setView(SCHEDULE_APPOINTMENT_VIEW);
             }}
@@ -313,4 +314,4 @@ const PayMonthlyAccounting = forwardRef(({ onComplete = () => {} }, ref) => {
   );
 });
 
-export default PayMonthlyAccounting;
+export default PayStartActivities;

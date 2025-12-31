@@ -120,7 +120,9 @@ export default function SubscriptionsManager() {
           ? 'La suscripción se cancelará al finalizar el periodo actual.'
           : 'La suscripción fue cancelada inmediatamente.'
       );
-      fetchSubs();
+      setTimeout(() => {
+        fetchSubs();
+      }, 1000);
     } catch (e) {
       setError(e?.error || e?.message || 'No se pudo cancelar la suscripción');
       setCancelling(false);
@@ -129,7 +131,7 @@ export default function SubscriptionsManager() {
 
   return (
     <div className="w-full">
-      <div className="mb-4">
+      <div className="mb-4 mt-5">
         <h2 className="text-xl font-semibold text-slate-900">Mis suscripciones</h2>
         <p className="text-sm text-slate-600">
           Visualiza y gestiona tus suscripciones activas por servicio.

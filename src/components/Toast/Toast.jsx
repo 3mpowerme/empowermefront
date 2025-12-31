@@ -32,9 +32,9 @@ export default function Toast({
   const getSpanClassNamesByType = (t) => {
     switch (t) {
       case 'error':
-        return classNames('text-red-600 mr-2');
+        return classNames('text-red-600');
       case 'success':
-        return classNames('text-primary mr-2');
+        return classNames('text-primary');
     }
   };
 
@@ -50,25 +50,43 @@ export default function Toast({
   return (
     <div
       className={classNames(
-        'fixed top-6 right-6 z-60 flex justify-center w-full pointer-events-none',
+        'fixed z-60 flex w-full pointer-events-none',
+        'top-3 px-3 justify-center sm:top-6 sm:right-6 sm:px-0 sm:justify-end',
         { hidden: !show }
       )}>
       <div
         className={classNames(
-          'min-w-1/3 bg-white border rounded-xl shadow-lg flex items-center justify-between px-4 py-3 pointer-events-auto animate-slide-in',
+          'relative bg-white border rounded-xl shadow-lg pointer-events-auto animate-slide-in',
+          'w-full max-w-[560px] sm:w-auto sm:min-w-[360px]',
+          'px-3 py-2 sm:px-4 sm:py-3',
+          'flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-0',
           getDivClassNamesByType(type)
         )}>
-        <span className={getSpanClassNamesByType(type)}>{message}</span>
+        <span
+          className={classNames(
+            getSpanClassNamesByType(type),
+            'text-sm sm:text-base',
+            'break-words pr-6 sm:pr-0'
+          )}>
+          {message}
+        </span>
+
+        <button
+          className={classNames(
+            getButtonClassNamesByType(type),
+            'absolute top-2 right-2 sm:static'
+          )}
+          onClick={handleClose}>
+          <X size={20} />
+        </button>
+
         {buttonMessage && onClick && (
-          <span className="mr-2">
+          <div className="flex justify-end sm:ml-2">
             <Button variant="wizard" onClick={onClick}>
               {buttonMessage}
             </Button>
-          </span>
+          </div>
         )}
-        <button className={getButtonClassNamesByType(type)} onClick={handleClose}>
-          <X size={20} />
-        </button>
       </div>
     </div>
   );

@@ -56,7 +56,7 @@ function formatSize(sizeBytes) {
   return `${gb.toFixed(1)} GB`;
 }
 
-export default function FileRepository({ serviceId, appointmentRequired }) {
+export default function FileRepository({ serviceId }) {
   const { activeCompany } = useAccount();
   const { setToast } = useApp();
   const { auth } = useAuth();
@@ -386,7 +386,7 @@ export default function FileRepository({ serviceId, appointmentRequired }) {
   }, [highlightedCommentFileId, openFileId, commentsLoadingByFile]);
 
   useEffect(() => {
-    if (!IalreadyViewedPage) {
+    if (true) {
       setToast({
         show: true,
         message: 'Aqui verás tus archivos y podrás subir los tuyos',
@@ -398,280 +398,255 @@ export default function FileRepository({ serviceId, appointmentRequired }) {
 
   return (
     <>
-      <div className="flex flex-col md:flex-row gap-4 md:gap-6 w-full h-full">
-        {!IalreadyViewedPage && appointmentRequired && (
-          <div>
-            <div className="flex items-center justify-center w-full">
-              <div>
-                <p>Para continuar requerimos que agendes una cita</p>
+      <div className="flex flex-col md:flex-row gap-4 md:gap-6 w-full h-full mr-5">
+        <>
+          <aside className="w-full md:w-64 lg:w-72 rounded-2xl border border-gray-200 bg-white shadow-sm p-4 flex flex-col">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-sm font-semibold text-gray-900">Mis archivos</h2>
 
-                <Button
-                  className="mt-5 cursor-pointer"
-                  onClick={() => {
-                    window.open(
-                      'https://calendly.com/contabilidadalphaconsulting/contabilidad',
-                      '_blank',
-                      'noopener,noreferrer'
-                    );
-                    storage.setItem('IalreadyViewedPage', true);
-                  }}>
-                  Agendar una cita
-                </Button>
-              </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                className="hidden"
+                onChange={(e) => handleUploadSelectedFile(e.target.files && e.target.files[0])}
+              />
+
+              <button
+                type="button"
+                disabled={uploading || !activeCompany}
+                onClick={() => fileInputRef.current && fileInputRef.current.click()}
+                className={`rounded-xl px-3 py-2 text-xs font-semibold transition cursor-pointer ${
+                  uploading
+                    ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                    : 'bg-primary text-white hover:opacity-90'
+                }`}>
+                {uploading ? 'Subiendo…' : 'Subir archivo'}
+              </button>
             </div>
-          </div>
-        )}
 
-        {IalreadyViewedPage && (
-          <>
-            <aside className="w-full md:w-64 lg:w-72 rounded-2xl border border-gray-200 bg-white shadow-sm p-4 flex flex-col">
-              <div className="flex items-center justify-between mb-3">
-                <h2 className="text-sm font-semibold text-gray-900">Mis archivos</h2>
-
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  className="hidden"
-                  onChange={(e) => handleUploadSelectedFile(e.target.files && e.target.files[0])}
-                />
-
-                <button
-                  type="button"
-                  disabled={uploading || !activeCompany}
-                  onClick={() => fileInputRef.current && fileInputRef.current.click()}
-                  className={`rounded-xl px-3 py-2 text-xs font-semibold transition cursor-pointer ${
-                    uploading
-                      ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                      : 'bg-primary text-white hover:opacity-90'
-                  }`}>
-                  {uploading ? 'Subiendo…' : 'Subir archivo'}
-                </button>
-              </div>
-
-              {loading && files.length === 0 ? (
-                <div className="text-xs text-gray-500">Cargando…</div>
-              ) : availableYears.length === 0 ? (
-                <div className="text-xs text-gray-500">No hay archivos disponibles.</div>
-              ) : (
-                <>
-                  <div className="text-[11px] uppercase tracking-wide text-gray-400 mb-2">Años</div>
-                  <div className="flex flex-col gap-1 mb-4">
-                    {availableYears.map((year) => (
-                      <button
-                        key={year}
-                        type="button"
-                        onClick={() => {
-                          setSelectedYear(year);
-                          const months = Object.keys(groupedByYearAndMonth[year])
-                            .map((m) => Number(m))
-                            .sort((a, b) => a - b);
-                          setSelectedMonth(months[0] ?? null);
-                          setFocusedFileId(null);
-                          setOpenFileId(null);
-                          setHighlightedCommentFileId(null);
-                        }}
-                        className={`rounded-xl px-3 py-2 text-sm transition cursor-pointer ${
-                          year === selectedYear
-                            ? 'bg-primary text-white shadow-sm'
-                            : 'text-gray-700 hover:bg-gray-50'
-                        }`}>
-                        {year}
-                      </button>
-                    ))}
-                  </div>
-
-                  {selectedYear && availableMonthsForSelectedYear.length > 0 && (
-                    <>
-                      <div className="text-[11px] uppercase tracking-wide text-gray-400 mb-2">
-                        Meses de {selectedYear}
-                      </div>
-                      <div className="grid grid-cols-2 gap-1 md:grid-cols-3">
-                        {availableMonthsForSelectedYear.map((monthIndex) => (
-                          <button
-                            key={monthIndex}
-                            type="button"
-                            onClick={() => {
-                              setSelectedMonth(monthIndex);
-                              setFocusedFileId(null);
-                              setOpenFileId(null);
-                              setHighlightedCommentFileId(null);
-                            }}
-                            className={`rounded-xl px-2 py-1.5 text-[11px] transition cursor-pointer ${
-                              monthIndex === selectedMonth
-                                ? 'bg-primary text-white shadow-sm'
-                                : 'text-gray-700 hover:bg-gray-50'
-                            }`}>
-                            {MONTH_LABELS[monthIndex]}
-                          </button>
-                        ))}
-                      </div>
-                    </>
-                  )}
-                </>
-              )}
-            </aside>
-
-            <section className="flex-1 rounded-2xl border border-gray-200 bg-white shadow-sm p-4 flex flex-col">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-semibold text-gray-900">
-                  {selectedYear && selectedMonth !== null
-                    ? `${MONTH_LABELS[selectedMonth]} ${selectedYear}`
-                    : 'Archivos'}
-                </h3>
-                <p className="text-xs text-gray-500">
-                  {visibleFiles.length} archivo{visibleFiles.length !== 1 ? 's' : ''}
-                </p>
-              </div>
-
-              {visibleFiles.length === 0 ? (
-                <div className="flex-1 flex items-center justify-center text-sm text-gray-500">
-                  No hay archivos.
+            {loading && files.length === 0 ? (
+              <div className="text-xs text-gray-500">Cargando…</div>
+            ) : availableYears.length === 0 ? (
+              <div className="text-xs text-gray-500">No hay archivos disponibles.</div>
+            ) : (
+              <>
+                <div className="text-[11px] uppercase tracking-wide text-gray-400 mb-2">Años</div>
+                <div className="flex flex-col gap-1 mb-4">
+                  {availableYears.map((year) => (
+                    <button
+                      key={year}
+                      type="button"
+                      onClick={() => {
+                        setSelectedYear(year);
+                        const months = Object.keys(groupedByYearAndMonth[year])
+                          .map((m) => Number(m))
+                          .sort((a, b) => a - b);
+                        setSelectedMonth(months[0] ?? null);
+                        setFocusedFileId(null);
+                        setOpenFileId(null);
+                        setHighlightedCommentFileId(null);
+                      }}
+                      className={`rounded-xl px-3 py-2 text-sm transition cursor-pointer ${
+                        year === selectedYear
+                          ? 'bg-primary text-white shadow-sm'
+                          : 'text-gray-700 hover:bg-gray-50'
+                      }`}>
+                      {year}
+                    </button>
+                  ))}
                 </div>
-              ) : (
-                <div className="overflow-auto rounded-xl border border-gray-100">
-                  <table className="min-w-full text-xs md:text-sm">
-                    <thead className="bg-gray-50 text-[11px] uppercase tracking-wide text-gray-500">
-                      <tr>
-                        <th className="px-4 py-2 text-left font-medium">Nombre</th>
-                        <th className="px-4 py-2 text-left font-medium">Fecha</th>
-                        <th className="px-4 py-2 text-left font-medium">Tamaño</th>
-                        <th className="px-4 py-2 text-left font-medium">Acciones</th>
-                      </tr>
-                    </thead>
 
-                    <tbody className="divide-y divide-gray-100">
-                      {visibleFiles.map((file) => (
-                        <React.Fragment key={file.id}>
-                          <tr
-                            className={`transition ${
-                              focusedFileId === file.id
-                                ? 'bg-purple-50 hover:bg-purple-100'
-                                : 'hover:bg-gray-50'
-                            }`}>
-                            <td className="px-4 py-2 text-gray-900">{file.name}</td>
+                {selectedYear && availableMonthsForSelectedYear.length > 0 && (
+                  <>
+                    <div className="text-[11px] uppercase tracking-wide text-gray-400 mb-2">
+                      Meses de {selectedYear}
+                    </div>
+                    <div className="grid grid-cols-2 gap-1 md:grid-cols-3">
+                      {availableMonthsForSelectedYear.map((monthIndex) => (
+                        <button
+                          key={monthIndex}
+                          type="button"
+                          onClick={() => {
+                            setSelectedMonth(monthIndex);
+                            setFocusedFileId(null);
+                            setOpenFileId(null);
+                            setHighlightedCommentFileId(null);
+                          }}
+                          className={`rounded-xl px-2 py-1.5 text-[11px] transition cursor-pointer ${
+                            monthIndex === selectedMonth
+                              ? 'bg-primary text-white shadow-sm'
+                              : 'text-gray-700 hover:bg-gray-50'
+                          }`}>
+                          {MONTH_LABELS[monthIndex]}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </>
+            )}
+          </aside>
 
-                            <td className="px-4 py-2 text-gray-600">
-                              {formatDate(file.uploaded_at)}
-                            </td>
+          <section className="flex-1 rounded-2xl border border-gray-200 bg-white shadow-sm p-4 flex flex-col">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-semibold text-gray-900">
+                {selectedYear && selectedMonth !== null
+                  ? `${MONTH_LABELS[selectedMonth]} ${selectedYear}`
+                  : 'Archivos'}
+              </h3>
+              <p className="text-xs text-gray-500">
+                {visibleFiles.length} archivo{visibleFiles.length !== 1 ? 's' : ''}
+              </p>
+            </div>
 
-                            <td className="px-4 py-2 text-gray-600">
-                              {formatSize(file.size_bytes)}
-                            </td>
+            {visibleFiles.length === 0 ? (
+              <div className="flex-1 flex items-center justify-center text-sm text-gray-500">
+                No hay archivos.
+              </div>
+            ) : (
+              <div className="overflow-auto rounded-xl border border-gray-100">
+                <table className="min-w-full text-xs md:text-sm">
+                  <thead className="bg-gray-50 text-[11px] uppercase tracking-wide text-gray-500">
+                    <tr>
+                      <th className="px-1 md:px-4 py-2 text-left font-medium">Nombre</th>
+                      <th className="px-1 md:px-4 py-2 text-left font-medium">Fecha</th>
+                      <th className="px-1 md:px-4 py-2 text-left font-medium">Tamaño</th>
+                      <th className="px-1 md:px-4 py-2 text-left font-medium">Acciones</th>
+                    </tr>
+                  </thead>
 
-                            <td className="px-4 py-2 space-x-2">
-                              <button
-                                onClick={() => handleView(file.id)}
-                                className="text-primary hover:underline text-xs cursor-pointer">
-                                Ver
-                              </button>
-                              <button
-                                onClick={() => toggleComments(file.id)}
-                                className="text-primary hover:underline text-xs cursor-pointer">
-                                Comentarios
-                              </button>
-                            </td>
-                          </tr>
+                  <tbody className="divide-y divide-gray-100">
+                    {visibleFiles.map((file) => (
+                      <React.Fragment key={file.id}>
+                        <tr
+                          className={`transition ${
+                            focusedFileId === file.id
+                              ? 'bg-purple-50 hover:bg-purple-100'
+                              : 'hover:bg-gray-50'
+                          }`}>
+                          <td className="px-1 md:px-4 py-2 text-gray-900">{file.name}</td>
 
-                          {openFileId === file.id && (
-                            <tr>
-                              <td colSpan={4} className="bg-gray-50 px-4 py-3">
-                                <div
-                                  className={`space-y-3 rounded-xl ${
-                                    highlightedCommentFileId === file.id
-                                      ? 'ring-2 ring-primary/60 bg-purple-50'
-                                      : ''
-                                  }`}>
-                                  <div className="flex items-center justify-between">
-                                    <span className="text-xs font-semibold text-gray-700">
-                                      Comentarios
-                                    </span>
-                                    {commentsLoadingByFile[file.id] && (
-                                      <span className="text-[11px] text-gray-500">Cargando…</span>
-                                    )}
-                                  </div>
+                          <td className="px-1 md:px-4 py-2 text-gray-600">
+                            {formatDate(file.uploaded_at)}
+                          </td>
 
-                                  <div className="max-h-40 overflow-y-auto space-y-2">
-                                    {(commentsByFile[file.id] || []).length === 0 &&
-                                    !commentsLoadingByFile[file.id] ? (
-                                      <div
-                                        ref={(el) => {
-                                          if (el) commentTargetRefByFile.current[file.id] = el;
-                                        }}
-                                        className="text-[11px] text-gray-500">
-                                        No hay comentarios.
-                                      </div>
-                                    ) : (
-                                      (commentsByFile[file.id] || []).map((c, idx, arr) => {
-                                        const isMine =
-                                          currentUserId && c.created_by_user_id === currentUserId;
-                                        const isLast = idx === arr.length - 1;
+                          <td className="px-1 md:px-4 py-2 text-gray-600">
+                            {formatSize(file.size_bytes)}
+                          </td>
 
-                                        return (
-                                          <div
-                                            key={c.id}
-                                            ref={(el) => {
-                                              if (isLast && el)
-                                                commentTargetRefByFile.current[file.id] = el;
-                                            }}
-                                            className={`max-w-[85%] rounded-lg border px-3 py-2 ${
-                                              isMine
-                                                ? 'ml-auto bg-primary text-white border-primary'
-                                                : 'mr-auto bg-white text-gray-800 border-gray-200'
-                                            }`}>
-                                            <div className="flex items-center justify-between gap-2 mb-1">
-                                              <span className="text-[10px] font-semibold">
-                                                {isMine ? 'Tú' : 'Administrador'}
-                                              </span>
-                                              {c.created_at && (
-                                                <span className="text-[10px] opacity-80">
-                                                  {formatDateTime(c.created_at)}
-                                                </span>
-                                              )}
-                                            </div>
-                                            <div className="text-xs break-words">{c.comment}</div>
-                                          </div>
-                                        );
-                                      })
-                                    )}
-                                  </div>
+                          <td className="px-1 md:px-4 py-2 space-x-2">
+                            <button
+                              onClick={() => handleView(file.id)}
+                              className="text-primary hover:underline text-xs cursor-pointer">
+                              Ver
+                            </button>
+                            <button
+                              onClick={() => toggleComments(file.id)}
+                              className="text-primary hover:underline text-xs cursor-pointer">
+                              Comentarios
+                            </button>
+                          </td>
+                        </tr>
 
-                                  <div className="mt-2">
-                                    <TextArea
-                                      maxLength={2000}
-                                      rows={3}
-                                      className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition"
-                                      placeholder="Escribe un comentario…"
-                                      value={newCommentByFile[file.id] || ''}
-                                      onChange={(e) =>
-                                        setNewCommentByFile((prev) => ({
-                                          ...prev,
-                                          [file.id]: e.target.value,
-                                        }))
-                                      }
-                                    />
-                                    <div className="mt-2 flex justify-end">
-                                      <Button
-                                        variant="wizard"
-                                        className="cursor-pointer"
-                                        onClick={() => handleAddComment(file.id)}
-                                        disabled={!!savingCommentByFile[file.id]}>
-                                        {savingCommentByFile[file.id] ? 'Guardando…' : 'Enviar'}
-                                      </Button>
+                        {openFileId === file.id && (
+                          <tr>
+                            <td colSpan={4} className="bg-gray-50 px-1 md:px-4 py-3">
+                              <div
+                                className={`space-y-3 rounded-xl ${
+                                  highlightedCommentFileId === file.id
+                                    ? 'ring-2 ring-primary/60 bg-purple-50'
+                                    : ''
+                                }`}>
+                                <div className="flex items-center justify-between">
+                                  <span className="text-xs font-semibold text-gray-700">
+                                    Comentarios
+                                  </span>
+                                  {commentsLoadingByFile[file.id] && (
+                                    <span className="text-[11px] text-gray-500">Cargando…</span>
+                                  )}
+                                </div>
+
+                                <div className="max-h-40 overflow-y-auto space-y-2">
+                                  {(commentsByFile[file.id] || []).length === 0 &&
+                                  !commentsLoadingByFile[file.id] ? (
+                                    <div
+                                      ref={(el) => {
+                                        if (el) commentTargetRefByFile.current[file.id] = el;
+                                      }}
+                                      className="text-[11px] text-gray-500">
+                                      No hay comentarios.
                                     </div>
+                                  ) : (
+                                    (commentsByFile[file.id] || []).map((c, idx, arr) => {
+                                      const isMine =
+                                        currentUserId && c.created_by_user_id === currentUserId;
+                                      const isLast = idx === arr.length - 1;
+
+                                      return (
+                                        <div
+                                          key={c.id}
+                                          ref={(el) => {
+                                            if (isLast && el)
+                                              commentTargetRefByFile.current[file.id] = el;
+                                          }}
+                                          className={`max-w-[85%] rounded-lg border px-3 py-2 ${
+                                            isMine
+                                              ? 'ml-auto bg-primary text-white border-primary'
+                                              : 'mr-auto bg-white text-gray-800 border-gray-200'
+                                          }`}>
+                                          <div className="flex items-center justify-between gap-2 mb-1">
+                                            <span className="text-[10px] font-semibold">
+                                              {isMine ? 'Tú' : 'Administrador'}
+                                            </span>
+                                            {c.created_at && (
+                                              <span className="text-[10px] opacity-80">
+                                                {formatDateTime(c.created_at)}
+                                              </span>
+                                            )}
+                                          </div>
+                                          <div className="text-xs break-words">{c.comment}</div>
+                                        </div>
+                                      );
+                                    })
+                                  )}
+                                </div>
+
+                                <div className="mt-2">
+                                  <TextArea
+                                    maxLength={2000}
+                                    rows={3}
+                                    className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition"
+                                    placeholder="Escribe un comentario…"
+                                    value={newCommentByFile[file.id] || ''}
+                                    onChange={(e) =>
+                                      setNewCommentByFile((prev) => ({
+                                        ...prev,
+                                        [file.id]: e.target.value,
+                                      }))
+                                    }
+                                  />
+                                  <div className="mt-2 flex justify-end">
+                                    <Button
+                                      variant="wizard"
+                                      className="cursor-pointer"
+                                      onClick={() => handleAddComment(file.id)}
+                                      disabled={!!savingCommentByFile[file.id]}>
+                                      {savingCommentByFile[file.id] ? 'Guardando…' : 'Enviar'}
+                                    </Button>
                                   </div>
                                 </div>
-                              </td>
-                            </tr>
-                          )}
-                        </React.Fragment>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </section>
-          </>
-        )}
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </section>
+        </>
       </div>
 
       <div className="w-full block">

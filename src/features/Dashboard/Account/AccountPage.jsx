@@ -180,11 +180,11 @@ export default function AccountPage() {
       label: 'Subscripciones',
       content: <SubscriptionsList />,
     },
-    {
+    /*{
       id: 'settings',
       label: 'Configuración',
       content: <p>Opciones de configuración</p>,
-    },
+    },*/
   ];
 
   return (
@@ -201,7 +201,7 @@ export default function AccountPage() {
           <WizardForm onClose={handleWizardClose} />
         </WizardProvider>
       )}
-      <div className="flex flex-col h-full w-full gap-5 pl-10 animate-slide-in mt-10">
+      <div className="flex flex-col h-full w-full gap-5 px-5 md:px-10 animate-slide-in mt-10">
         <h1 className="text-2xl text-black font-bold">Cuenta</h1>
         <Tabs tabs={tabs} initialTab={sub} />
       </div>

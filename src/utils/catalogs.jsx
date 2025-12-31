@@ -14,6 +14,7 @@ import {
   Mic,
   Laptop,
   HandPlatter,
+  ShoppingBag,
 } from 'lucide-react';
 import { capitalizeFirst } from './utils';
 
@@ -102,10 +103,12 @@ export const addIconsToMenu = (menu = []) => {
 
 export const addIconsToOfferingServiceType = (items = []) => {
   const ICON_BY_NAME = {
-    'bienes fisicos': BriefcaseBusiness,
-    servicios: KeyRound,
+    'alimentos, restaurantes y hospitalidad': HandPlatter,
+    'comercio minorista y consumo masivo': ShoppingBag,
+    'bienes fisicos y productos materiales': BriefcaseBusiness,
+    'servicios profesionales y personales': KeyRound,
     'ocio y hospitalidad': HandPlatter,
-    'contenido original': Mic,
+    'contenido original y productos digitales': Mic,
     'tecnologia y software': Laptop,
   };
 

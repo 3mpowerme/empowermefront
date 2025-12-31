@@ -63,11 +63,12 @@ export const confirmForgotPassword = async ({ email, code, newPassword }) => {
   }
 };
 
-export const google = async ({ idToken, countryCode }) => {
+export const google = async ({ idToken, countryCode, companyName }) => {
   try {
     const response = await api.post('/auth/google', {
       idToken,
       countryCode,
+      companyName,
     });
     return response.data;
   } catch (error) {

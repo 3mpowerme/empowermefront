@@ -49,7 +49,10 @@ export default function DashboardBuildCompanyPage() {
 
   useEffect(() => {
     if (wizards.length > 0) {
-      if (!services?.paidServices?.['business_creation'] && today_focus === 'Crea tu empresa') {
+      if (
+        services?.paidServices?.['business_creation'] === false &&
+        today_focus === 'Crea tu empresa'
+      ) {
         setServiceType('business_creation');
         setView(PAY_AND_SCHEDULE_APPOINTMENT_VIEW);
       }

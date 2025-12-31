@@ -39,7 +39,7 @@ export default function LogoDesignPage() {
     {
       id: 1,
       img: '/images/dashboard/graphic_design/design_logo_step_1.jpeg',
-      title: '1. Ingresa el nobre de tu empresa',
+      title: '1. Ingresa el nombre de tu empresa',
       desc: 'Ingresa el nombre de tu empresa. Agrega un eslogan (si corresponde) y haz clic en "Diseñar".',
     },
     {
@@ -96,7 +96,7 @@ export default function LogoDesignPage() {
   }, [logoHistory.length]);
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-white">
       <Switch value={view}>
         <Switch.Item case={WIZARD_VIEW}>
           <Wizard

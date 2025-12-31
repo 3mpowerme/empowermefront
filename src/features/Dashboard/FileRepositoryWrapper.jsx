@@ -9,6 +9,7 @@ export default function FileRepositoryWrapper({ parentPath }) {
     'business_orientation',
     'shareholders_registry',
     'personalized_advice',
+    'personalized_advisory',
     'constitution_review',
     'dissolution_of_spa',
     'dissolution_of_eirl',
@@ -16,10 +17,13 @@ export default function FileRepositoryWrapper({ parentPath }) {
     'accounting',
     'audit',
     'balance',
+    'start_activities',
     'tax_planning',
     'remunerations',
     'virtual_office',
     'virtual_office_plus_ministorage',
+    'company_modifications_spa',
+    'company_modifications_srl',
   ];
   const { serviceId } = useParams();
   const { activeCompanyInfo: { companyName } = {} } = useAccount();
@@ -29,9 +33,9 @@ export default function FileRepositoryWrapper({ parentPath }) {
   }
 
   return (
-    <div className="flex flex-col h-full w-full gap-5 pl-10 animate-slide-in mt-10">
+    <div className="flex flex-col h-full w-full gap-5 pl-3 pr-3 md:pl-10 md:pr-10 animate-slide-in mt-10">
       <h1 className="text-2xl text-black font-bold">{`Bienvenido ${companyName}`} </h1>
-      <FileRepository serviceId={serviceId} appointmentRequired={serviceId === 'accounting'} />
+      <FileRepository serviceId={serviceId} />
     </div>
   );
 }

@@ -6,11 +6,10 @@ import * as yup from 'yup';
 import { useWizard } from '../../hooks/useWizard';
 import { useApp } from '../../hooks/useApp';
 import Input from '../Input/Input';
-import CardSelector from '../CardSelector/CardSelector';
-import { mapShareholdersToCards } from '../../utils/catalogs';
 import { privateService } from '../../services/privateService';
 import TextArea from '../TextArea/TextArea';
 import PhoneInputModern from '../PhoneInputModern/PhoneInputModern';
+import Tooltip from '../Tooltip/Tooltip';
 
 function buildValidationSchema(fields) {
   const shape = {};
@@ -32,6 +31,25 @@ function buildValidationSchema(fields) {
     phone: yup.string().matches(/^[0-9+()\-\s]*$/, 'Número telefónico inválido'),
   });
 
+  const shareholderItemSchema3 = yup.object().shape({
+    full_name: yup.string().max(255),
+    tax_id: yup.string().max(20),
+    unique_key: yup.string().max(50),
+    address_region_commune: yup.string().max(255),
+    profession: yup.string().max(100),
+    phone: yup.string().matches(/^[0-9+()\-\s]*$/, 'Número telefónico inválido'),
+  });
+
+  const shareholderItemSchema4 = yup.object().shape({
+    full_name: yup.string().max(255),
+    tax_id: yup.string().max(20),
+    address_region_commune: yup.string().max(255),
+    nationality: yup.string().max(100),
+    profession: yup.string().max(100),
+    marital_status: yup.string().max(100),
+    email: yup.string().email('Formato de email invalido').max(255),
+  });
+
   const legalRepresentativeSchema = yup.object().shape({
     tax_id: yup.string().max(20),
     unique_key: yup.string().max(50),
@@ -41,6 +59,10 @@ function buildValidationSchema(fields) {
     full_name: yup.string().max(255),
     tax_id: yup.string().max(20),
     nationality: yup.string().max(100),
+  });
+
+  const legalRepresentativeSchema3 = yup.object().shape({
+    full_name: yup.string().max(255),
   });
 
   fields.forEach((field) => {
@@ -99,19 +121,6 @@ function buildValidationSchema(fields) {
 
       case 'phone':
         validator = yup.string().matches(/^[0-9+()\-\s]*$/, 'Número telefónico inválido');
-        /*
-        validator = yup
-          .object()
-          .shape({
-            countryCode: yup.string().max(10),
-            phone: yup.string().matches(/^\d*$/, 'Debe ser un numero').max(15, 'Maximo 15 digitos'),
-            phone_code: yup.string().max(10),
-          })
-          .test('phone-required', `${field.label} es requerido`, (v) => {
-            if (!field.required) return true;
-            return Boolean(v && String(v.countryCode || '').trim() && String(v.phone || '').trim());
-          });
-          */
         break;
 
       case 'shareholders':
@@ -138,6 +147,30 @@ function buildValidationSchema(fields) {
             );
           });
         break;
+      case 'shareholders_3':
+        validator = yup
+          .array()
+          .of(shareholderItemSchema3)
+          .min(1, `${field.label} es requerido`)
+          .test('at-least-one-filled', `${field.label} es requerido`, (arr) => {
+            if (!Array.isArray(arr) || arr.length === 0) return false;
+            return arr.some((s) =>
+              Object.values(s || {}).some((v) => String(v || '').trim().length > 0)
+            );
+          });
+        break;
+      case 'shareholders_4':
+        validator = yup
+          .array()
+          .of(shareholderItemSchema4)
+          .min(1, `${field.label} es requerido`)
+          .test('at-least-one-filled', `${field.label} es requerido`, (arr) => {
+            if (!Array.isArray(arr) || arr.length === 0) return false;
+            return arr.some((s) =>
+              Object.values(s || {}).some((v) => String(v || '').trim().length > 0)
+            );
+          });
+        break;
 
       case 'legal_representative':
         validator = yup
@@ -155,6 +188,18 @@ function buildValidationSchema(fields) {
         validator = yup
           .array()
           .of(legalRepresentativeSchema2)
+          .min(1, `${field.label} es requerido`)
+          .test('at-least-one-filled', `${field.label} es requerido`, (arr) => {
+            if (!Array.isArray(arr) || arr.length === 0) return false;
+            return arr.some((s) =>
+              Object.values(s || {}).some((v) => String(v || '').trim().length > 0)
+            );
+          });
+        break;
+      case 'legal_representative_3':
+        validator = yup
+          .array()
+          .of(legalRepresentativeSchema3)
           .min(1, `${field.label} es requerido`)
           .test('at-least-one-filled', `${field.label} es requerido`, (arr) => {
             if (!Array.isArray(arr) || arr.length === 0) return false;
@@ -240,14 +285,11 @@ function IntelligenceTextSelect({ field, value, onChange, error }) {
           </label>
         )}
         {field.tooltip && (
-          <div className="relative group">
+          <Tooltip content={field.tooltip}>
             <div className="flex items-center justify-center w-5 h-5 rounded-full text-primary">
               <Info className="w-5 h-5" />
             </div>
-            <div className="absolute right-0 mt-2 hidden w-96 rounded-md bg-white p-4 text-xs leading-relaxed text-gray-700 shadow-lg group-hover:block z-20">
-              {field.tooltip}
-            </div>
-          </div>
+          </Tooltip>
         )}
       </div>
 
@@ -308,7 +350,7 @@ function IntelligenceTextSelect({ field, value, onChange, error }) {
             }}
             className="mt-2 inline-flex items-center gap-1 text-xs text-primary">
             <Repeat2 className="w-3 h-3" />
-            Volver a intentar inferir
+            Volver a buscar
           </button>
         </div>
       )}
@@ -610,14 +652,11 @@ export default function StepForm({ step, onStepSubmit }) {
                     {field.label}
                   </label>
                   {field.tooltip && (
-                    <div className="relative group">
+                    <Tooltip content={field.tooltip}>
                       <div className="flex items-center justify-center w-5 h-5 rounded-full text-primary">
                         <Info className="w-5 h-5" />
                       </div>
-                      <div className="absolute right-0 mt-2 hidden w-96 rounded-md bg-white p-4 text-xs leading-relaxed text-gray-700 shadow-lg group-hover:block z-20">
-                        {field.tooltip}
-                      </div>
-                    </div>
+                    </Tooltip>
                   )}
                 </div>
 
@@ -632,14 +671,11 @@ export default function StepForm({ step, onStepSubmit }) {
                           <span className="text-gray-800">{opt.label}</span>
                         </div>
                         {opt.tooltip && (
-                          <div className="relative">
+                          <Tooltip content={opt.tooltip}>
                             <div className="flex items-center justify-center w-5 h-5 rounded-full text-primary shrink-0">
                               <Info className="w-5 h-5" />
                             </div>
-                            <div className="absolute right-0 mt-2 hidden w-96 rounded-md bg-white p-4 text-xs leading-relaxed text-gray-700 shadow-lg group-hover:block z-20">
-                              {opt.tooltip}
-                            </div>
-                          </div>
+                          </Tooltip>
                         )}
                       </div>
                     ))}
@@ -1016,6 +1052,106 @@ export default function StepForm({ step, onStepSubmit }) {
           />
         );
 
+      case 'legal_representative_3':
+        return (
+          <Controller
+            name={field.name}
+            control={control}
+            defaultValue={[
+              {
+                full_name: '',
+              },
+            ]}
+            render={({ field: { value, onChange } }) => {
+              const list = Array.isArray(value) ? value : [];
+
+              const addShareholder = () => {
+                onChange([
+                  ...list,
+                  {
+                    full_name: '',
+                  },
+                ]);
+              };
+
+              const removeShareholder = (index) => {
+                onChange(list.filter((_, i) => i !== index));
+              };
+
+              const updateShareholder = (index, key, val) => {
+                const next = list.map((item, i) =>
+                  i === index ? { ...(item || {}), [key]: val } : item
+                );
+                onChange(next);
+              };
+
+              return (
+                <div className="flex flex-col gap-3">
+                  <div className="flex items-center justify-between">
+                    {field.label && (
+                      <label className="mb-1 font-bold text-md" htmlFor={field.name}>
+                        <Circle size={10} className="inline mr-2 text-black" />
+                        {field.label}
+                      </label>
+                    )}
+
+                    {field.tooltip && (
+                      <Tooltip content={field.tooltip} className="mr-5">
+                        <div className="flex items-center justify-center w-5 h-5 rounded-full text-primary">
+                          <Info className="w-5 h-5" />
+                        </div>
+                      </Tooltip>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={addShareholder}
+                      className="bg-primary text-white text-xs px-4 py-2 rounded-full hover:bg-purple-700">
+                      + Agregar
+                    </button>
+                  </div>
+
+                  {list.length === 0 && (
+                    <button
+                      type="button"
+                      onClick={addShareholder}
+                      className="bg-primary text-white text-xs px-4 py-2 rounded-full hover:bg-purple-700 w-fit">
+                      + Agregar representante legal
+                    </button>
+                  )}
+
+                  {list.map((s, idx) => (
+                    <div key={idx} className="bg-white shadow-md hover:shadow-xl p-4 rounded">
+                      <div className="flex items-center justify-between mb-3">
+                        <p className="font-bold text-sm">Representante legal #{idx + 1}</p>
+                        {list.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => removeShareholder(idx)}
+                            className="text-xs text-red-700">
+                            Eliminar
+                          </button>
+                        )}
+                      </div>
+
+                      <div className="flex flex-col gap-3">
+                        <Input
+                          type="text"
+                          label="Nombre completo"
+                          value={(s && s.full_name) || ''}
+                          onChange={(e) => updateShareholder(idx, 'full_name', e.target.value)}
+                        />
+                      </div>
+                    </div>
+                  ))}
+
+                  {error && <span className="block text-red-700 mt-2 text-xs">{error}</span>}
+                </div>
+              );
+            }}
+          />
+        );
+
       case 'shareholders_2':
         return (
           <Controller
@@ -1148,6 +1284,294 @@ export default function StepForm({ step, onStepSubmit }) {
           />
         );
 
+      case 'shareholders_3':
+        return (
+          <Controller
+            name={field.name}
+            control={control}
+            defaultValue={[
+              {
+                full_name: '',
+                tax_id: '',
+                unique_key: '',
+                address_region_commune: '',
+                profession: '',
+                phone: '',
+              },
+            ]}
+            render={({ field: { value, onChange } }) => {
+              const list = Array.isArray(value) ? value : [];
+
+              const addShareholder = () => {
+                onChange([
+                  ...list,
+                  {
+                    full_name: '',
+                    tax_id: '',
+                    unique_key: '',
+                    address_region_commune: '',
+                    profession: '',
+                    phone: '',
+                  },
+                ]);
+              };
+
+              const removeShareholder = (index) => {
+                onChange(list.filter((_, i) => i !== index));
+              };
+
+              const updateShareholder = (index, key, val) => {
+                const next = list.map((item, i) =>
+                  i === index ? { ...(item || {}), [key]: val } : item
+                );
+                onChange(next);
+              };
+
+              return (
+                <div className="flex flex-col gap-3">
+                  <div className="flex items-center justify-between">
+                    {field.label && (
+                      <label className="mb-1 font-bold text-md" htmlFor={field.name}>
+                        <Circle size={10} className="inline mr-2" />
+                        {field.label}
+                      </label>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={addShareholder}
+                      className="bg-primary text-white text-xs px-4 py-2 rounded-full hover:bg-purple-700">
+                      + Agregar
+                    </button>
+                  </div>
+
+                  {list.length === 0 && (
+                    <button
+                      type="button"
+                      onClick={addShareholder}
+                      className="bg-primary text-white text-xs px-4 py-2 rounded-full hover:bg-purple-700 w-fit">
+                      + Agregar accionista
+                    </button>
+                  )}
+
+                  {list.map((s, idx) => (
+                    <div key={idx} className="bg-white shadow-md hover:shadow-xl p-4 rounded">
+                      <div className="flex items-center justify-between mb-3">
+                        <p className="font-bold text-sm">Accionista #{idx + 1}</p>
+                        {list.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => removeShareholder(idx)}
+                            className="text-xs text-red-700">
+                            Eliminar
+                          </button>
+                        )}
+                      </div>
+
+                      <div className="flex flex-col gap-3">
+                        <Input
+                          type="text"
+                          label="Nombre completo"
+                          value={(s && s.full_name) || ''}
+                          onChange={(e) => updateShareholder(idx, 'full_name', e.target.value)}
+                        />
+
+                        <Input
+                          type="text"
+                          label="RUT"
+                          value={(s && s.tax_id) || ''}
+                          onChange={(e) => updateShareholder(idx, 'tax_id', e.target.value)}
+                        />
+
+                        <Input
+                          type="text"
+                          label="Clave única"
+                          value={(s && s.unique_key) || ''}
+                          onChange={(e) => updateShareholder(idx, 'unique_key', e.target.value)}
+                        />
+
+                        <Input
+                          type="text"
+                          label="Dirección (Región / Comuna)"
+                          value={(s && s.address_region_commune) || ''}
+                          onChange={(e) =>
+                            updateShareholder(idx, 'address_region_commune', e.target.value)
+                          }
+                        />
+
+                        <Input
+                          type="text"
+                          label="Profesión/oficio"
+                          value={(s && s.profession) || ''}
+                          onChange={(e) => updateShareholder(idx, 'profession', e.target.value)}
+                        />
+
+                        <PhoneInputModern
+                          label="Número telefónico"
+                          value={(s && s.phone) || ''}
+                          onChange={(e) => {
+                            updateShareholder(idx, 'phone', e.phone);
+                          }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+
+                  {error && <span className="block text-red-700 mt-2 text-xs">{error}</span>}
+                </div>
+              );
+            }}
+          />
+        );
+
+      case 'shareholders_4':
+        return (
+          <Controller
+            name={field.name}
+            control={control}
+            defaultValue={[
+              {
+                full_name: '',
+                tax_id: '',
+                address_region_commune: '',
+                nationality: '',
+                profession: '',
+                marital_status: '',
+                email: '',
+              },
+            ]}
+            render={({ field: { value, onChange } }) => {
+              const list = Array.isArray(value) ? value : [];
+
+              const addShareholder = () => {
+                onChange([
+                  ...list,
+                  {
+                    full_name: '',
+                    tax_id: '',
+                    address_region_commune: '',
+                    nationality: '',
+                    profession: '',
+                    marital_status: '',
+                    email: '',
+                  },
+                ]);
+              };
+
+              const removeShareholder = (index) => {
+                onChange(list.filter((_, i) => i !== index));
+              };
+
+              const updateShareholder = (index, key, val) => {
+                const next = list.map((item, i) =>
+                  i === index ? { ...(item || {}), [key]: val } : item
+                );
+                onChange(next);
+              };
+
+              return (
+                <div className="flex flex-col gap-3">
+                  <div className="flex items-center justify-between">
+                    {field.label && (
+                      <label className="mb-1 font-bold text-md" htmlFor={field.name}>
+                        <Circle size={10} className="inline mr-2" />
+                        {field.label}
+                      </label>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={addShareholder}
+                      className="bg-primary text-white text-xs px-4 py-2 rounded-full hover:bg-purple-700">
+                      + Agregar
+                    </button>
+                  </div>
+
+                  {list.length === 0 && (
+                    <button
+                      type="button"
+                      onClick={addShareholder}
+                      className="bg-primary text-white text-xs px-4 py-2 rounded-full hover:bg-purple-700 w-fit">
+                      + Agregar accionista
+                    </button>
+                  )}
+
+                  {list.map((s, idx) => (
+                    <div key={idx} className="bg-white shadow-md hover:shadow-xl p-4 rounded">
+                      <div className="flex items-center justify-between mb-3">
+                        <p className="font-bold text-sm">Accionista #{idx + 1}</p>
+                        {list.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => removeShareholder(idx)}
+                            className="text-xs text-red-700">
+                            Eliminar
+                          </button>
+                        )}
+                      </div>
+
+                      <div className="flex flex-col gap-3">
+                        <Input
+                          type="text"
+                          label="Nombre completo"
+                          value={(s && s.full_name) || ''}
+                          onChange={(e) => updateShareholder(idx, 'full_name', e.target.value)}
+                        />
+
+                        <Input
+                          type="text"
+                          label="RUT"
+                          value={(s && s.tax_id) || ''}
+                          onChange={(e) => updateShareholder(idx, 'tax_id', e.target.value)}
+                        />
+
+                        <Input
+                          type="text"
+                          label="Dirección (Región / Comuna)"
+                          value={(s && s.address_region_commune) || ''}
+                          onChange={(e) =>
+                            updateShareholder(idx, 'address_region_commune', e.target.value)
+                          }
+                        />
+
+                        <Input
+                          type="text"
+                          label="Nacionalidad"
+                          value={(s && s.nationality) || ''}
+                          onChange={(e) => updateShareholder(idx, 'nationality', e.target.value)}
+                        />
+
+                        <Input
+                          type="text"
+                          label="Profesión/oficio/ocupación"
+                          value={(s && s.profession) || ''}
+                          onChange={(e) => updateShareholder(idx, 'profession', e.target.value)}
+                        />
+
+                        <Input
+                          type="text"
+                          label="Estado civil"
+                          value={(s && s.marital_status) || ''}
+                          onChange={(e) => updateShareholder(idx, 'marital_status', e.target.value)}
+                        />
+
+                        <Input
+                          type="email"
+                          label="Email"
+                          value={(s && s.email) || ''}
+                          onChange={(e) => updateShareholder(idx, 'email', e.target.value)}
+                        />
+                      </div>
+                    </div>
+                  ))}
+
+                  {error && <span className="block text-red-700 mt-2 text-xs">{error}</span>}
+                </div>
+              );
+            }}
+          />
+        );
+
       case 'intelligence-text-select':
         return (
           <Controller
@@ -1176,14 +1600,11 @@ export default function StepForm({ step, onStepSubmit }) {
                     <Circle size={10} className="inline mr-2" />
                     {field.label}
                   </label>
-                  <div className="relative group">
+                  <Tooltip content={field.tooltip}>
                     <div className="flex items-center justify-center w-5 h-5 rounded-full text-primary">
                       <Info className="w-5 h-5" />
                     </div>
-                    <div className="absolute right-0 mt-2 hidden w-96 rounded-md bg-white p-4 text-xs leading-relaxed text-gray-700 shadow-lg group-hover:block z-20">
-                      {field.tooltip}
-                    </div>
-                  </div>
+                  </Tooltip>
                 </div>
               )}
               <Input

@@ -37,7 +37,7 @@ const BuildCompanyWizardStep3 = ({ name }) => {
   }
 
   return (
-    <div className="w-full px-4 sm:px-6 md:px-10 lg:px-16 flex flex-col items-center">
+    <div className="w-full px-4 sm:px-6 md:px-10 lg:px-16 py-5 md:py-0 flex flex-col items-center">
       <div className="w-full max-w-4xl text-center">
         <h1 className="font-bold text-2xl sm:text-3xl md:text-3xl text-black">
           ¿Qué ofrece {name}?

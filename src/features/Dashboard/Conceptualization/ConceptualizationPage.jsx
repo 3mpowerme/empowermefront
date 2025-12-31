@@ -19,11 +19,14 @@ import ConceptualizationDetails from './ConceptualizationDetails';
 import classNames from 'classnames';
 import { useCompanySetup } from '../../../hooks/useCompanySetup';
 import { storage } from '../../../utils/storage';
+import { Link } from 'react-router';
+import BrandBookWizard from './BrandBookWizard';
 
 const LOADING_VIEW = 'loading-view';
 const ERROR_VIEW = 'error-view';
 const CONCEPTUALIZATIONS_VIEW = 'conceptualizations-view';
 const NEW_CONCEPTUALIZATION_VIEW = 'new-conceptualization-view';
+const CONTINUE_CONCEPTUALIZATION_VIEW = 'continue-conceptualization-view';
 const CONCEPTUALIZATION_DETAILS_VIEW = 'conceptualization-details-view';
 
 const ConceptualizationCard = ({
@@ -49,11 +52,13 @@ const ConceptualizationCard = ({
         )}
       </div>
       {showCreateCompanyButton && (
-        <button className="flex flex-row items-center cursor-pointer">
-          <p className="text-white text-sm font-semibold bg-primary rounded-xl px-5 h-9 flex items-center">
-            Crear Empresa
-          </p>
-        </button>
+        <Link to="/dashboard/buildCompany">
+          <button className="flex flex-row items-center cursor-pointer">
+            <p className="text-white text-sm font-semibold bg-primary rounded-xl px-5 h-9 flex items-center">
+              Crear Empresa
+            </p>
+          </button>
+        </Link>
       )}
     </div>
   );
@@ -244,6 +249,22 @@ const ConceptualizationPage = ({ showWelcomeMessage = false }) => {
             />
           </div>
         </Switch.Item>
+        <Switch.Item case={CONTINUE_CONCEPTUALIZATION_VIEW}>
+          <BrandBookWizard
+            onClose={() => {
+              refetch().finally(() => {
+                setView(CONCEPTUALIZATIONS_VIEW);
+              });
+            }}
+            ref={brandBookIdRef}
+            conceptualization={
+              conceptualizations?.filter(
+                (it) => it.conceptualization_id === selectedConceptualization
+              )[0]
+            }
+            onComplete={handleComplete}
+          />
+        </Switch.Item>
 
         <Switch.Item case={CONCEPTUALIZATIONS_VIEW}>
           <div className="mx-auto w-full max-w-7xl px-4 lg:px-10 py-6 sm:py-8 md:py-10 animate-slide-in">
@@ -266,17 +287,20 @@ const ConceptualizationPage = ({ showWelcomeMessage = false }) => {
                     Nueva Conceptualización
                   </p>
                 </button>
-                <button className="flex items-center cursor-pointer shadow-xl hover:scale-105 transition-transform">
-                  <p className="text-white text-sm font-semibold bg-primary rounded-xl px-5 py-2 flex items-center">
-                    Crear Empresa
-                  </p>
-                </button>
+                {false && (
+                  <button className="flex items-center cursor-pointer shadow-xl hover:scale-105 transition-transform">
+                    <p className="text-white text-sm font-semibold bg-primary rounded-xl px-5 py-2 flex items-center">
+                      Crear Empresa
+                    </p>
+                  </button>
+                )}
               </div>
             )}
 
             <div className="flex flex-col gap-3 w-full py-5 print:hidden">
               {conceptualizations.map((conceptualization, i) => (
                 <ConceptualizationCard
+                  showCreateCompanyButton
                   key={conceptualization.conceptualization_id || i}
                   isActive={selectedConceptualization === conceptualization.conceptualization_id}
                   name={`${companyName} ${i + 1}`}
@@ -311,6 +335,9 @@ const ConceptualizationPage = ({ showWelcomeMessage = false }) => {
                       (it) => it.conceptualization_id === selectedConceptualization
                     )[0]
                   }
+                  onConceptualizationContinue={() => {
+                    setView(CONTINUE_CONCEPTUALIZATION_VIEW);
+                  }}
                   refetchConceptualizations={refetch}
                 />
               </div>

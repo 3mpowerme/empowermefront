@@ -18,6 +18,7 @@ import StripeSubscribeModal from '../stripe/StripeSubscribeModal';
 import SuccessfulSubscriptionMonthlyAccounting from './SuccessfullSubscription';
 import NumberInput from '../NumberInput/NumberInput';
 import SuccessfullPayment from './SuccessfullPayment/SuccessfullPayment';
+import ScheduleAppointmentNotice from '../ScheduleAppointmentNotice/ScheduleAppointmentNotice';
 
 const LOADING_VIEW = 'loading-view';
 const ERROR_VIEW = 'error-view';
@@ -89,7 +90,7 @@ const PayPersonalizedAdvisory = forwardRef(({ onComplete = () => {} }, ref) => {
     setOpenStripeModal(false);
     setOpenMethodModal(false);
     setPaymentIntentId(paymentIntent.id);
-    setView(SCHEDULE_APPOINTMENT_VIEW);
+    setView(SUCCESSFULL_SUBSCRIPTION_VIEW);
   };
 
   const handleMethodProceed = async () => {
@@ -230,6 +231,7 @@ const PayPersonalizedAdvisory = forwardRef(({ onComplete = () => {} }, ref) => {
             folio={paymentIntentId}
             goTo={'taxes_and_accounting/personalized_advisory'}
           />
+          <ScheduleAppointmentNotice url="https://koalendar.com/e/asesoria-personalizada-breve" />
         </Switch.Item>
       </Switch>
     </>

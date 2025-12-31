@@ -20,6 +20,7 @@ import PayTaxPlanning from '../../components/PayAndScheduleAppointment/PayTaxPla
 import VirtualOfficeWizard from './TaxesAndAccounting/Wizards/VirtualOfficeWizard';
 import PayVirtualOffice from '../../components/PayAndScheduleAppointment/PayVirtualOffice';
 import PayVirtualOfficePlusMiniStorage from '../../components/PayAndScheduleAppointment/PayVirtualOfficePlusMiniStorage';
+import PayStartActivities from '../../components/PayAndScheduleAppointment/PayStartActivities';
 
 const LOADING_VIEW = 'loading-view';
 const ERROR_VIEW = 'error-view';
@@ -65,7 +66,7 @@ export default function DashboardTaxesAndAccountingPage() {
           //setView(PAY_AND_SCHEDULE_APPOINTMENT_VIEW);
         }
 
-        if (link === 'tax_audit_wizard') {
+        if (link === 'audit_wizard') {
           const info = storage.getItem(`wizard_form/company-audit-request/${companyId}`) || {};
           storage.setItem(`wizard_form/company-audit-request/${companyId}`, {
             ...info,
@@ -96,6 +97,13 @@ export default function DashboardTaxesAndAccountingPage() {
           setView(PAY_AND_SCHEDULE_APPOINTMENT_VIEW);
         }
         if (link === 'start_activities_wizard') {
+          const info =
+            storage.getItem(`wizard_form/company-start-activities-request/${companyId}`) || {};
+          storage.setItem(`wizard_form/company-start-activities-request/${companyId}`, {
+            ...info,
+            email,
+            company_name: companyName,
+          });
           setServiceType('start_activities');
           setView(alreadyRegistered ? PAY_AND_SCHEDULE_APPOINTMENT_VIEW : START_ACTIVITIES_WIZARD);
         }
@@ -172,6 +180,16 @@ export default function DashboardTaxesAndAccountingPage() {
           <Switch value={serviceType}>
             <Switch.Item case="accounting">
               <PayMonthlyAccounting
+                ref={currentServiceOrderIdRef}
+                onComplete={() => {
+                  refetch().finally(() => {
+                    fetchData().finally(() => setView(TAXES_AND_ACCOUNTING_VIEW));
+                  });
+                }}
+              />
+            </Switch.Item>
+            <Switch.Item case="start_activities">
+              <PayStartActivities
                 ref={currentServiceOrderIdRef}
                 onComplete={() => {
                   refetch().finally(() => {

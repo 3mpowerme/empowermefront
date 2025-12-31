@@ -29,6 +29,9 @@ import PayOrdinaryShareholderMeeting from '../../../components/PayAndScheduleApp
 import OrdinaryShareholdersMeetingWizard from './Wizards/OrdinaryShareholdersMeetingWizard';
 import PayCompanyModificationsSpa from '../../../components/PayAndScheduleAppointment/PayCompanyModificationsSpa';
 import PayCompanyModificationsSrl from '../../../components/PayAndScheduleAppointment/PayCompanyModificationsSrl';
+import CompanyModificationsSpaWizard from './Wizards/CompanyModificationsSpaWizard';
+import CompanyModificationsSrlWizard from './Wizards/CompanyModificationsSrlWizard';
+import PayPersonalizedAdvisory from '../../../components/PayAndScheduleAppointment/PayPersonalizedAdvisory';
 
 const LOADING_VIEW = 'loading-view';
 const ERROR_VIEW = 'error-view';
@@ -216,6 +219,16 @@ export default function LegalServicesPage() {
         <Switch.Item case={ERROR_VIEW}></Switch.Item>
         <Switch.Item case={PAY_AND_SCHEDULE_APPOINTMENT_VIEW}>
           <Switch value={serviceType}>
+            <Switch.Item case="personalized_advisory">
+              <PayPersonalizedAdvisory
+                ref={currentServiceOrderIdRef}
+                onComplete={() => {
+                  refetch().finally(() => {
+                    fetchData().finally(() => setView(LEGAL_SERVICES_VIEW));
+                  });
+                }}
+              />
+            </Switch.Item>
             <Switch.Item case="dissolution_of_spa">
               <PayDissolutionOfSpa
                 ref={currentServiceOrderIdRef}
@@ -335,6 +348,20 @@ export default function LegalServicesPage() {
         </Switch.Item>
         <Switch.Item case={DISSOLUTION_OF_SRL_WIZARD_VIEW}>
           <DissolutionOfSrlWizard
+            companyId={companyId}
+            handleWizardClose={handleWizardClose}
+            handleWizardSuccess={handleWizardSuccess}
+          />
+        </Switch.Item>
+        <Switch.Item case={COMPANY_MODIFICATIONS_SPA_WIZARD_VIEW}>
+          <CompanyModificationsSpaWizard
+            companyId={companyId}
+            handleWizardClose={handleWizardClose}
+            handleWizardSuccess={handleWizardSuccess}
+          />
+        </Switch.Item>
+        <Switch.Item case={COMPANY_MODIFICATIONS_SRL_WIZARD_VIEW}>
+          <CompanyModificationsSrlWizard
             companyId={companyId}
             handleWizardClose={handleWizardClose}
             handleWizardSuccess={handleWizardSuccess}

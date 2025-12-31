@@ -20,23 +20,19 @@ export default function SuccessfulSubscriptionMonthlyAccounting({
   const navigate = useNavigate();
   const [view, setView] = useState(SUCCESSFUL_SUBSCRIPTION_VIEW);
   const handleClick = () => {
-    const message = encodeURIComponent('¡Hola!');
-    const phone = '5215544444444';
+    const message = encodeURIComponent('¡Hola! Tengo una duda');
+    const phone = '56962101021';
     window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
   };
 
   useEffect(() => {
     privateService.get(`/monthly-accounting/${companyId}`).then((monthlyAccountingResponse) => {
-      console.log('HERE monthlyAccountingResponse', monthlyAccountingResponse);
-      if (
-        monthlyAccountingResponse.need_activity_start_support &&
-        monthlyAccountingResponse.need_activity_start_support === 'SI'
-      ) {
+      if (monthlyAccountingResponse?.need_activity_start_support === 'SI') {
         setNeedActivityStartSupport(true);
       }
     });
   }, []);
-
+  console.log('needActivityStartSupport', needActivityStartSupport);
   return (
     <>
       <Switch value={view}>
@@ -48,7 +44,7 @@ export default function SuccessfulSubscriptionMonthlyAccounting({
             {folio && (
               <h2 className="text-1xl font-semibold text-gray-800 mb-2">Folio: {`${folio}`}</h2>
             )}
-            {needActivityStartSupport && (
+            {(needActivityStartSupport || showRequiredDocuments) && (
               <>
                 <p className="mb-10">para continuar requerimos completes el siguiente formulario</p>
                 <Button
@@ -71,7 +67,7 @@ export default function SuccessfulSubscriptionMonthlyAccounting({
 
           <Button
             onClick={handleClick}
-            className="fixed bottom-20 right-20 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-full shadow-lg text-sm z-50">
+            className="fixed top-4 right-4 md:top-auto md:bottom-20 md:right-20 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-full shadow-lg text-sm z-50">
             <MessageCircle className="w-5 h-5 inline mr-2" />
             Orientación por WhatsApp
           </Button>

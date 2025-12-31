@@ -23,7 +23,6 @@ export default function DissolutionOfEirlWizard({
             placeHolder: 'Ingresa Razón Social de la Empresa',
             type: 'text',
             required: true,
-            disabled: true,
           },
           {
             name: 'company_tax_id',
@@ -31,7 +30,6 @@ export default function DissolutionOfEirlWizard({
             placeHolder: 'Ingresa RUT de la Empresa',
             type: 'text',
             required: true,
-            disabled: true,
           },
           {
             name: 'shareholders',
@@ -66,7 +64,7 @@ export default function DissolutionOfEirlWizard({
             name: 'contact_person_phone',
             label: 'Teléfono personal persona de contacto para el proceso*',
             placeHolder: 'Ingresa móvil de persona de contacto',
-            type: 'text',
+            type: 'phone',
             required: true,
           },
         ],

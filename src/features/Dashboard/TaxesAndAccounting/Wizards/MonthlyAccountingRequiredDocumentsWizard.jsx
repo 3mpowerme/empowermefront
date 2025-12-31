@@ -8,8 +8,44 @@ export default function MonthlyAccountingRequiredDocumentsWizard({
   handleWizardSuccess,
   needActivityStartSupport,
 }) {
+  console.log('HERE needActivityStartSupport', needActivityStartSupport);
   const { activeCompany: companyId } = useAccount();
   const getConfig = () => {
+    console.log('HERE 2 needActivityStartSupport', needActivityStartSupport);
+    const fields = [
+      {
+        name: 'legal_representative_rut',
+        label: 'Rut*',
+        placeHolder: 'Ingresa RUT',
+        tooltip:
+          'de la plataforma del Servicio de Impuestos Internos del representante legal y ante el SII de la empresa',
+        type: 'text',
+        required: false,
+      },
+      needActivityStartSupport
+        ? null
+        : {
+            name: 'legal_representative_key',
+            label: 'Clave Tributaria*',
+            placeHolder: 'Ingresa Clave Tributaria',
+            tooltip:
+              'de la plataforma del Servicio de Impuestos Internos del representante legal y ante el SII de la empresa',
+            type: 'text',
+            required: false,
+          },
+      {
+        name: 'activities',
+        label: 'Indicar qué actividades económicas desea iniciar.*',
+        tooltip:
+          'recuerde que sólo puede agregar actividades que realmente comenzará a realizar inmediatamente, puesto que estas se deben acreditar a posterior y de no poderse ello generará problemas con el SII y la imposibilidad de que su empresa pueda operar con normalidad',
+        placeHolder:
+          'Puedes listar las actividades económicas codificadas del Servicio de Impuestos Internos (en caso de que ya las conozcas), o puedes describir a qué se dedicará tu empresa con tus propias palabras y presionar el botón actividades sugeridas y elegirlas desde ahí',
+        type: 'intelligence-text-select',
+        endpoint: '/ia',
+        required: true,
+      },
+    ].filter(Boolean);
+    console.log('HERE fields', fields);
     return [
       {
         id: 'step-1',
@@ -74,46 +110,17 @@ export default function MonthlyAccountingRequiredDocumentsWizard({
         subtitle: 'Complete toda la información solicitada',
         description: '',
         image: '/images/dashboard/taxes_and_accounting/monthly_accounting_2.jpg',
-        fields: [
-          {
-            name: 'legal_representative_rut',
-            label: 'Rut*',
-            placeHolder: 'Ingresa RUT',
-            tooltip:
-              'de la plataforma del Servicio de Impuestos Internos del representante legal y ante el SII de la empresa',
-            type: 'text',
-            required: false,
-          },
-          needActivityStartSupport
-            ? {
-                name: 'legal_representative_key',
-                label: 'Clave Tributaria*',
-                placeHolder: 'Ingresa Clave Tributaria',
-                tooltip:
-                  'de la plataforma del Servicio de Impuestos Internos del representante legal y ante el SII de la empresa',
-                type: 'text',
-                required: false,
-              }
-            : {},
-          {
-            name: 'activities',
-            label: 'Indicar qué actividades económicas desea iniciar.*',
-            tooltip:
-              'recuerde que sólo puede agregar actividades que realmente comenzará a realizar inmediatamente, puesto que estas se deben acreditar a posterior y de no poderse ello generará problemas con el SII y la imposibilidad de que su empresa pueda operar con normalidad',
-            placeHolder:
-              'Puedes listar las actividades económicas codificadas del Servicio de Impuestos Internos (en caso de que ya las conozcas), o puedes describir a qué se dedicará tu empresa con tus propias palabras y presionar el botón actividades sugeridas y elegirlas desde ahí',
-            type: 'intelligence-text-select',
-            endpoint: '/ia',
-            required: true,
-          },
-        ].filter(Boolean),
+        fields: fields,
       },
     ];
   };
+
+  const config = getConfig();
+  console.log('HERE config', config);
   return (
     <WizardProvider
       onlyCreate
-      stepsConfig={getConfig()}
+      stepsConfig={config}
       globalSubmitApi={{
         method: 'POST',
         url: `/company-monthly-accounting-required-documents/${companyId}`,

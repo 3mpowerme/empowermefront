@@ -9,7 +9,7 @@ import { useAccount } from '../../hooks/useAccount';
 import Switch from '../Switch/Switch';
 import StripePaymentModal from '../stripe/StripePaymentModal';
 import { Elements } from '@stripe/react-stripe-js';
-import { X } from 'lucide-react';
+import { Info, X } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import CalendlyPopup from '../CalendlyPopup/CalendlyPopup';
 import { loadStripe } from '@stripe/stripe-js';
@@ -19,6 +19,7 @@ import StripeSubscribeModal from '../stripe/StripeSubscribeModal';
 import SuccessfulSubscriptionMonthlyAccounting from './SuccessfullSubscription';
 import NumberInput from '../NumberInput/NumberInput';
 import SuccessfullPayment from './SuccessfullPayment/SuccessfullPayment';
+import Tooltip from '../Tooltip/Tooltip';
 
 const LOADING_VIEW = 'loading-view';
 const ERROR_VIEW = 'error-view';
@@ -35,7 +36,7 @@ const PayCompanyModificationsSpa = forwardRef(({ onComplete = () => {} }, ref) =
   const [view, setView] = useState(LOADING_VIEW);
   const [selectedMethod, setSelectedMethod] = useState([]); // [id]
   const [clientSecret, setClientSecret] = useState('');
-  const [count, setCount] = useState(1);
+  const [count, setCount] = useState(0);
   const [paymentIntentId, setPaymentIntentId] = useState('');
 
   const { account, activeCompany: companyId } = useAccount();
@@ -47,8 +48,24 @@ const PayCompanyModificationsSpa = forwardRef(({ onComplete = () => {} }, ref) =
     const payload = {
       serviceCode: 'company_modifications_srl',
       companyId,
-      count,
+      count: 1,
     };
+
+    if (count > 0) {
+      if (Array.isArray(payload.items)) {
+        payload.items.push({
+          serviceCode: 'share_purchase_and_sale',
+          quantity: count,
+        });
+      } else {
+        payload.items = [
+          {
+            serviceCode: 'share_purchase_and_sale',
+            quantity: count,
+          },
+        ];
+      }
+    }
 
     const res = await privateService.create('/payments/service-order', payload);
 
@@ -156,16 +173,34 @@ const PayCompanyModificationsSpa = forwardRef(({ onComplete = () => {} }, ref) =
         <Switch.Item case={PAY_APPOINTMENT_VIEW}>
           <div className="flex flex-col items-center space-y-5 px-6 md:px-10 lg:px-20 mt-10 md:mt-20">
             <h1 className="text-xl font-bold text-center">
-              ¿Necesitas realizar la apertura de libro para una Sociedad por Acciones para cumplir
-              con las obligaciones emanadas de la entrada en vigencia de la ley 20.659?
+              Modificación de Sociedad de Responsabilidad Limitada
             </h1>
             <p>
-              A partir del 1 de febrero de 2023 entraron en vigencia las modificaciones a la ley
-              20.659, que entre otras cosas obligan a las Sociedades por Acciones a mantener
-              actualizado un registro de accionistas en www.registrodeempresasysociedades.cl
+              El servicio de Modificación de Sociedad de Responsabilidad Limitada se realiza 100%
+              online (si no requiere compraventa, en cuyo caso, debe realizarse una parte del mismo
+              en cualquier notaría).
             </p>
-            <div className="w-1/5">
-              <NumberInput value={count} onChange={setCount} min={1} max={100} step={1} />
+
+            <p>
+              Si la modificación de Sociedad de Responsabilidad Limitada requiere incorporar o
+              eliminar socios o cambiar la participación que los mismos tienen de la empresa en
+              porcentaje, se debe sumar a este valor las respectivas compraventas de participación
+              societaria por las que cobramos $35.000 (cada una). Además de haber compraventas
+              involucradas, no se puede realizar el proceso online y se debe firmar presencialmente
+              en notaría tanto las compraventas como la modificación, pudiendo tener que acudir
+              presencialmente a la notaría 2 o 3 veces.
+            </p>
+            <div className="flex flex-row justify-center items-center">
+              <NumberInput value={count} onChange={setCount} min={0} max={100} step={1} />
+              <Tooltip
+                content="Si la modificación requiere incorporar o eliminar socios o cambiar la
+                                participación que los mismos tienen de la empresa en porcentaje, se debe sumar a
+                                este valor las respectivas compraventas de participación societaria.">
+                <div className="flex items-center justify-center rounded-full text-primary">
+                  <span>Compraventa (+$35.000)</span>
+                  <Info className="w-5 h-5 inline" />
+                </div>
+              </Tooltip>
             </div>
 
             <PlanSelector
@@ -231,6 +266,7 @@ const PayCompanyModificationsSpa = forwardRef(({ onComplete = () => {} }, ref) =
         </Switch.Item>
         <Switch.Item case={SUCCESSFULL_SUBSCRIPTION_VIEW}>
           <SuccessfullPayment
+            count={count}
             companyId={companyId}
             serviceCode={'company_modifications_srl'}
             folio={paymentIntentId}

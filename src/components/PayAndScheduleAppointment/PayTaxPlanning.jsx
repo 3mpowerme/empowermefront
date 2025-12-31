@@ -19,6 +19,7 @@ import StripeSubscribeModal from '../stripe/StripeSubscribeModal';
 import SuccessfulSubscriptionMonthlyAccounting from './SuccessfullSubscription';
 import NumberInput from '../NumberInput/NumberInput';
 import SuccessfullPayment from './SuccessfullPayment/SuccessfullPayment';
+import ScheduleAppointmentNotice from '../ScheduleAppointmentNotice/ScheduleAppointmentNotice';
 
 const LOADING_VIEW = 'loading-view';
 const ERROR_VIEW = 'error-view';
@@ -236,6 +237,7 @@ const PayTaxPlanning = forwardRef(({ onComplete = () => {} }, ref) => {
             folio={paymentIntentId}
             goTo={'taxes_and_accounting/tax_planning'}
           />
+          <ScheduleAppointmentNotice url="" />
         </Switch.Item>
       </Switch>
     </>

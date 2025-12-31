@@ -6,12 +6,14 @@ import MarketAnalysis from './MarketAnalysis';
 import BusinessPlan from './BusinessPlan';
 import Mockups from './Mockups';
 import classNames from 'classnames';
+import BrandBookEmptyState from './BrandBookEmptyState';
 
 const ConceptualizationDetails = ({
   hideTitle = false,
   conceptualization,
   goBack,
   refetchConceptualizations = () => {},
+  onConceptualizationContinue = () => {},
 }) => {
   console.log('Conceptualization conceptualization', conceptualization);
   const [searchParams] = useSearchParams();
@@ -20,7 +22,7 @@ const ConceptualizationDetails = ({
     {
       id: 'brand-book',
       label: 'BrandBook',
-      content: (
+      content: conceptualization?.brand_book_id ? (
         <BrandBook
           brandName={conceptualization?.brand_name}
           slogan={conceptualization?.slogan}
@@ -32,6 +34,8 @@ const ConceptualizationDetails = ({
           about={conceptualization?.about}
           colorimetryName={conceptualization?.colorimetry_name}
         />
+      ) : (
+        <BrandBookEmptyState onCreate={onConceptualizationContinue} />
       ),
     },
     {

@@ -54,7 +54,7 @@ export default function AccountInfo({ companyId, regions }) {
       errorMessage={'La solicitud no pudo ser procesada'}
       loadPrefillAfterFinish
       persistData={false}>
-      <div className="w-1/2">
+      <div className="md:w-1/2">
         <FormSection />
       </div>
     </WizardProvider>

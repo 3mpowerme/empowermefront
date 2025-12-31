@@ -18,6 +18,7 @@ export default function BrandBook({
   region = '',
   colorimetry = [],
   colorimetryName,
+  showPrintPdf = false,
 }) {
   const containerRef = useRef(null);
   const [downloadingLogo, setDownloadingLogo] = useState(false);
@@ -115,17 +116,19 @@ export default function BrandBook({
 
       <div className="flex items-center justify-between gap-4">
         <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Brand Book</h2>
-        <div className="flex gap-3">
-          <Button
-            variant="wizard"
-            className="flex py-2 print:hidden"
-            onClick={handlePrintBrowserPdf}>
-            <span>
-              <Printer className="mr-2" />
-            </span>
-            <span>Imprimir PDF</span>
-          </Button>
-        </div>
+        {showPrintPdf && (
+          <div className="flex gap-3">
+            <Button
+              variant="wizard"
+              className="flex py-2 print:hidden"
+              onClick={handlePrintBrowserPdf}>
+              <span>
+                <Printer className="mr-2" />
+              </span>
+              <span>Imprimir PDF</span>
+            </Button>
+          </div>
+        )}
       </div>
 
       <div

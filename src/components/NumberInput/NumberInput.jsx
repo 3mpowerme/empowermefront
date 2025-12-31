@@ -1,10 +1,10 @@
 export default function NumberInput({ value, onChange, min = 0, max = 9999, step = 1 }) {
   return (
-    <div className="flex items-center gap-2 w-full">
+    <div className="flex items-center gap-1 w-full">
       <button
         type="button"
         onClick={() => onChange(Math.max(min, Number(value) - step))}
-        className="px-3 py-2 rounded-xl bg-neutral-100 hover:bg-neutral-200 transition text-neutral-700 text-sm font-medium">
+        className="px-2 py-1 rounded-xl bg-neutral-100 hover:bg-neutral-200 transition text-neutral-700 text-sm font-medium cursor-pointer">
         -
       </button>
 
@@ -21,7 +21,7 @@ export default function NumberInput({ value, onChange, min = 0, max = 9999, step
       <button
         type="button"
         onClick={() => onChange(Math.min(max, Number(value) + step))}
-        className="px-3 py-2 rounded-xl bg-neutral-100 hover:bg-neutral-200 transition text-neutral-700 text-sm font-medium">
+        className="px-2 py-1 rounded-xl bg-neutral-100 hover:bg-neutral-200 transition text-neutral-700 text-sm font-medium cursor-pointer">
         +
       </button>
     </div>

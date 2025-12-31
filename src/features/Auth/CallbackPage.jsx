@@ -22,6 +22,7 @@ export default function CallbackPage() {
 
     const code = searchParams.get('code');
     if (code) {
+      console.log('buildCompany', buildCompany);
       fetchTokens(
         code,
         buildCompany?.step0?.companyName,
@@ -29,10 +30,20 @@ export default function CallbackPage() {
       )
         .then(({ tokens, googleResponse }) => {
           if (tokens && googleResponse) {
-            console.log('googleResponse', googleResponse);
-            setAuthState({ auth: tokens, status: AUTHENTICATED });
-            navigate(`/dashboard`);
-
+            console.log('done with api call googleResponse', googleResponse);
+            console.log('done with api call tokens', tokens);
+            setAuthState({
+              auth: {
+                accessToken: tokens.access_token,
+                idToken: tokens.id_token,
+                refreshToken: tokens.refresh_token,
+                todayFocus: googleResponse.todayFocus,
+                todayFocusFeatureId: googleResponse.todayFocusFeatureId,
+                todayFocusUrl: googleResponse.todayFocusUrl,
+                userId: googleResponse.userId,
+              },
+              status: AUTHENTICATED,
+            });
             if (buildCompany) {
               const {
                 step2: { todayFocus: today_focus } = {},
@@ -40,39 +51,52 @@ export default function CallbackPage() {
                   companyOffering: company_offering,
                   customerServiceChannel: customer_service_channel,
                 } = {},
-                step4: { business_sectors, about } = {},
+                step4: { business_sectors, business_sector_other, about } = {},
                 step5: { phone_number, region_id, zip_code, street } = {},
                 step6: { hasEmployees } = {},
                 step7: { isRegisteredCompany } = {},
-                step8: { marketingSource: marketing_source } = {},
+                step8: { hasStartedActivities } = {},
+                step9: { marketingSource: marketing_source } = {},
               } = buildCompany;
+
+              const parsedId = Number(business_sectors?.[0]);
+              const isNumericId = !Number.isNaN(parsedId);
+
               const body = {
                 company_id: googleResponse.companyId,
                 today_focus,
                 company_offering,
                 marketing_source,
-                business_sector_id: business_sectors[0],
+                business_sector_id: isNumericId ? parsedId : 11,
+                business_sector_other: business_sector_other || '',
                 customer_service_channel,
                 phone_number,
-                is_registered_company: isRegisteredCompany[0],
-                has_employees: hasEmployees[0],
+                is_registered_company: isRegisteredCompany?.[0],
+                hasStartedActivities: hasStartedActivities?.[0],
+                has_employees: hasEmployees?.[0],
                 region_id,
                 zip_code,
                 about,
                 street,
               };
-              genericService.create('/build-company', body).then(() => {
+              genericService.create('/build-company', body).then((r) => {
+                console.log('r', r);
                 storage.removeItem('buildCompany');
+                if (r?.todayFocusUrl) {
+                  setTimeout(() => {
+                    console.log('vamos a navegar');
+                    navigate(r.todayFocusUrl, { replace: true });
+                  }, 100);
+                }
               });
+            } else {
+              if (googleResponse?.todayFocusUrl) {
+                setTimeout(() => {
+                  console.log('vamos a navegar');
+                  navigate(googleResponse.todayFocusUrl, { replace: true });
+                }, 1000);
+              }
             }
-
-            navigate('/dashboard', {
-              state: {
-                accessToken: tokens.access_token,
-                idToken: tokens.id_token,
-                ...googleResponse,
-              },
-            });
           }
         })
         .catch((error) => {

@@ -45,7 +45,7 @@ export default function StartActivitiesWizard({
             name: 'company_contact_phone',
             label: 'Teléfono de contacto de la empresa*',
             placeHolder: 'Ingresa teléfono de contacto de la empresa',
-            type: 'text',
+            type: 'phone',
             required: true,
           },
           {
@@ -76,7 +76,7 @@ export default function StartActivitiesWizard({
             name: 'legal_representative_phone',
             label: 'Teléfono del representante legal*',
             placeHolder: 'Ingresa teléfono del representante legal',
-            type: 'text',
+            type: 'phone',
             required: true,
           },
           {

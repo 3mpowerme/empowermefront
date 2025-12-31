@@ -9,7 +9,7 @@ import { useAccount } from '../../hooks/useAccount';
 import Switch from '../Switch/Switch';
 import StripePaymentModal from '../stripe/StripePaymentModal';
 import { Elements } from '@stripe/react-stripe-js';
-import { X } from 'lucide-react';
+import { Info, X } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import CalendlyPopup from '../CalendlyPopup/CalendlyPopup';
 import { loadStripe } from '@stripe/stripe-js';
@@ -19,6 +19,7 @@ import StripeSubscribeModal from '../stripe/StripeSubscribeModal';
 import SuccessfulSubscriptionMonthlyAccounting from './SuccessfullSubscription';
 import NumberInput from '../NumberInput/NumberInput';
 import SuccessfullPayment from './SuccessfullPayment/SuccessfullPayment';
+import Tooltip from '../Tooltip/Tooltip';
 
 const LOADING_VIEW = 'loading-view';
 const ERROR_VIEW = 'error-view';
@@ -35,9 +36,9 @@ const PayCompanyModificationsSpa = forwardRef(({ onComplete = () => {} }, ref) =
   const [view, setView] = useState(LOADING_VIEW);
   const [selectedMethod, setSelectedMethod] = useState([]); // [id]
   const [clientSecret, setClientSecret] = useState('');
-  const [count, setCount] = useState(1);
+  const [count, setCount] = useState(0);
   const [paymentIntentId, setPaymentIntentId] = useState('');
-
+  const [includeShareholdersRegistry, setIncludeShareholdersRegistry] = useState(false);
   const { account, activeCompany: companyId } = useAccount();
   const { email = '', name = '' } = account || {};
   const { setToast } = useApp();
@@ -47,8 +48,33 @@ const PayCompanyModificationsSpa = forwardRef(({ onComplete = () => {} }, ref) =
     const payload = {
       serviceCode: 'company_modifications_spa',
       companyId,
-      count,
+      count: 1,
     };
+
+    if (includeShareholdersRegistry) {
+      payload.items = [
+        {
+          serviceCode: 'shareholders_registry',
+          quantity: 1,
+        },
+      ];
+    }
+
+    if (count > 0) {
+      if (Array.isArray(payload.items)) {
+        payload.items.push({
+          serviceCode: 'share_purchase_and_sale',
+          quantity: count,
+        });
+      } else {
+        payload.items = [
+          {
+            serviceCode: 'share_purchase_and_sale',
+            quantity: count,
+          },
+        ];
+      }
+    }
 
     const res = await privateService.create('/payments/service-order', payload);
 
@@ -156,16 +182,58 @@ const PayCompanyModificationsSpa = forwardRef(({ onComplete = () => {} }, ref) =
         <Switch.Item case={PAY_APPOINTMENT_VIEW}>
           <div className="flex flex-col items-center space-y-5 px-6 md:px-10 lg:px-20 mt-10 md:mt-20">
             <h1 className="text-xl font-bold text-center">
-              ¿Necesitas realizar la apertura de libro para una Sociedad por Acciones para cumplir
-              con las obligaciones emanadas de la entrada en vigencia de la ley 20.659?
+              Modificación de Sociedad por Acciones SpA
             </h1>
             <p>
-              A partir del 1 de febrero de 2023 entraron en vigencia las modificaciones a la ley
-              20.659, que entre otras cosas obligan a las Sociedades por Acciones a mantener
-              actualizado un registro de accionistas en www.registrodeempresasysociedades.cl
+              Si la modificación de Sociedad por Acciones SpA requiere cambiar la participación de
+              los accionistas (cantidad de acciones, disminuir o aumentar o venta para la salida o
+              entrada de un nuevo accionista de la sociedad) se agrega un valor de $35.000 por cada
+              compraventa de acciones que se deba redactar y esta igualmente se protocoliza ante
+              notario (se incorpora al proceso en los pasos 2, 3 y 4).
             </p>
-            <div className="w-1/5">
-              <NumberInput value={count} onChange={setCount} min={1} max={100} step={1} />
+            <p>
+              El primer plazo del servicio de Modificación de Sociedad por Acciones SpA de 7 días
+              hábiles es contado desde que se recepciona la información solicitada completa y
+              correcta, cualquier error u omisión implicará una nueva solicitud y el plazo de
+              respuesta por nuestra parte se extenderá.
+            </p>
+            <p>
+              NOTA IMPORTANTE: Si no has realizado la apertura de libro (registro de accionistas),
+              tienes que agregar el adicional (ver pestaña del lado derecho) que agregará $19.990
+              que es el costo de ese servicio (y que es obligatorio de realizar antes de la
+              disolución ya que de lo contrario la empresa se encuentra bloqueada para
+              modificaciones, transformaciones o disoluciones). En caso de que no lo agregues y deba
+              realizarse, se te contactará para que puedas realizar el pago y esto puede retrasar
+              todo el proceso.
+            </p>
+            <div className="flex flex-row justify-center items-center">
+              <NumberInput value={count} onChange={setCount} min={0} max={100} step={1} />
+              <Tooltip
+                content="Si la modificación requiere incorporar o eliminar socios o cambiar la
+                  participación que los mismos tienen de la empresa en porcentaje, se debe sumar a
+                  este valor las respectivas compraventas de participación societaria.">
+                <div className="flex items-center justify-center rounded-full text-primary">
+                  <span>Compraventa (+$35.000)</span>
+                  <Info className="w-5 h-5 inline" />
+                </div>
+              </Tooltip>
+            </div>
+            <div className="w-full max-w-xl mt-4 border rounded-xl p-4 bg-white shadow-sm">
+              <p className="text-md font-semibold mb-2">Agregar servicios adicionales</p>
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="w-4 h-4"
+                  checked={includeShareholdersRegistry}
+                  onChange={(e) => setIncludeShareholdersRegistry(e.target.checked)}
+                />
+                <div className="flex flex-col">
+                  <span className="text-sm font-semibold">
+                    Registro de accionistas (apertura de libro)
+                  </span>
+                  <span className="text-xs text-gray-600">x1 (+$19.990)</span>
+                </div>
+              </label>
             </div>
 
             <PlanSelector
@@ -175,7 +243,7 @@ const PayCompanyModificationsSpa = forwardRef(({ onComplete = () => {} }, ref) =
                   setOpenMethodModal(true);
                 },
               }))}
-              showInclude={false}
+              showInclude={true}
             />
 
             <Modal
@@ -231,6 +299,7 @@ const PayCompanyModificationsSpa = forwardRef(({ onComplete = () => {} }, ref) =
         </Switch.Item>
         <Switch.Item case={SUCCESSFULL_SUBSCRIPTION_VIEW}>
           <SuccessfullPayment
+            count={count}
             companyId={companyId}
             serviceCode={'company_modifications_spa'}
             folio={paymentIntentId}

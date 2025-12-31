@@ -101,7 +101,7 @@ export default function AuditWizard({ handleWizardClose, handleWizardSuccess, co
             name: 'contact_person_phone',
             label: 'Teléfono personal persona de contacto para el proceso*',
             placeHolder: 'Ingresa móvil de persona de contacto',
-            type: 'text',
+            type: 'phone',
             required: true,
           },
         ],
