@@ -18,7 +18,7 @@ export default function BusinessOrientationPage() {
   const [view, setView] = useState(BUSINESS_PROFILE_VIEW);
   const currentServiceOrderIdRef = useRef({
     serviceOrderId: null,
-    serviceType: 'personalized_advice',
+    serviceType: 'personalized_advisory',
   });
 
   return (

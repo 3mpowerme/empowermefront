@@ -31,6 +31,10 @@ import { AccountProvider } from '../context/AccountContext/AccountProvider';
 import NotificationsPage from '../features/Dashboard/Notifications/NotificationsPage';
 import PageNotFound from '../components/PageNotFound/PageNotFound';
 import DashboardGate from '../features/Dashboard/DashboardGate';
+import ServicesPage from '../features/Dashboard/Services/ServicesPage';
+import PanelPage from '../features/Dashboard/Panel/Panel';
+import RepositoryPage from '../features/Dashboard/Repository/Repository';
+import CompaniesPage from '../features/Dashboard/Companies/Companies';
 
 const AppRoutes = () => {
   return (
@@ -98,6 +102,10 @@ const AppRoutes = () => {
           />
           <Route path="legal_and_tax_compliance" element={<DashboardLegalAndTaxCompliancePage />} />
           <Route path="business_profile" element={<DashboardBusinessProfilePage />} />
+          <Route path="services" element={<ServicesPage />} />
+          <Route path="panel" element={<PanelPage />} />
+          <Route path="companies" element={<CompaniesPage />} />
+          <Route path="repository/:serviceId/:companyId" element={<RepositoryPage />} />
         </Route>
         <Route path="*" element={<PageNotFound />} />
       </Routes>

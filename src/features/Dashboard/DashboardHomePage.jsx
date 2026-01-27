@@ -13,6 +13,8 @@ import PayBalance from '../../components/PayAndScheduleAppointment/PayBalance';
 import PayBusinessCreation from '../../components/PayAndScheduleAppointment/PayBusinessCreation';
 import MonthlyAccountingWizard from './TaxesAndAccounting/Wizards/MonthlyAccountingWizard';
 import BalanceWizard from './TaxesAndAccounting/Wizards/BalanceWizard';
+import NoCompanyGate from '../../components/NoCompanyGate/NoCompanyGate';
+import { prefillInfoIfExist } from '../../utils/utils';
 
 const LOADING_VIEW = 'loading-view';
 const ERROR_VIEW = 'error-view';
@@ -23,7 +25,7 @@ const BALANCE_WIZARD_VIEW = 'balance-wizard-view';
 
 export default function DashboardHomePage() {
   const {
-    activeCompanyInfo: { companyName, createdAt, info: { hasStartedActivities } = {} } = {},
+    activeCompanyInfo: { companyName = '', createdAt, info: { hasStartedActivities } = {} } = {},
     account: { email = '' } = {},
     activeCompany: companyId,
   } = useAccount();
@@ -35,13 +37,11 @@ export default function DashboardHomePage() {
   const { services, refetch } = useRegisteredServies('home');
   const mapWizards = (ws) => {
     return ws.map((w) => {
-      w.onClick = (link, alreadyRegistered, needsDocuments) => {
+      w.onClick = async (link, alreadyRegistered, needsDocuments) => {
         console.log('link', link);
         if (link === 'accounting_wizard') {
-          const info = storage.getItem(`wizard_form/monthly-accounting/${companyId}`) || {};
-          storage.setItem(`wizard_form/monthly-accounting/${companyId}`, {
-            ...info,
-            email,
+          await prefillInfoIfExist(`wizard_form/monthly-accounting/${companyId}`, companyId, {
+            contact_person_email: email,
             company_name: companyName,
           });
           setServiceType('accounting');
@@ -49,9 +49,7 @@ export default function DashboardHomePage() {
           //setView(PAY_AND_SCHEDULE_APPOINTMENT_VIEW);
         }
         if (link === 'balance_wizard') {
-          const info = storage.getItem(`wizard_form/company-balance-request/${companyId}`) || {};
-          storage.setItem(`wizard_form/company-balance-request/${companyId}`, {
-            ...info,
+          await prefillInfoIfExist(`wizard_form/company-balance-request/${companyId}`, companyId, {
             contact_person_email: email,
             company_name: companyName,
           });
@@ -61,11 +59,7 @@ export default function DashboardHomePage() {
         }
         if (link === 'business_creation_wizard') {
           setServiceType('business_creation');
-          setView(
-            alreadyRegistered
-              ? PAY_AND_SCHEDULE_APPOINTMENT_VIEW
-              : PAY_AND_SCHEDULE_APPOINTMENT_VIEW
-          );
+          setView(PAY_AND_SCHEDULE_APPOINTMENT_VIEW);
         }
       };
 
@@ -154,27 +148,36 @@ export default function DashboardHomePage() {
         <Switch.Item case={HOME_VIEW}>
           <div className="flex flex-col h-full w-full gap-5 px-4 lg:px-10 animate-slide-in mt-10">
             <h1 className="text-2xl text-black font-bold">{`Bienvenido ${companyName}`} </h1>
-            <div className="flex flex-row justify-between p-5 rounded-xl bg-black shadow-lg">
-              <div className="flex flex-col">
-                <p className="text-primary text-md font-bold">{companyName}</p>
-                <p className="text-white text-sm">{`Formada: ${createdAt ? format(new Date(createdAt), 'dd/MM/yyyy') : ''}`}</p>
-              </div>
-              {showPlan && (
-                <div className="flex flex-row space-x-2 items-center">
-                  <p className="text-white text-sm">Plan</p>
-
-                  <p className="text-white text-sm font-semibold bg-primary rounded-xl flex flex-row w-20 justify-center h-7 items-center">
-                    Pro <Diamond className="ml-1" size={15} />
-                  </p>
+            {companyName && createdAt && (
+              <div className="flex flex-row justify-between p-5 rounded-xl bg-black shadow-lg">
+                <div className="flex flex-col">
+                  <p className="text-primary text-md font-bold">{companyName}</p>
+                  <p className="text-white text-sm">{`Formada: ${createdAt ? format(new Date(createdAt), 'dd/MM/yyyy') : ''}`}</p>
                 </div>
-              )}
-            </div>
-            <h2 className="text-xl text-black font-bold">Próximos pasos</h2>
+                {showPlan && (
+                  <div className="flex flex-row space-x-2 items-center">
+                    <p className="text-white text-sm">Plan</p>
+
+                    <p className="text-white text-sm font-semibold bg-primary rounded-xl flex flex-row w-20 justify-center h-7 items-center">
+                      Pro <Diamond className="ml-1" size={15} />
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+            {!companyName && <NoCompanyGate />}
+            {companyName && createdAt && (
+              <h2 className="text-xl text-black font-bold">Próximos pasos</h2>
+            )}
             <WizardList wizards={wizards} services={services} />
-            <h2 className="text-xl text-black font-bold">Estatus de tu empresa</h2>
-            <div className="border rounded-xl border-opaque shadow-lg w-full h-50 flex justify-center items-center text-secondary mb-5">
-              Proximamente...
-            </div>
+            {companyName && createdAt && (
+              <>
+                <h2 className="text-xl text-black font-bold">Estatus de tu empresa</h2>
+                <div className="border rounded-xl border-opaque shadow-lg w-full h-50 flex justify-center items-center text-secondary mb-5">
+                  Proximamente...
+                </div>
+              </>
+            )}
           </div>
         </Switch.Item>
       </Switch>

@@ -28,7 +28,25 @@ function buildValidationSchema(fields) {
     tax_id: yup.string().max(20),
     address_region_commune: yup.string().max(255),
     profession: yup.string().max(100),
-    phone: yup.string().matches(/^[0-9+()\-\s]*$/, 'Número telefónico inválido'),
+    phone: yup
+      .object({
+        countryCode: yup
+          .string()
+          .required('countryCode es requerido')
+          .matches(/^[A-Z]{2}$/, 'countryCode inválido'),
+
+        phone_code: yup
+          .string()
+          .required('phone_code es requerido')
+          .matches(/^\+\d{1,4}$/, 'phone_code inválido'),
+
+        phone: yup
+          .string()
+          .required('phone es requerido')
+          .matches(/^\d{6,15}$/, 'Número telefónico inválido'),
+      })
+      .required()
+      .noUnknown(),
   });
 
   const shareholderItemSchema3 = yup.object().shape({
@@ -37,7 +55,25 @@ function buildValidationSchema(fields) {
     unique_key: yup.string().max(50),
     address_region_commune: yup.string().max(255),
     profession: yup.string().max(100),
-    phone: yup.string().matches(/^[0-9+()\-\s]*$/, 'Número telefónico inválido'),
+    phone: yup
+      .object({
+        countryCode: yup
+          .string()
+          .required('countryCode es requerido')
+          .matches(/^[A-Z]{2}$/, 'countryCode inválido'),
+
+        phone_code: yup
+          .string()
+          .required('phone_code es requerido')
+          .matches(/^\+\d{1,4}$/, 'phone_code inválido'),
+
+        phone: yup
+          .string()
+          .required('phone es requerido')
+          .matches(/^\d{6,15}$/, 'Número telefónico inválido'),
+      })
+      .required()
+      .noUnknown(),
   });
 
   const shareholderItemSchema4 = yup.object().shape({
@@ -48,6 +84,12 @@ function buildValidationSchema(fields) {
     profession: yup.string().max(100),
     marital_status: yup.string().max(100),
     email: yup.string().email('Formato de email invalido').max(255),
+  });
+
+  const shareholderItemSchema5 = yup.object().shape({
+    full_name: yup.string().max(255),
+    tax_id: yup.string().max(20),
+    address_region_commune: yup.string().max(255),
   });
 
   const legalRepresentativeSchema = yup.object().shape({
@@ -120,7 +162,25 @@ function buildValidationSchema(fields) {
         break;
 
       case 'phone':
-        validator = yup.string().matches(/^[0-9+()\-\s]*$/, 'Número telefónico inválido');
+        validator = yup
+          .object({
+            countryCode: yup
+              .string()
+              .required('countryCode es requerido')
+              .matches(/^[A-Z]{2}$/, 'countryCode inválido'),
+
+            phone_code: yup
+              .string()
+              .required('phone_code es requerido')
+              .matches(/^\+\d{1,4}$/, 'phone_code inválido'),
+
+            phone: yup
+              .string()
+              .required('phone es requerido')
+              .matches(/^\d{6,15}$/, 'Número telefónico inválido'),
+          })
+          .required()
+          .noUnknown();
         break;
 
       case 'shareholders':
@@ -128,10 +188,11 @@ function buildValidationSchema(fields) {
           .array()
           .of(shareholderItemSchema)
           .min(1, `${field.label} es requerido`)
-          .test('at-least-one-filled', `${field.label} es requerido`, (arr) => {
+          .test('all-fields-filled', `${field.label}: todos los campos son obligatorios`, (arr) => {
             if (!Array.isArray(arr) || arr.length === 0) return false;
-            return arr.some((s) =>
-              Object.values(s || {}).some((v) => String(v || '').trim().length > 0)
+
+            return arr.every((s) =>
+              Object.values(s || {}).every((v) => String(v || '').trim().length > 0)
             );
           });
         break;
@@ -140,11 +201,19 @@ function buildValidationSchema(fields) {
           .array()
           .of(shareholderItemSchema2)
           .min(1, `${field.label} es requerido`)
-          .test('at-least-one-filled', `${field.label} es requerido`, (arr) => {
+          .test('all-fields-filled', `${field.label}: todos los campos son obligatorios`, (arr) => {
             if (!Array.isArray(arr) || arr.length === 0) return false;
-            return arr.some((s) =>
-              Object.values(s || {}).some((v) => String(v || '').trim().length > 0)
-            );
+
+            return arr.every((s) => {
+              return Object.values(s || {}).every((v) => {
+                if (typeof v === 'object') {
+                  return Object.values(v || {}).every((w) => {
+                    return String(w || '').trim().length > 0;
+                  });
+                }
+                return String(v || '').trim().length > 0;
+              });
+            });
           });
         break;
       case 'shareholders_3':
@@ -152,11 +221,19 @@ function buildValidationSchema(fields) {
           .array()
           .of(shareholderItemSchema3)
           .min(1, `${field.label} es requerido`)
-          .test('at-least-one-filled', `${field.label} es requerido`, (arr) => {
+          .test('all-fields-filled', `${field.label}: todos los campos son obligatorios`, (arr) => {
             if (!Array.isArray(arr) || arr.length === 0) return false;
-            return arr.some((s) =>
-              Object.values(s || {}).some((v) => String(v || '').trim().length > 0)
-            );
+
+            return arr.every((s) => {
+              return Object.values(s || {}).every((v) => {
+                if (typeof v === 'object') {
+                  return Object.values(v || {}).every((w) => {
+                    return String(w || '').trim().length > 0;
+                  });
+                }
+                return String(v || '').trim().length > 0;
+              });
+            });
           });
         break;
       case 'shareholders_4':
@@ -164,10 +241,24 @@ function buildValidationSchema(fields) {
           .array()
           .of(shareholderItemSchema4)
           .min(1, `${field.label} es requerido`)
-          .test('at-least-one-filled', `${field.label} es requerido`, (arr) => {
+          .test('all-fields-filled', `${field.label}: todos los campos son obligatorios`, (arr) => {
             if (!Array.isArray(arr) || arr.length === 0) return false;
-            return arr.some((s) =>
-              Object.values(s || {}).some((v) => String(v || '').trim().length > 0)
+
+            return arr.every((s) =>
+              Object.values(s || {}).every((v) => String(v || '').trim().length > 0)
+            );
+          });
+        break;
+      case 'shareholders_5':
+        validator = yup
+          .array()
+          .of(shareholderItemSchema5)
+          .min(1, `${field.label} es requerido`)
+          .test('all-fields-filled', `${field.label}: todos los campos son obligatorios`, (arr) => {
+            if (!Array.isArray(arr) || arr.length === 0) return false;
+
+            return arr.every((s) =>
+              Object.values(s || {}).every((v) => String(v || '').trim().length > 0)
             );
           });
         break;
@@ -177,10 +268,11 @@ function buildValidationSchema(fields) {
           .array()
           .of(legalRepresentativeSchema)
           .min(1, `${field.label} es requerido`)
-          .test('at-least-one-filled', `${field.label} es requerido`, (arr) => {
+          .test('all-fields-filled', `${field.label}: todos los campos son obligatorios`, (arr) => {
             if (!Array.isArray(arr) || arr.length === 0) return false;
-            return arr.some((s) =>
-              Object.values(s || {}).some((v) => String(v || '').trim().length > 0)
+
+            return arr.every((s) =>
+              Object.values(s || {}).every((v) => String(v || '').trim().length > 0)
             );
           });
         break;
@@ -189,10 +281,11 @@ function buildValidationSchema(fields) {
           .array()
           .of(legalRepresentativeSchema2)
           .min(1, `${field.label} es requerido`)
-          .test('at-least-one-filled', `${field.label} es requerido`, (arr) => {
+          .test('all-fields-filled', `${field.label}: todos los campos son obligatorios`, (arr) => {
             if (!Array.isArray(arr) || arr.length === 0) return false;
-            return arr.some((s) =>
-              Object.values(s || {}).some((v) => String(v || '').trim().length > 0)
+
+            return arr.every((s) =>
+              Object.values(s || {}).every((v) => String(v || '').trim().length > 0)
             );
           });
         break;
@@ -201,10 +294,11 @@ function buildValidationSchema(fields) {
           .array()
           .of(legalRepresentativeSchema3)
           .min(1, `${field.label} es requerido`)
-          .test('at-least-one-filled', `${field.label} es requerido`, (arr) => {
+          .test('all-fields-filled', `${field.label}: todos los campos son obligatorios`, (arr) => {
             if (!Array.isArray(arr) || arr.length === 0) return false;
-            return arr.some((s) =>
-              Object.values(s || {}).some((v) => String(v || '').trim().length > 0)
+
+            return arr.every((s) =>
+              Object.values(s || {}).every((v) => String(v || '').trim().length > 0)
             );
           });
         break;
@@ -217,7 +311,7 @@ function buildValidationSchema(fields) {
         validator = yup.string();
     }
 
-    if (field.required && field.type !== 'shareholders' && field.type !== 'shareholders_2') {
+    if (field.required) {
       validator = validator.required(`${field.label} es requerido`);
     }
 
@@ -406,7 +500,6 @@ export default function StepForm({ step, onStepSubmit }) {
   const { setToast } = useApp();
   const [fileProgress, setFileProgress] = useState({});
   const defaultValues = { ...formData };
-
   const schema = buildValidationSchema(step.fields);
 
   const {
@@ -550,16 +643,25 @@ export default function StepForm({ step, onStepSubmit }) {
           <Controller
             name={field.name}
             control={control}
-            defaultValue={{ countryCode: '', phone: '', phone_code: '' }}
-            render={({ field: { value, onChange } }) => (
-              <PhoneInputModern
-                label={field.label}
-                error={error}
-                defaultCountryCode={(value && value.countryCode) || field.defaultCountryCode}
-                className={field.className}
-                onChange={(v) => onChange(v.phone)}
-              />
-            )}
+            defaultValue={{
+              countryCode: defaultValues?.[field.name]?.countryCode ?? '',
+              phone: defaultValues?.[field.name]?.phone ?? '',
+              phone_code: defaultValues?.[field.name]?.phone_code ?? '',
+            }}
+            render={({ field: { value, onChange } }) => {
+              return (
+                <PhoneInputModern
+                  defaultPhone={defaultValues?.[field.name]?.phone || value?.phone || ''}
+                  label={field.label}
+                  error={error}
+                  defaultCountryCode={
+                    defaultValues?.[field.name]?.countryCode || value?.countryCode || ''
+                  }
+                  className={field.className}
+                  onChange={(v) => onChange(v)}
+                />
+              );
+            }}
           />
         );
 
@@ -1266,12 +1368,10 @@ export default function StepForm({ step, onStepSubmit }) {
                         />
 
                         <PhoneInputModern
+                          defaultPhone={s?.phone?.phone ?? ''}
                           label="Número telefónico"
-                          value={(s && s.phone) || ''}
-                          onChange={(e) => {
-                            console.log('HERE', e);
-                            updateShareholder(idx, 'phone', e.phone);
-                          }}
+                          defaultCountryCode={s?.phone?.countryCode ?? ''}
+                          onChange={(v) => updateShareholder(idx, 'phone', v)}
                         />
                       </div>
                     </div>
@@ -1407,11 +1507,10 @@ export default function StepForm({ step, onStepSubmit }) {
                         />
 
                         <PhoneInputModern
+                          defaultPhone={s?.phone?.phone ?? ''}
                           label="Número telefónico"
-                          value={(s && s.phone) || ''}
-                          onChange={(e) => {
-                            updateShareholder(idx, 'phone', e.phone);
-                          }}
+                          defaultCountryCode={s?.phone?.countryCode ?? ''}
+                          onChange={(v) => updateShareholder(idx, 'phone', v)}
                         />
                       </div>
                     </div>
@@ -1560,6 +1659,118 @@ export default function StepForm({ step, onStepSubmit }) {
                           label="Email"
                           value={(s && s.email) || ''}
                           onChange={(e) => updateShareholder(idx, 'email', e.target.value)}
+                        />
+                      </div>
+                    </div>
+                  ))}
+
+                  {error && <span className="block text-red-700 mt-2 text-xs">{error}</span>}
+                </div>
+              );
+            }}
+          />
+        );
+
+      case 'shareholders_5':
+        return (
+          <Controller
+            name={field.name}
+            control={control}
+            defaultValue={[
+              {
+                full_name: '',
+                tax_id: '',
+                address_region_commune: '',
+              },
+            ]}
+            render={({ field: { value, onChange } }) => {
+              const list = Array.isArray(value) ? value : [];
+
+              const addShareholder = () => {
+                onChange([
+                  ...list,
+                  {
+                    full_name: '',
+                    tax_id: '',
+                    address_region_commune: '',
+                  },
+                ]);
+              };
+
+              const removeShareholder = (index) => {
+                onChange(list.filter((_, i) => i !== index));
+              };
+
+              const updateShareholder = (index, key, val) => {
+                const next = list.map((item, i) =>
+                  i === index ? { ...(item || {}), [key]: val } : item
+                );
+                onChange(next);
+              };
+
+              return (
+                <div className="flex flex-col gap-3">
+                  <div className="flex items-center justify-between">
+                    {field.label && (
+                      <label className="mb-1 font-bold text-md" htmlFor={field.name}>
+                        <Circle size={10} className="inline mr-2" />
+                        {field.label}
+                      </label>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={addShareholder}
+                      className="bg-primary text-white text-xs px-4 py-2 rounded-full hover:bg-purple-700">
+                      + Agregar
+                    </button>
+                  </div>
+
+                  {list.length === 0 && (
+                    <button
+                      type="button"
+                      onClick={addShareholder}
+                      className="bg-primary text-white text-xs px-4 py-2 rounded-full hover:bg-purple-700 w-fit">
+                      + Agregar accionista
+                    </button>
+                  )}
+
+                  {list.map((s, idx) => (
+                    <div key={idx} className="bg-white shadow-md hover:shadow-xl p-4 rounded">
+                      <div className="flex items-center justify-between mb-3">
+                        <p className="font-bold text-sm">Accionista #{idx + 1}</p>
+                        {list.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => removeShareholder(idx)}
+                            className="text-xs text-red-700">
+                            Eliminar
+                          </button>
+                        )}
+                      </div>
+
+                      <div className="flex flex-col gap-3">
+                        <Input
+                          type="text"
+                          label="Nombre completo"
+                          value={(s && s.full_name) || ''}
+                          onChange={(e) => updateShareholder(idx, 'full_name', e.target.value)}
+                        />
+
+                        <Input
+                          type="text"
+                          label="RUT"
+                          value={(s && s.tax_id) || ''}
+                          onChange={(e) => updateShareholder(idx, 'tax_id', e.target.value)}
+                        />
+
+                        <Input
+                          type="text"
+                          label="Dirección (Región / Comuna)"
+                          value={(s && s.address_region_commune) || ''}
+                          onChange={(e) =>
+                            updateShareholder(idx, 'address_region_commune', e.target.value)
+                          }
                         />
                       </div>
                     </div>

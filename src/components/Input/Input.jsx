@@ -1,10 +1,26 @@
 import React, { useState } from 'react';
 import { EyeOff, Eye } from 'lucide-react';
 
-const Input = ({ label, error, type = 'text', ...props }) => {
-  console.log('props', props);
+const Input = ({ label, error, type = 'text', inputMode, maxLength, onChange, ...props }) => {
   const [showPassword, setShowPassword] = useState(false);
   const inputType = type === 'password' && showPassword ? 'text' : type;
+
+  const handleChange = (e) => {
+    let value = e.target.value;
+
+    if (inputMode === 'numeric') {
+      value = value.replace(/\D/g, '');
+      if (maxLength) {
+        value = value.slice(0, maxLength);
+      }
+      e.target.value = value;
+    }
+
+    if (onChange) {
+      onChange(e);
+    }
+  };
+
   return (
     <div className="flex flex-col w-full relative">
       {label && (
@@ -16,6 +32,9 @@ const Input = ({ label, error, type = 'text', ...props }) => {
         <input
           {...props}
           type={inputType}
+          inputMode={inputMode}
+          maxLength={maxLength}
+          onChange={handleChange}
           className={`bg-white shadow-md hover:shadow-xl px-5 py-3 p-2 rounded w-full focus:outline-none focus:border-2 focus:border-primary ${error ? 'border-b-red-700' : ''} ${props.className || ''} pr-12`}
         />
         {type === 'password' && (

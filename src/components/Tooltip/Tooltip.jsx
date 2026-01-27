@@ -11,7 +11,6 @@ export default function Tooltip({
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
-  console.log('HERE open', open);
   useEffect(() => {
     if (!open) return;
 

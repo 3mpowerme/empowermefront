@@ -139,7 +139,7 @@ const PayAudit = forwardRef(({ onComplete = () => {} }, ref) => {
   }, []);
 
   const { plan: plans } = useServicePlan('audit');
-  console.log('HERE plan', plans);
+
   return (
     <>
       {onComplete && (

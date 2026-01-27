@@ -129,7 +129,6 @@ const PayBusinessCreation = forwardRef(({ onComplete = () => {} }, ref) => {
   }, []);
 
   const { plan: plans } = useServicePlan('business_creation');
-  console.log('HERE plan', plans);
   return (
     <>
       {onComplete && (
@@ -233,7 +232,6 @@ const PayBusinessCreation = forwardRef(({ onComplete = () => {} }, ref) => {
             folio={paymentIntentId}
             goTo={'taxes_and_accounting/business_creation'}
           />
-          <ScheduleAppointmentNotice url="https://koalendar.com/e/empresaenundia" />
         </Switch.Item>
       </Switch>
     </>

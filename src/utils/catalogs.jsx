@@ -15,6 +15,7 @@ import {
   Laptop,
   HandPlatter,
   ShoppingBag,
+  UsersRound,
 } from 'lucide-react';
 import { capitalizeFirst } from './utils';
 
@@ -69,6 +70,9 @@ export const addIconsToMenu = (menu = []) => {
     'cumplimiento legal y tributario (compliance)': Handshake,
     'business profile': BriefcaseBusiness,
     'diseno de logo': Palette, // Nuevo hijo
+    ordenes: Folder,
+    dashboard: Home,
+    clientes: UsersRound,
   };
 
   const ICON_BY_FEATURE = {
@@ -79,13 +83,14 @@ export const addIconsToMenu = (menu = []) => {
     5: Gavel,
     6: Lightbulb,
     7: Palette,
+    10: Folder,
+    11: Folder,
+    12: Folder,
   };
   return menu.map((m) => {
     const key = normalize(m.name);
     const Icon = ICON_BY_NAME[key] || ICON_BY_FEATURE[m.feature_id] || null;
-
     const mapped = { ...m, icon: Icon };
-
     if (key === 'diseno grafico') {
       mapped.children = [
         {

@@ -3,7 +3,7 @@ import CardSelector from '../../components/CardSelector/CardSelector';
 import { useBuildCompany } from '../../hooks/useBuildCompany';
 import { storage } from '../../utils/storage';
 
-const BuildCompanyWizardStep7 = () => {
+const BuildCompanyWizardStep8 = () => {
   const { setStepState } = useBuildCompany();
   const buildCompanyFromStorage = storage.getItem('buildCompany') || {};
   const { step8: { hasStartedActivities: hasStartedActivitiesFromStorage } = {} } =
@@ -42,4 +42,4 @@ const BuildCompanyWizardStep7 = () => {
   );
 };
 
-export default BuildCompanyWizardStep7;
+export default BuildCompanyWizardStep8;

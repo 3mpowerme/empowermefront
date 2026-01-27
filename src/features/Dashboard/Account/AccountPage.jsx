@@ -34,104 +34,6 @@ export default function AccountPage() {
   const { setToast } = useApp();
   const { activeCompany: companyId } = useAccount();
 
-  const openShareholderWizard = () => {
-    setState((prevState) => ({
-      ...prevState,
-      currentWizardConfig: getShareholderWizardConfig(),
-      globalAPI: `/company-shareholder/${companyId}`,
-      successMessage: 'El socio/accionista se guardó correctamente, ¿Quieres agregar otro?',
-      successButton: {
-        message: 'Agregar',
-        onClick: () => {
-          openShareholderWizard();
-        },
-      },
-    }));
-  };
-
-  const getShareholderWizardConfig = () => {
-    return [
-      {
-        id: 'step-1',
-        title: 'Pasos para agregar un accionista/socio a tu empresa',
-        subtitle: 'Complete toda la información solicitada',
-        description:
-          'Para poder realizar las siguientes solicitudes necesitas tener registrado al menos un accionista/socio',
-        image: '/images/dashboard/legal_services/shareholders_registry_1.jpg',
-        fields: [
-          {
-            name: 'type',
-            label: 'Elige si es socio o accionista*',
-            placeHolder: 'Elige una opción',
-            type: 'select',
-            options: [
-              { value: 'SOCIO', label: 'Socio' },
-              { value: 'ACCIONISTA', label: 'Accionista' },
-            ],
-            required: true,
-          },
-          {
-            name: 'full_name',
-            label: 'Nombre de socio/accionista*',
-            placeHolder: 'Ingresa el nombre de socio/accionista',
-            type: 'text',
-            required: true,
-          },
-          {
-            name: 'rut',
-            label: 'RUT de socio/accionista*',
-            placeHolder: 'Ingresa el RUT de socio/accionista',
-            type: 'text',
-            required: true,
-          },
-          {
-            name: 'address',
-            label: 'Dirección de socio/accionista*',
-            placeHolder: 'Ingresa la dirección de socio/accionista',
-            type: 'text',
-            required: true,
-          },
-          {
-            name: 'phone',
-            label: 'Teléfono de socio/accionista*',
-            placeHolder: 'Ingresa el teléfono de socio/accionista',
-            type: 'text',
-            required: true,
-          },
-          {
-            name: 'profession',
-            label: 'Profesión de socio/accionista*',
-            placeHolder: 'Ingresa la profesión de socio/accionista',
-            type: 'text',
-            required: true,
-          },
-          {
-            name: 'email',
-            label: 'Correo electrónico de socio/accionista*',
-            placeHolder: 'Ingresa correo electrónico de socio/accionista',
-            type: 'email',
-            required: true,
-          },
-          {
-            name: 'nationality',
-            label: 'Nacionalidad de socio/accionista*',
-            placeHolder: 'Ingresa correo electrónico de socio/accionista',
-            type: 'select',
-            options: global.nationalityOptions,
-            required: true,
-          },
-          {
-            name: 'unique_key',
-            label: 'Clave única de socio/accionista*',
-            placeHolder: 'Ingresa la clave única de socio/accionista',
-            type: 'text',
-            required: true,
-          },
-        ],
-      },
-    ];
-  };
-
   const handleWizardClose = () => {
     storage.removeItem(`wizard_form/company-shareholder/${companyId}`);
     setState((prevState) => ({
@@ -145,28 +47,6 @@ export default function AccountPage() {
   const handleShareholderSuccess = () => {
     refetch();
     handleWizardClose();
-  };
-
-  const deleteShareholder = (id) => {
-    console.log('delete id', id);
-    privateService
-      .delete(`/company-shareholder/${id}`)
-      .then(() => {
-        setToast({
-          show: true,
-          message: 'El socio/accionista se borro correctamente',
-          type: 'success',
-        });
-        refetch();
-      })
-      .catch((error) => {
-        console.error('error deleting shareholder', error);
-        setToast({
-          show: true,
-          message: 'El socio/accionista no se borro correctamente',
-          type: 'error',
-        });
-      });
   };
 
   const tabs = [

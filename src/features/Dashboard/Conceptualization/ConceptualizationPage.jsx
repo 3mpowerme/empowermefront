@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Wizard from '../../../components/Wizard/Wizard';
 import ConceptualizationWizardStep1 from './ConceptualizationWizardStep1';
 import ConceptualizationWizardStep2 from './ConceptualizationWizardStep2';
@@ -19,8 +19,9 @@ import ConceptualizationDetails from './ConceptualizationDetails';
 import classNames from 'classnames';
 import { useCompanySetup } from '../../../hooks/useCompanySetup';
 import { storage } from '../../../utils/storage';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import BrandBookWizard from './BrandBookWizard';
+import { useBuildCompany } from '../../../hooks/useBuildCompany';
 
 const LOADING_VIEW = 'loading-view';
 const ERROR_VIEW = 'error-view';
@@ -32,9 +33,26 @@ const CONCEPTUALIZATION_DETAILS_VIEW = 'conceptualization-details-view';
 const ConceptualizationCard = ({
   isActive = false,
   name = '',
+  about,
+  business_sectors,
   onClick = () => {},
   showCreateCompanyButton = false,
 }) => {
+  const { setStepState } = useBuildCompany();
+  const navigate = useNavigate();
+  const trimmedName = useMemo(() => name?.trim(), [name]);
+  const goToBuildCompany = () => {
+    navigate(`/buildCompany?name=${encodeURIComponent(trimmedName)}`);
+    setTimeout(() => {
+      setStepState(4, {
+        business_sectors: String(business_sectors),
+        about,
+        business_sector_other: '',
+        canContinue: true,
+      });
+    }, 1000);
+  };
+
   return (
     <div
       className={classNames(
@@ -52,22 +70,21 @@ const ConceptualizationCard = ({
         )}
       </div>
       {showCreateCompanyButton && (
-        <Link to="/dashboard/buildCompany">
-          <button className="flex flex-row items-center cursor-pointer">
-            <p className="text-white text-sm font-semibold bg-primary rounded-xl px-5 h-9 flex items-center">
-              Crear Empresa
-            </p>
-          </button>
-        </Link>
+        /*<Link to="/dashboard/buildCompany">*/
+        <button className="flex flex-row items-center cursor-pointer" onClick={goToBuildCompany}>
+          <p className="text-white text-sm font-semibold bg-primary rounded-xl px-5 h-9 flex items-center">
+            Crear Empresa
+          </p>
+        </button>
+        /*</Link>*/
       )}
     </div>
   );
 };
 
 const ConceptualizationPage = ({ showWelcomeMessage = false }) => {
-  const {
-    activeCompanyInfo: { companyName },
-  } = useAccount();
+  const { activeCompanyInfo } = useAccount();
+  const { companyName = '' } = activeCompanyInfo || {};
   const {
     state: { step2, step3, step5, step6, conceptualizations = [] } = {},
     setIsMarketAnalysisLoading,
@@ -105,6 +122,7 @@ const ConceptualizationPage = ({ showWelcomeMessage = false }) => {
     { id: 2, component: <ConceptualizationWizardStep2 /> },
     { id: 3, component: <ConceptualizationWizardStep3 /> },
     { id: 4, component: <ConceptualizationWizardStep4 /> },
+
     { id: 5, component: <ConceptualizationWizardStep5 /> },
     { id: 6, component: <ConceptualizationWizardStep6 /> },
   ];
@@ -134,6 +152,9 @@ const ConceptualizationPage = ({ showWelcomeMessage = false }) => {
   const handleContinue = (stepNumber) => {
     if (stepNumber === 3) {
       if (step2?.offeringServiceType && step3?.about && step3?.business_sectors && step3?.region) {
+        if (step2?.about && step2.about.length < 10) {
+          return;
+        }
         setIsMarketAnalysisLoading(true);
 
         const parsedId = Number(step3.business_sectors);
@@ -156,6 +177,12 @@ const ConceptualizationPage = ({ showWelcomeMessage = false }) => {
             }
           })
           .catch((error) => {
+            setToast({
+              show: true,
+              message: '¡Ha ocurrido un error!',
+              type: 'error',
+            });
+            handleGoBack();
             console.error('conceptualization error', error);
           })
           .finally(() => {
@@ -182,6 +209,12 @@ const ConceptualizationPage = ({ showWelcomeMessage = false }) => {
             });
           })
           .catch((error) => {
+            setToast({
+              show: true,
+              message: '¡Ha ocurrido un error!',
+              type: 'error',
+            });
+            handleGoBack();
             console.error('Erro getting brand book options', error);
           })
           .finally(() => {
@@ -206,6 +239,15 @@ const ConceptualizationPage = ({ showWelcomeMessage = false }) => {
           .then((response) => {
             if (response?.logos) setLogos(response.logos);
             brandBookIdRef.current = response?.brand_book_id;
+          })
+          .catch((error) => {
+            setToast({
+              show: true,
+              message: '¡Ha ocurrido un error!',
+              type: 'error',
+            });
+            handleGoBack();
+            console.error('Erro creating brand book', error);
           })
           .finally(() => {
             setIsMarketAnalysisLoading(false);
@@ -300,10 +342,12 @@ const ConceptualizationPage = ({ showWelcomeMessage = false }) => {
             <div className="flex flex-col gap-3 w-full py-5 print:hidden">
               {conceptualizations.map((conceptualization, i) => (
                 <ConceptualizationCard
-                  showCreateCompanyButton
+                  about={conceptualization.about}
+                  business_sectors={conceptualization.business_sector_id}
+                  showCreateCompanyButton={!!conceptualization.brand_name}
                   key={conceptualization.conceptualization_id || i}
                   isActive={selectedConceptualization === conceptualization.conceptualization_id}
-                  name={`${companyName} ${i + 1}`}
+                  name={conceptualization.brand_name}
                   onClick={() =>
                     handleViewConceptualization(conceptualization.conceptualization_id)
                   }

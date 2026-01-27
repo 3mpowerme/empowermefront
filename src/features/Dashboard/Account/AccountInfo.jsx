@@ -42,7 +42,7 @@ export default function AccountInfo({ companyId, regions }) {
               name: 'phone_number',
               label: 'Teléfono de contacto de la empresa*',
               placeHolder: 'Ingresa teléfono de contacto de la empresa',
-              type: 'text',
+              type: 'phone',
               required: true,
             },
           ],

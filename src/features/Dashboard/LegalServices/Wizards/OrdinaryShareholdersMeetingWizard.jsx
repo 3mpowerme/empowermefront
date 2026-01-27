@@ -36,7 +36,7 @@ export default function OrdinaryShareholdersMeetingWizard({
           {
             name: 'shareholders',
             label: 'Socios/accionistas*',
-            type: 'shareholders_2',
+            type: 'shareholders_5',
           },
         ],
       },
@@ -78,7 +78,10 @@ export default function OrdinaryShareholdersMeetingWizard({
     <WizardProvider
       onlyCreate
       stepsConfig={getConfig()}
-      globalSubmitApi={{ method: 'POST', url: `/shareholders-registry-request/${companyId}` }}
+      globalSubmitApi={{
+        method: 'POST',
+        url: `/ordinary_shareholders_meeting-request/${companyId}`,
+      }}
       successMessage="Por favor elige el plan que se mejor se adapte a ti"
       successButton={{}}
       errorMessage="La solicitud no pudo ser procesada"

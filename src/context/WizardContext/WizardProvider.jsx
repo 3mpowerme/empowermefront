@@ -66,7 +66,6 @@ export function WizardProvider({
     setIsLoading(true);
     console.log('formData', JSON.stringify(formData));
     console.log('formDataRef.current', JSON.stringify(formDataRef.current));
-
     try {
       if (globalSubmitApi) {
         if (hasAlreadyInfo && !onlyCreate) {
@@ -97,7 +96,7 @@ export function WizardProvider({
 
       storage.removeItem(STORAGE_KEY);
     } catch (err) {
-      console.error('HERE err', err);
+      console.error('err', err);
       if (errorMessage) {
         setToast({
           show: true,

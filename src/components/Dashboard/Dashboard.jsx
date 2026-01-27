@@ -6,10 +6,7 @@ import {
   Menu,
   X,
   User,
-  Globe,
   CalendarDays,
-  Phone,
-  Gem,
   ChevronLeft,
   ChevronUp,
   ChevronDown,
@@ -21,7 +18,7 @@ import { useAccount } from '../../hooks/useAccount';
 import { useDashboard } from '../../hooks/useDashboard';
 import { privateService } from '../../services/privateService';
 
-export default function Dashboard({ menuItems: mi = [], showAppointments = false }) {
+export default function Dashboard({ menuItems: mi = [], showAppointments = true }) {
   const menuItems = mi.map((it) => {
     if (it.name === 'Diseño Gráfico') {
       delete it.link;
@@ -72,7 +69,7 @@ export default function Dashboard({ menuItems: mi = [], showAppointments = false
     [activeCompanyInfo]
   );
   const activeCompanyInitials = useMemo(
-    () => getInitials(activeCompanyName || 'EmpowerMe'),
+    () => getInitials(activeCompanyName || 'User'),
     [activeCompanyName]
   );
 
@@ -284,6 +281,7 @@ export default function Dashboard({ menuItems: mi = [], showAppointments = false
                     aria-label={name}
                     onClick={() => {
                       if (!link) {
+                        toggleSection(id);
                         return;
                       }
                       setWizardsState(wizards);
@@ -367,22 +365,24 @@ export default function Dashboard({ menuItems: mi = [], showAppointments = false
                   {activeCompanyInitials}
                 </div>
 
-                <select
-                  className="min-w-[220px] max-w-xs rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-400 disabled:bg-gray-100"
-                  value={activeCompany || ''}
-                  onChange={(e) => {
-                    const newCompanyId = e.target.value;
-                    setActiveCompany?.(newCompanyId);
-                    navigate('/dashboard');
-                  }}
-                  disabled={!companies.length}>
-                  {!companies.length && <option value="">No companies</option>}
-                  {companies.map((c) => (
-                    <option key={c.companyId} value={c.companyId}>
-                      {c.companyName || c.name || `Company #${c.companyId}`}
-                    </option>
-                  ))}
-                </select>
+                {companies?.length > 0 && (
+                  <select
+                    className="min-w-[220px] max-w-xs rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-400 disabled:bg-gray-100"
+                    value={activeCompany || ''}
+                    onChange={(e) => {
+                      const newCompanyId = e.target.value;
+                      setActiveCompany?.(newCompanyId);
+                      navigate('/dashboard');
+                    }}
+                    disabled={!companies.length}>
+                    {!companies.length && <option value="">No companies</option>}
+                    {companies.map((c) => (
+                      <option key={c.companyId} value={c.companyId}>
+                        {c.companyName || c.name || `Company #${c.companyId}`}
+                      </option>
+                    ))}
+                  </select>
+                )}
               </div>
 
               <div className="flex md:hidden">

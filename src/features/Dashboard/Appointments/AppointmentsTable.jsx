@@ -1,18 +1,22 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { CalendarCog, Edit, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import Switch from '../../../components/Switch/Switch';
 import CalendlyPopup from '../../../components/CalendlyPopup/CalendlyPopup';
 import { normalizeAppointmentStatus, normalizePaymentStatus } from '../../../utils/utils';
+import Button from '../../../components/Button/Button';
+import { useAccount } from '../../../hooks/useAccount';
 
-const AppointmentsTable = ({ data }) => {
+const AppointmentsTable = ({ data, refetch = () => {}, showPaymentStatus = false }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [rescheduleOptions, setRescheduleOptions] = useState({
     showModal: false,
     rescheduleUrl: '',
   });
   const rowsPerPage = 10;
+  const serviceOrderRef = useRef({ serviceOrderId: null });
+  const { account: { email = '' } = {} } = useAccount();
 
   const totalPages = Math.ceil(data.length / rowsPerPage);
   const startIndex = (currentPage - 1) * rowsPerPage;
@@ -26,16 +30,22 @@ const AppointmentsTable = ({ data }) => {
     if (currentPage < totalPages) setCurrentPage(currentPage + 1);
   };
 
-  const handleCancel = (id) => {
-    console.log('Cancelar cita con ID:', id);
+  const handleCancel = (cancelUrl) => {
+    console.log('Cancelar cita con cancelUrl:', cancelUrl);
+    setRescheduleOptions({ showModal: true, rescheduleUrl: cancelUrl });
   };
 
   const handleEventRescheduled = () => {
     console.log('rescheduled');
+    refetch();
   };
 
   const handleRescheduleAppointment = (rescheduleUrl) => {
     setRescheduleOptions({ showModal: true, rescheduleUrl });
+  };
+
+  const handleSchedule = (scheduleUrl) => {
+    setRescheduleOptions({ showModal: true, rescheduleUrl: scheduleUrl });
   };
 
   return (
@@ -49,7 +59,7 @@ const AppointmentsTable = ({ data }) => {
                   <th className="py-3 px-4">ID</th>
                   <th className="py-3 px-4">Tipo de servicio</th>
                   <th className="py-3 px-4">Estado de la cita</th>
-                  <th className="py-3 px-4">Estado del pago</th>
+                  {showPaymentStatus && <th className="py-3 px-4">Estado del pago</th>}
                   <th className="py-3 px-4">Horario</th>
                   <th className="py-3 px-4">Fecha de solicitud</th>
                   <th className="py-3 px-4 text-center">Acciones</th>
@@ -76,19 +86,21 @@ const AppointmentsTable = ({ data }) => {
                         {normalizeAppointmentStatus(item.appointment_status)}
                       </span>
                     </td>
-                    <td className="py-3 px-4">
-                      <span
-                        className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                          item.payment_status === 'pending_payment' ||
-                          item.payment_status === 'failed' ||
-                          item.payment_status === 'requires_action' ||
-                          item.payment_status === 'canceled'
-                            ? 'bg-red-100 text-red-700'
-                            : 'bg-blue-100 text-blue-700'
-                        }`}>
-                        {normalizePaymentStatus(item.payment_status)}
-                      </span>
-                    </td>
+                    {showPaymentStatus && (
+                      <td className="py-3 px-4">
+                        <span
+                          className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                            item.payment_status === 'pending_payment' ||
+                            item.payment_status === 'failed' ||
+                            item.payment_status === 'requires_action' ||
+                            item.payment_status === 'canceled'
+                              ? 'bg-red-100 text-red-700'
+                              : 'bg-blue-100 text-blue-700'
+                          }`}>
+                          {normalizePaymentStatus(item.payment_payment_status)}
+                        </span>
+                      </td>
+                    )}
                     <td className="py-3 px-4">
                       {' '}
                       {item.scheduled_event_start_time && item.scheduled_event_end_time
@@ -117,6 +129,16 @@ const AppointmentsTable = ({ data }) => {
                             className="text-orange-strong hover:bg-red-100 rounded-full cursor-pointer">
                             <X className="w-4 h-4" />
                           </button>
+                        )}
+
+                        {item.payment_status === 'paid' && !item.appointment_status && (
+                          <Button
+                            onClick={() => {
+                              serviceOrderRef.current.serviceOrderId = item?.service_order_id;
+                              handleSchedule(item.appointment_url);
+                            }}>
+                            Tienes una cita por agendar
+                          </Button>
                         )}
                       </div>
                     </td>
@@ -154,10 +176,14 @@ const AppointmentsTable = ({ data }) => {
       <Switch value={rescheduleOptions.showModal}>
         <Switch.Item case={true}>
           <CalendlyPopup
+            user={{ email }}
+            ref={serviceOrderRef}
             onClose={() => {
-              setRescheduleOptions({
-                showModal: false,
-                rescheduleUrl: '',
+              refetch().finally(() => {
+                setRescheduleOptions({
+                  showModal: false,
+                  rescheduleUrl: '',
+                });
               });
             }}
             onEventScheduled={handleEventRescheduled}

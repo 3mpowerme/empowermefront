@@ -47,7 +47,7 @@ export default function Modal({ open = false, onClose = () => {}, title, subtitl
           </div>
         </div>
 
-        <div className="px-6 py-3 border-t border-transparent">
+        <div className="px-6 py-3 border-t border-transparent max-h-[500px] overflow-auto">
           {bodyChild || <div className="text-sm text-black"> </div>}
         </div>
 

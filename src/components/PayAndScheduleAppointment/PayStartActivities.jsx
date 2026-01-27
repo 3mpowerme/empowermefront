@@ -307,7 +307,6 @@ const PayStartActivities = forwardRef(({ onComplete = () => {} }, ref) => {
               setView(SCHEDULE_APPOINTMENT_VIEW);
             }}
           />
-          <ScheduleAppointmentNotice url="https://calendly.com/contabilidadalphaconsulting/contabilidad" />
         </Switch.Item>
       </Switch>
     </>

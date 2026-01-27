@@ -53,6 +53,7 @@ const PayMonthlyAccounting = forwardRef(({ onComplete = () => {} }, ref) => {
         {
           companyId,
           planId: selectedPlan.id,
+          serviceCode: 'accounting',
         }
       );
       console.log('clientSecret', clientSecret);
@@ -306,7 +307,6 @@ const PayMonthlyAccounting = forwardRef(({ onComplete = () => {} }, ref) => {
               setView(SCHEDULE_APPOINTMENT_VIEW);
             }}
           />
-          <ScheduleAppointmentNotice url="https://calendly.com/contabilidadalphaconsulting/contabilidad" />
         </Switch.Item>
       </Switch>
     </>

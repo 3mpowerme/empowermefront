@@ -139,7 +139,6 @@ const PayDissolutionOfSrl = forwardRef(({ onComplete = () => {} }, ref) => {
   }, []);
 
   const { plan: plans } = useServicePlan('dissolution_of_srl');
-  console.log('HERE plan', plans);
   return (
     <>
       {onComplete && (

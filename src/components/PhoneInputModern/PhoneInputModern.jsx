@@ -1,19 +1,31 @@
 import React, { useState, useEffect } from 'react';
 import { useCountry } from '../../hooks/useCountry';
 
-const PhoneInputModern = ({ label, error, defaultCountryCode, className, onChange }) => {
+const PhoneInputModern = ({
+  label,
+  error,
+  defaultCountryCode,
+  className,
+  onChange,
+  defaultPhone,
+}) => {
   const { country: countries } = useCountry();
-  const [phone, setPhone] = useState('');
+  const [phone, setPhone] = useState(defaultPhone || '');
   const [countryCode, setCountryCode] = useState(defaultCountryCode || countries[0]?.code || '');
-  console.log('countries', countries);
   const selectedCountry = countries.find((c) => c.code === countryCode);
-  console.log('selectedCountry', selectedCountry);
   const phoneMax = selectedCountry?.phone_length_max || 15;
-  console.log('phoneMax', phoneMax);
   const prefix = selectedCountry?.phone_code || '';
 
   useEffect(() => {
-    if (countries[0]) setCountryCode(countries[0]?.code);
+    setCountryCode(defaultCountryCode);
+  }, [defaultCountryCode]);
+
+  useEffect(() => {
+    setPhone(defaultPhone);
+  }, [defaultPhone]);
+
+  useEffect(() => {
+    if (countries[0]) setCountryCode(defaultCountryCode || countries[0]?.code);
   }, [countries.length]);
 
   useEffect(() => {

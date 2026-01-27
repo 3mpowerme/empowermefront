@@ -139,7 +139,6 @@ const PayShareholdersRegistry = forwardRef(({ onComplete = () => {} }, ref) => {
   }, []);
 
   const { plan: plans } = useServicePlan('shareholders_registry');
-  console.log('HERE plan', plans);
   return (
     <>
       {onComplete && (

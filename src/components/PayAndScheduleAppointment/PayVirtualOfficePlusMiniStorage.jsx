@@ -139,7 +139,6 @@ const PayVirtualOfficePlusMiniStorage = forwardRef(({ onComplete = () => {} }, r
   }, []);
 
   const { plan: plans } = useServicePlan('virtual_office_plus_ministorage');
-  console.log('HERE plan', plans);
   return (
     <>
       {onComplete && (

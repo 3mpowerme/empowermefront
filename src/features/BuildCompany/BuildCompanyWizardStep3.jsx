@@ -1,14 +1,18 @@
-import React, { useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import CardSelector from '../../components/CardSelector/CardSelector';
 import { useBuildCompany } from '../../hooks/useBuildCompany';
 import { useCustomerServiceChannel } from '../../hooks/useCustomerServiceChannel';
 import { useCompanyOffering } from '../../hooks/useCompanyOffering';
 import FullScreenSpinner from '../../components/FullScreenSpinner/FullScreenSpinner';
 import { storage } from '../../utils/storage';
+import { useCustomEvent } from '../../hooks/useCustomEvent';
 
 const BuildCompanyWizardStep3 = ({ name }) => {
-  const currentOptionRef = useRef({});
   const { setStepState } = useBuildCompany();
+  const { customerServiceChannel, isLoading: isLoadingCustomerService } =
+    useCustomerServiceChannel();
+  const { companyOffering, isLoading: isLoadingCompanyOffering } = useCompanyOffering();
+  const [showErrors, setShowErrors] = useState(false);
 
   const buildCompanyFromStorage = storage.getItem('buildCompany') || {};
   const {
@@ -18,23 +22,52 @@ const BuildCompanyWizardStep3 = ({ name }) => {
     } = {},
   } = buildCompanyFromStorage;
 
-  const { customerServiceChannel, isLoading: isLoadingCustomerService } =
-    useCustomerServiceChannel();
-  const { companyOffering, isLoading: isLoadingCompanyOffering } = useCompanyOffering();
+  const [selected, setSelected] = useState({
+    companyOffering: companyOfferingFromStorage || [],
+    customerServiceChannel: customerServiceChannelFromStorage || [],
+  });
 
   const handleCardChangeCompanyOffering = (ids) => {
-    currentOptionRef.current = { ...currentOptionRef.current, companyOffering: ids };
-    setStepState(3, { ...currentOptionRef.current, canContinue: true });
+    setSelected((prev) => ({ ...prev, companyOffering: ids }));
+    setShowErrors(false);
   };
 
   const handleCardChangeCustomerServiceChannel = (ids) => {
-    currentOptionRef.current = { ...currentOptionRef.current, customerServiceChannel: ids };
-    setStepState(3, { ...currentOptionRef.current, canContinue: true });
+    setSelected((prev) => ({ ...prev, customerServiceChannel: ids }));
+    setShowErrors(false);
   };
+
+  useEffect(() => {
+    const companyOfferingOk = Array.isArray(selected.companyOffering)
+      ? selected.companyOffering.length > 0
+      : !!selected.companyOffering;
+    const customerServiceChannelOk = Array.isArray(selected.customerServiceChannel)
+      ? selected.customerServiceChannel.length > 0
+      : !!selected.customerServiceChannel;
+
+    setStepState(3, {
+      companyOffering: selected.companyOffering,
+      customerServiceChannel: selected.customerServiceChannel,
+      canContinue: companyOfferingOk && customerServiceChannelOk,
+    });
+  }, [selected.companyOffering, selected.customerServiceChannel]);
+
+  useCustomEvent('cannot-continue', () => {
+    setShowErrors(true);
+  });
 
   if (isLoadingCustomerService && isLoadingCompanyOffering) {
     return <FullScreenSpinner />;
   }
+
+  const offeringError =
+    showErrors &&
+    (!Array.isArray(selected.companyOffering) || selected.companyOffering.length === 0);
+
+  const channelError =
+    showErrors &&
+    (!Array.isArray(selected.customerServiceChannel) ||
+      selected.customerServiceChannel.length === 0);
 
   return (
     <div className="w-full px-4 sm:px-6 md:px-10 lg:px-16 py-5 md:py-0 flex flex-col items-center">
@@ -47,12 +80,17 @@ const BuildCompanyWizardStep3 = ({ name }) => {
 
       <div className="w-full max-w-5xl">
         <CardSelector
-          initialValues={companyOfferingFromStorage}
+          initialValues={selected.companyOffering}
           multiple
           cards={companyOffering}
           columns={1}
           onCardChange={handleCardChangeCompanyOffering}
         />
+        {offeringError && (
+          <p className="mt-3 text-sm text-red-600 text-center">
+            Selecciona al menos una opción para continuar.
+          </p>
+        )}
       </div>
 
       <div className="w-full max-w-4xl text-center mt-6">
@@ -64,12 +102,17 @@ const BuildCompanyWizardStep3 = ({ name }) => {
 
       <div className="w-full max-w-5xl">
         <CardSelector
-          initialValues={customerServiceChannelFromStorage}
+          initialValues={selected.customerServiceChannel}
           multiple
           cards={customerServiceChannel}
           columns={1}
           onCardChange={handleCardChangeCustomerServiceChannel}
         />
+        {channelError && (
+          <p className="mt-3 text-sm text-red-600 text-center">
+            Selecciona al menos una opción para continuar.
+          </p>
+        )}
       </div>
     </div>
   );

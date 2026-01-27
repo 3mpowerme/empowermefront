@@ -6,6 +6,7 @@ import { mapCatalogToOptions } from '../../utils/catalogs';
 import FullScreenSpinner from '../../components/FullScreenSpinner/FullScreenSpinner';
 import { useBuildCompany } from '../../hooks/useBuildCompany';
 import { storage } from '../../utils/storage';
+import { useCustomEvent } from '../../hooks/useCustomEvent';
 
 const BuildCompanyWizardStep4 = ({ name }) => {
   const buildCompanyFromStorage = storage.getItem('buildCompany') || {};
@@ -15,6 +16,8 @@ const BuildCompanyWizardStep4 = ({ name }) => {
   const [text, setText] = useState(aboutFromStorage ?? '');
   const [value, setValue] = useState(business_sectorsFromStorage ?? '');
   const [businessSectorOther, setBusinessSectorOther] = useState('');
+  const [showErrors, setShowErrors] = useState(false);
+
   const { businessSectors, isLoading } = useBusinessSectors();
   const options = mapCatalogToOptions(businessSectors);
   const { setStepState } = useBuildCompany();
@@ -45,12 +48,17 @@ const BuildCompanyWizardStep4 = ({ name }) => {
     });
   }, [text, value, businessSectorOther]);
 
+  useCustomEvent('cannot-continue', () => {
+    setShowErrors(true);
+  });
+
   if (isLoading) {
     return <FullScreenSpinner />;
   }
 
   const handleBusinessSectorChange = (val) => {
     setValue(val);
+    setShowErrors(false);
     if (val && isNaN(Number(val))) {
       setBusinessSectorOther(val);
     } else {
@@ -60,7 +68,11 @@ const BuildCompanyWizardStep4 = ({ name }) => {
 
   const handleNewOptionAdded = (newOptionName) => {
     setBusinessSectorOther(newOptionName);
+    setShowErrors(false);
   };
+
+  const sectorError = showErrors && !value;
+  const aboutError = showErrors && !text;
 
   return (
     <div className="w-full px-4 sm:px-6 md:px-10 lg:px-16 flex flex-col items-center gap-5 sm:gap-5">
@@ -83,6 +95,11 @@ const BuildCompanyWizardStep4 = ({ name }) => {
           label="Sector Empresarial"
           onNewOptionAdded={handleNewOptionAdded}
         />
+        {sectorError && (
+          <p className="mt-3 text-sm text-red-600 text-center">
+            Selecciona un sector empresarial para continuar.
+          </p>
+        )}
       </div>
 
       <div className="w-full max-w-2xl">
@@ -94,8 +111,16 @@ const BuildCompanyWizardStep4 = ({ name }) => {
           maxLength={500}
           rows={6}
           value={text}
-          onChange={(e) => setText(e.target.value)}
+          onChange={(e) => {
+            setText(e.target.value);
+            setShowErrors(false);
+          }}
         />
+        {aboutError && (
+          <p className="mt-3 text-sm text-red-600 text-center">
+            Cuéntanos más sobre tu negocio para continuar.
+          </p>
+        )}
       </div>
     </div>
   );

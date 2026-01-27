@@ -4,6 +4,7 @@ import classNames from 'classnames';
 import { useConceptualization } from '../../hooks/useConceptualization';
 import { X } from 'lucide-react';
 import { useBuildCompany } from '../../hooks/useBuildCompany';
+import { dispatchCustomEvent } from '../../utils/utils';
 
 export default function Wizard({
   steps,
@@ -30,12 +31,15 @@ export default function Wizard({
       if (buildCompanyState[`step${currentStep + 1}`]?.canContinue) {
         if (!isLastStep) setCurrentStep(currentStep);
       } else {
+        dispatchCustomEvent('cannot-continue', state[`step${currentStep + 1}`]);
         return;
       }
     }
     if (withCanContinue) {
       if (state[`step${currentStep + 1}`]?.canContinue) {
         if (!isLastStep) setCurrentStep((prev) => prev + 1);
+      } else {
+        dispatchCustomEvent('cannot-continue', state[`step${currentStep + 1}`]);
       }
     } else if (!isLastStep) setCurrentStep((prev) => prev + 1);
   };

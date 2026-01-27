@@ -1,19 +1,11 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { privateService } from '../../../services/privateService';
 import WizardList from '../../../components/WizardList/WizardList';
-import { WizardProvider } from '../../../context/WizardContext/WizardProvider';
-import WizardForm from '../../../components/WizardForm/WizardForm';
-import { useShareholder } from '../../../hooks/useShareholder';
-import global from '../../../constants/global';
 import { useAccount } from '../../../hooks/useAccount';
-import { storage } from '../../../utils/storage';
 import { useApp } from '../../../hooks/useApp';
 import Switch from '../../../components/Switch/Switch';
-import { normalizeAppointmentStatus } from '../../../utils/utils';
-import PayAndScheduleAppointment from '../../../components/PayAndScheduleAppointment/PayAndScheduleAppointment';
+import { prefillInfoIfExist } from '../../../utils/utils';
 import { useDashboard } from '../../../hooks/useDashboard';
-import { useAppointment } from '../../../hooks/useAppointment';
 import ConstitutionReviewWizard from './Wizards/ConstitutionReviewWizard';
 import ShareholdersRegistryWizard from './Wizards/ShareholdersRegistryWizard';
 import DissolutionOfSpaWizard from './Wizards/DissolutionOfSpaWizard';
@@ -66,20 +58,19 @@ export default function LegalServicesPage() {
   const { wizards: ws } = useDashboard();
 
   const { services, refetch } = useRegisteredServies('legal_services');
-  console.log('HERE services', services);
 
   const mapWizards = (ws) => {
     return ws.map((w) => {
-      w.onClick = (link, alreadyRegistered, needsDocuments) => {
+      w.onClick = async (link, alreadyRegistered, needsDocuments) => {
         console.log('link', link);
         if (link === 'shareholders_registry_wizard') {
-          const info =
-            storage.getItem(`wizard_form/shareholders-registry-request/${companyId}`) || {};
-          storage.setItem(`wizard_form/shareholders-registry-request/${companyId}`, {
-            ...info,
-            //contact_person_email: email,
-            company_name: companyName,
-          });
+          await prefillInfoIfExist(
+            `wizard_form/shareholders-registry-request/${companyId}`,
+            companyId,
+            {
+              company_name: companyName,
+            }
+          );
           setServiceType('shareholders_registry');
           setView(
             alreadyRegistered
@@ -88,13 +79,13 @@ export default function LegalServicesPage() {
           );
         }
         if (link === 'constitution_review_wizard') {
-          const info =
-            storage.getItem(`wizard_form/constitution-review-request/${companyId}`) || {};
-          storage.setItem(`wizard_form/constitution-review-request/${companyId}`, {
-            ...info,
-            //contact_person_email: email,
-            company_name: companyName,
-          });
+          await prefillInfoIfExist(
+            `wizard_form/constitution-review-request/${companyId}`,
+            companyId,
+            {
+              company_name: companyName,
+            }
+          );
 
           setServiceType('constitution_review');
           setView(
@@ -102,28 +93,27 @@ export default function LegalServicesPage() {
           );
         }
         if (link === 'dissolution_of_spa_wizard') {
-          const info =
-            storage.getItem(`wizard_form/dissolution-request/${companyId}/dissolution_of_spa`) ||
-            {};
-          storage.setItem(`wizard_form/dissolution-request/${companyId}/dissolution_of_spa`, {
-            ...info,
-            //contact_person_email: email,
-            company_name: companyName,
-          });
+          await prefillInfoIfExist(
+            `wizard_form/dissolution-request/${companyId}/dissolution_of_spa`,
+            companyId,
+            {
+              company_name: companyName,
+            }
+          );
+
           setServiceType('dissolution_of_spa');
           setView(
             alreadyRegistered ? PAY_AND_SCHEDULE_APPOINTMENT_VIEW : DISSOLUTION_OF_SPA_WIZARD_VIEW
           );
         }
         if (link === 'dissolution_of_eirl_wizard') {
-          const info =
-            storage.getItem(`wizard_form/dissolution-request/${companyId}/dissolution_of_eirl`) ||
-            {};
-          storage.setItem(`wizard_form/dissolution-request/${companyId}/dissolution_of_eirl`, {
-            ...info,
-            //contact_person_email: email,
-            company_name: companyName,
-          });
+          await prefillInfoIfExist(
+            `wizard_form/dissolution-request/${companyId}/dissolution_of_eirl`,
+            companyId,
+            {
+              company_name: companyName,
+            }
+          );
 
           setServiceType('dissolution_of_eirl');
           setView(
@@ -131,25 +121,33 @@ export default function LegalServicesPage() {
           );
         }
         if (link === 'dissolution_of_srl_wizard') {
-          const info =
-            storage.getItem(`wizard_form/dissolution-request/${companyId}/dissolution_of_srl`) ||
-            {};
-          storage.setItem(`wizard_form/dissolution-request/${companyId}/dissolution_of_srl`, {
-            ...info,
-            //contact_person_email: email,
-            company_name: companyName,
-          });
+          await prefillInfoIfExist(
+            `wizard_form/dissolution-request/${companyId}/dissolution_of_srl`,
+            companyId,
+            {
+              company_name: companyName,
+            }
+          );
+
           setServiceType('dissolution_of_srl');
           setView(
             alreadyRegistered ? PAY_AND_SCHEDULE_APPOINTMENT_VIEW : DISSOLUTION_OF_SRL_WIZARD_VIEW
           );
         }
         if (link === 'personalized_advisory_wizard') {
-          setServiceType('personalized_advice');
+          setServiceType('personalized_advisory');
           currentServiceOrderIdRef.current.serviceOrderId = null;
           setView(PAY_AND_SCHEDULE_APPOINTMENT_VIEW);
         }
         if (link === 'ordinary_shareholders_meeting_wizard') {
+          await prefillInfoIfExist(
+            `wizard_form/ordinary_shareholders_meeting-request/${companyId}`,
+            companyId,
+            {
+              company_name: companyName,
+            }
+          );
+
           setServiceType('ordinary_shareholders_meeting');
           currentServiceOrderIdRef.current.serviceOrderId = null;
           setView(
@@ -159,6 +157,13 @@ export default function LegalServicesPage() {
           );
         }
         if (link === 'company_modifications_spa_wizard') {
+          await prefillInfoIfExist(
+            `wizard_form/company-modifications-request/${companyId}/company_modifications_spa`,
+            companyId,
+            {
+              company_name: companyName,
+            }
+          );
           setServiceType('company_modifications_spa');
           currentServiceOrderIdRef.current.serviceOrderId = null;
           setView(
@@ -168,6 +173,13 @@ export default function LegalServicesPage() {
           );
         }
         if (link === 'company_modifications_srl_wizard') {
+          await prefillInfoIfExist(
+            `wizard_form/company-modifications-request/${companyId}/company_modifications_srl`,
+            companyId,
+            {
+              company_name: companyName,
+            }
+          );
           setServiceType('company_modifications_srl');
           currentServiceOrderIdRef.current.serviceOrderId = null;
           setView(

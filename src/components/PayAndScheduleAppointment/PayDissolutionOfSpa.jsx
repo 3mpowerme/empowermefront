@@ -139,7 +139,6 @@ const PayDissolutionOfSpa = forwardRef(({ onComplete = () => {} }, ref) => {
   }, []);
 
   const { plan: plans } = useServicePlan('dissolution_of_spa');
-  console.log('HERE plan', plans);
   return (
     <>
       {onComplete && (

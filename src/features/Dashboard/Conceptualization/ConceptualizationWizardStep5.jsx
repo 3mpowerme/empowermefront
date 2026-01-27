@@ -1,14 +1,22 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useConceptualization } from '../../../hooks/useConceptualization';
 import { useForm } from 'react-hook-form';
 import Switch from '../../../components/Switch/Switch';
 import FullScreenSpinner from '../../../components/FullScreenSpinner/FullScreenSpinner';
+import { useCustomEvent } from '../../../hooks/useCustomEvent';
 
 const CUSTOM_VALUE = 'custom';
 
 const ConceptualizationWizardStep5 = () => {
   const { state: { brandBookOptions, isLoading } = {}, setStepState } = useConceptualization();
 
+  const [error, setError] = useState({
+    brandName: '',
+    brandNameCustom: '',
+    slogan: '',
+    logoType: '',
+    colorimetry: '',
+  });
   const { register, watch, setValue } = useForm({
     defaultValues: {
       brandName: '',
@@ -44,6 +52,7 @@ const ConceptualizationWizardStep5 = () => {
   useEffect(() => {
     const canContinue =
       !!selectedLogoType && !!effectiveBrandName && !!effectiveSlogan && !!selectedColorimetry;
+
     if (canContinue)
       setStepState(5, {
         brand_name: effectiveBrandName || null,
@@ -76,6 +85,23 @@ const ConceptualizationWizardStep5 = () => {
     },
   ];
 
+  useCustomEvent('cannot-continue', (data) => {
+    console.log('here data', data);
+    // TODO later
+    return;
+    const newError = { business_sectors: '', about: '', region: '' };
+    if (!data.business_sectors) {
+      newError.business_sectors = 'Por favor elige un sector';
+    }
+    if (!data.about) {
+      newError.about = 'Por favor escribe una descripción';
+    }
+    if (!data.region) {
+      newError.region = 'Por favor elige una región';
+    }
+    setError(newError);
+  });
+
   return (
     <Switch value={isLoading}>
       <Switch.Item case={true}>
@@ -102,6 +128,7 @@ const ConceptualizationWizardStep5 = () => {
                     transition-colors duration-200 cursor-pointer shadow hover:border-opaque"
                     {...register('brandName')}
                   />
+                  {error.brandName && <span className="text-red-700">{error.region}</span>}
                 </label>
               ))}
 

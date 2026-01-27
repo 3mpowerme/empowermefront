@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import Input from '../../components/Input/Input';
 import Button from '../../components/Button/Button';
@@ -10,6 +10,8 @@ import { loginWithGoogle } from '../../utils/auth';
 import { storage } from '../../utils/storage';
 import globalConstants from '../../constants/global';
 import { useApp } from '../../hooks/useApp';
+import { isTokenExpired } from '../../utils/utils';
+import { privateService } from '../../services/privateService';
 
 const SignUpPage = () => {
   const navigate = useNavigate();
@@ -20,6 +22,106 @@ const SignUpPage = () => {
   } = useForm();
 
   const { setIsLoading, setToast } = useApp();
+
+  const buildCompanyRequest = (companyId, startCB = () => {}, endCB = () => {}) => {
+    const buildCompany = storage.getItem('buildCompany');
+    startCB();
+    if (buildCompany) {
+      const {
+        step2: { todayFocus: today_focus } = {},
+        step3: {
+          companyOffering: company_offering,
+          customerServiceChannel: customer_service_channel,
+        } = {},
+        step4: { business_sectors, business_sector_other, about } = {},
+        step5: { phone_number, region_id, zip_code, street } = {},
+        step6: { hasEmployees } = {},
+        step7: { isRegisteredCompany } = {},
+        step8: { hasStartedActivities } = {},
+        step9: { marketingSource: marketing_source } = {},
+      } = buildCompany;
+
+      const parsedId = Number(business_sectors?.[0]);
+      const isNumericId = !Number.isNaN(parsedId);
+
+      const body = {
+        company_id: companyId,
+        today_focus,
+        company_offering,
+        marketing_source,
+        business_sector_id: isNumericId ? parsedId : 11,
+        business_sector_other: business_sector_other || '',
+        customer_service_channel,
+        phone_number,
+        is_registered_company: isRegisteredCompany?.[0],
+        hasStartedActivities: hasStartedActivities?.[0],
+        has_employees: hasEmployees?.[0],
+        region_id,
+        zip_code,
+        about,
+        street,
+      };
+      genericService
+        .create('/build-company', body)
+        .then(() => {
+          storage.removeItem('buildCompany');
+        })
+        .catch((error) => {
+          setToast({
+            show: true,
+            message: error?.error || 'Ocurrio un error',
+            type: 'error',
+            button: {},
+          });
+          navigate('..');
+          console.error('Error building company', error);
+        })
+        .finally(() => {
+          endCB();
+        });
+    }
+  };
+
+  useEffect(() => {
+    const storedAuth = storage.getItem('auth');
+    const buildCompany = storage.getItem('buildCompany');
+
+    if (storedAuth?.accessToken && !isTokenExpired(storedAuth.accessToken) && buildCompany) {
+      // user is logged in
+
+      const {
+        step0: { companyName },
+      } = buildCompany;
+      setIsLoading(true);
+      privateService
+        .create('/intakes/create-company', {
+          userId: storedAuth?.userId,
+          companyName: companyName,
+        })
+        .then(({ companyId }) => {
+          buildCompanyRequest(
+            companyId,
+            () => {},
+            () => {
+              setIsLoading(false);
+              setTimeout(() => {
+                navigate('/dashboard/buildCompany', { replace: true });
+              }, 100);
+            }
+          );
+        })
+        .catch((error) => {
+          setToast({
+            show: true,
+            message: 'Ocurrio un error',
+            type: 'error',
+            button: {},
+          });
+          navigate('..');
+          console.error('Error creating company', error);
+        });
+    }
+  }, []);
 
   const buildCompany = storage.getItem('buildCompany');
 
@@ -33,46 +135,7 @@ const SignUpPage = () => {
         countryCode: globalConstants.countryCode,
       });
       const { companyId } = signupResponse;
-
-      if (buildCompany) {
-        const {
-          step2: { todayFocus: today_focus } = {},
-          step3: {
-            companyOffering: company_offering,
-            customerServiceChannel: customer_service_channel,
-          } = {},
-          step4: { business_sectors, business_sector_other, about } = {},
-          step5: { phone_number, region_id, zip_code, street } = {},
-          step6: { hasEmployees } = {},
-          step7: { isRegisteredCompany } = {},
-          step8: { hasStartedActivities } = {},
-          step9: { marketingSource: marketing_source } = {},
-        } = buildCompany;
-
-        const parsedId = Number(business_sectors?.[0]);
-        const isNumericId = !Number.isNaN(parsedId);
-
-        const body = {
-          company_id: companyId,
-          today_focus,
-          company_offering,
-          marketing_source,
-          business_sector_id: isNumericId ? parsedId : 11,
-          business_sector_other: business_sector_other || '',
-          customer_service_channel,
-          phone_number,
-          is_registered_company: isRegisteredCompany?.[0],
-          hasStartedActivities: hasStartedActivities?.[0],
-          has_employees: hasEmployees?.[0],
-          region_id,
-          zip_code,
-          about,
-          street,
-        };
-        genericService.create('/build-company', body).then(() => {
-          storage.removeItem('buildCompany');
-        });
-      }
+      buildCompanyRequest(companyId);
       navigate('/verifyEmail');
     } catch (err) {
       console.error('Signup error:', err);

@@ -21,6 +21,7 @@ import VirtualOfficeWizard from './TaxesAndAccounting/Wizards/VirtualOfficeWizar
 import PayVirtualOffice from '../../components/PayAndScheduleAppointment/PayVirtualOffice';
 import PayVirtualOfficePlusMiniStorage from '../../components/PayAndScheduleAppointment/PayVirtualOfficePlusMiniStorage';
 import PayStartActivities from '../../components/PayAndScheduleAppointment/PayStartActivities';
+import { prefillInfoIfExist } from '../../utils/utils';
 
 const LOADING_VIEW = 'loading-view';
 const ERROR_VIEW = 'error-view';
@@ -48,42 +49,38 @@ export default function DashboardTaxesAndAccountingPage() {
 
   const { wizards: ws } = useDashboard();
   const { services, refetch } = useRegisteredServies('invoice_and_accounting');
-  console.log('HERE services', services);
   const mapWizards = (ws) => {
     return ws.map((w) => {
       w.buttonType = undefined;
-      w.onClick = (link, alreadyRegistered, needsDocuments) => {
+      w.onClick = async (link, alreadyRegistered, needsDocuments) => {
         console.log('link', link);
         if (link === 'accounting_wizard') {
-          const info = storage.getItem(`wizard_form/monthly-accounting/${companyId}`) || {};
-          storage.setItem(`wizard_form/monthly-accounting/${companyId}`, {
-            ...info,
-            email,
+          await prefillInfoIfExist(`wizard_form/monthly-accounting/${companyId}`, companyId, {
+            contact_person_email: email,
             company_name: companyName,
           });
+
           setServiceType('accounting');
           setView(alreadyRegistered ? PAY_AND_SCHEDULE_APPOINTMENT_VIEW : ACCOUNTING_WIZARD_VIEW);
           //setView(PAY_AND_SCHEDULE_APPOINTMENT_VIEW);
         }
 
         if (link === 'audit_wizard') {
-          const info = storage.getItem(`wizard_form/company-audit-request/${companyId}`) || {};
-          storage.setItem(`wizard_form/company-audit-request/${companyId}`, {
-            ...info,
+          await prefillInfoIfExist(`wizard_form/company-audit-request/${companyId}`, companyId, {
             contact_person_email: email,
             company_name: companyName,
           });
+
           setServiceType('audit');
           //setView(PAY_AND_SCHEDULE_APPOINTMENT_VIEW);
           setView(alreadyRegistered ? PAY_AND_SCHEDULE_APPOINTMENT_VIEW : AUDIT_WIZARD_VIEW);
         }
         if (link === 'balance_wizard') {
-          const info = storage.getItem(`wizard_form/company-balance-request/${companyId}`) || {};
-          storage.setItem(`wizard_form/company-balance-request/${companyId}`, {
-            ...info,
+          await prefillInfoIfExist(`wizard_form/company-balance-request/${companyId}`, companyId, {
             contact_person_email: email,
             company_name: companyName,
           });
+
           setServiceType('balance');
           //setView(PAY_AND_SCHEDULE_APPOINTMENT_VIEW);
           setView(alreadyRegistered ? PAY_AND_SCHEDULE_APPOINTMENT_VIEW : BALANCE_WIZARD_VIEW);
@@ -97,23 +94,40 @@ export default function DashboardTaxesAndAccountingPage() {
           setView(PAY_AND_SCHEDULE_APPOINTMENT_VIEW);
         }
         if (link === 'start_activities_wizard') {
-          const info =
-            storage.getItem(`wizard_form/company-start-activities-request/${companyId}`) || {};
-          storage.setItem(`wizard_form/company-start-activities-request/${companyId}`, {
-            ...info,
-            email,
-            company_name: companyName,
-          });
+          await prefillInfoIfExist(
+            `wizard_form/company-start-activities-request/${companyId}`,
+            companyId,
+            {
+              contact_person_email: email,
+              company_name: companyName,
+            }
+          );
           setServiceType('start_activities');
           setView(alreadyRegistered ? PAY_AND_SCHEDULE_APPOINTMENT_VIEW : START_ACTIVITIES_WIZARD);
         }
         if (link === 'virtual_office_wizard') {
+          await prefillInfoIfExist(
+            `wizard_form/virtual-office-request/${companyId}/virtual_office`,
+            companyId,
+            {
+              contact_person_email: email,
+              company_name: companyName,
+            }
+          );
           setServiceType('virtual_office');
           setView(
             alreadyRegistered ? PAY_AND_SCHEDULE_APPOINTMENT_VIEW : VIRTUAL_OFFICE_WIZARD_VIEW
           );
         }
         if (link === 'virtual_office_plus_ministorage_wizard') {
+          await prefillInfoIfExist(
+            `wizard_form/virtual-office-request/${companyId}/virtual_office_plus_ministorage`,
+            companyId,
+            {
+              contact_person_email: email,
+              company_name: companyName,
+            }
+          );
           setServiceType('virtual_office_plus_ministorage');
           setView(
             alreadyRegistered

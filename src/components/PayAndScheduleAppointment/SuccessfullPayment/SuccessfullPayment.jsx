@@ -5,6 +5,8 @@ import { useState } from 'react';
 import Link from '../../Link/Link';
 import { useNavigate } from 'react-router';
 import CompanyPurchaseSaleWizard from '../../../features/Dashboard/LegalServices/Wizards/CompanyPurchaseSaleWizard';
+import { useService } from '../../../hooks/useService';
+import ScheduleAppointmentNotice from '../../ScheduleAppointmentNotice/ScheduleAppointmentNotice';
 
 const WIZARD_VIEW = 'wizard-view';
 const SUCCESSFUL_SUBSCRIPTION_VIEW = 'successful-subscription';
@@ -12,12 +14,17 @@ const SUCCESSFUL_SUBSCRIPTION_VIEW = 'successful-subscription';
 export default function SuccessfullPayment({ serviceCode, goTo, folio, count }) {
   const navigate = useNavigate();
   const [view, setView] = useState(SUCCESSFUL_SUBSCRIPTION_VIEW);
+
+  const {
+    data: { whats_app_support_number, requires_appointment, appointment_url },
+  } = useService(serviceCode);
+
   const handleClick = () => {
     const message = encodeURIComponent('¡Hola! Tengo una duda');
-    const phone = '56962101021';
+    const phone = whats_app_support_number || '56962101021';
     window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
   };
-  console.log('count', count);
+
   const needsPurchaseSale =
     serviceCode === 'company_modifications_spa'
       ? count > 0
@@ -25,6 +32,8 @@ export default function SuccessfullPayment({ serviceCode, goTo, folio, count }) 
         ? count > 0
         : false;
   console.log('needsPurchaseSale', needsPurchaseSale);
+
+  const showRepositoryLink = false;
   return (
     <>
       <Switch value={view}>
@@ -51,7 +60,7 @@ export default function SuccessfullPayment({ serviceCode, goTo, folio, count }) 
               Recibirá una notificacion, si tiene algún mensaje o requiremos alguna información
               adicional
             </p>
-            <Link to={`/dashboard/${goTo}`}>Ir a mi repositorio</Link>
+            {showRepositoryLink && <Link to={`/dashboard/${goTo}`}>Ir a mi repositorio</Link>}
           </div>
 
           <Button
@@ -60,6 +69,7 @@ export default function SuccessfullPayment({ serviceCode, goTo, folio, count }) 
             <MessageCircle className="w-5 h-5 inline mr-2" />
             Orientación por WhatsApp
           </Button>
+          {requires_appointment === 1 && <ScheduleAppointmentNotice url={appointment_url} />}
         </Switch.Item>
         <Switch.Item case={WIZARD_VIEW}>
           <CompanyPurchaseSaleWizard

@@ -1,4 +1,6 @@
 import { isToday, isAfter, startOfDay } from 'date-fns';
+import { privateService } from '../services/privateService';
+import { storage } from './storage';
 
 export function capitalizeFirst(str) {
   if (!str) return '';
@@ -116,3 +118,34 @@ export function formatBytesToMB(bytes) {
   const mb = bytes / (1024 * 1024);
   return `${mb.toFixed(2)} MB`;
 }
+
+export const dispatchCustomEvent = (eventName, detail) => {
+  window.dispatchEvent(new CustomEvent(eventName, { detail }));
+};
+
+export const prefillInfoIfExist = async (keyFromStorage, companyId, currentInfo = {}) => {
+  const info = storage.getItem(keyFromStorage) || {};
+  try {
+    const reusableValues = await privateService.create(`/intakes/${companyId}/reuse-values`, {
+      fields: [
+        'company_name',
+        'company_tax_id',
+        'contact_person_name',
+        'contact_person_email',
+        'contact_person_phone',
+      ],
+    });
+
+    storage.setItem(keyFromStorage, {
+      ...currentInfo,
+      ...info,
+      ...reusableValues,
+    });
+  } catch (error) {
+    storage.setItem(keyFromStorage, {
+      ...currentInfo,
+      ...info,
+    });
+    console.error('Error getting reusable info: ', error);
+  }
+};

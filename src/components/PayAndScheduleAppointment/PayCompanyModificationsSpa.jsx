@@ -165,7 +165,6 @@ const PayCompanyModificationsSpa = forwardRef(({ onComplete = () => {} }, ref) =
   }, []);
 
   const { plan: plans } = useServicePlan('company_modifications_spa');
-  console.log('HERE plan', plans);
   return (
     <>
       {onComplete && (

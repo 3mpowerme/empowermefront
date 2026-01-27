@@ -139,7 +139,6 @@ const PayOrdinaryShareholderMeeting = forwardRef(({ onComplete = () => {} }, ref
   }, []);
 
   const { plan: plans } = useServicePlan('ordinary_shareholders_meeting');
-  console.log('HERE plan', plans);
   return (
     <>
       {onComplete && (

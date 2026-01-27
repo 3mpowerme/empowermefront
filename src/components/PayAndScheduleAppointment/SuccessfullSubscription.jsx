@@ -5,6 +5,8 @@ import { useEffect, useState } from 'react';
 import MonthlyAccountingRequiredDocumentsWizard from '../../features/Dashboard/TaxesAndAccounting/Wizards/MonthlyAccountingRequiredDocumentsWizard';
 import { Link, useNavigate } from 'react-router';
 import { privateService } from '../../services/privateService';
+import { useService } from '../../hooks/useService';
+import ScheduleAppointmentNotice from '../ScheduleAppointmentNotice/ScheduleAppointmentNotice';
 
 const WIZARD_VIEW = 'wizard-view';
 const SUCCESSFUL_SUBSCRIPTION_VIEW = 'successful-subscription';
@@ -18,10 +20,14 @@ export default function SuccessfulSubscriptionMonthlyAccounting({
 }) {
   const [needActivityStartSupport, setNeedActivityStartSupport] = useState(false);
   const navigate = useNavigate();
+  const {
+    data: { whats_app_support_number, requires_appointment, appointment_url },
+  } = useService('accounting');
+
   const [view, setView] = useState(SUCCESSFUL_SUBSCRIPTION_VIEW);
   const handleClick = () => {
     const message = encodeURIComponent('¡Hola! Tengo una duda');
-    const phone = '56962101021';
+    const phone = whats_app_support_number || '56962101021';
     window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
   };
 
@@ -32,6 +38,9 @@ export default function SuccessfulSubscriptionMonthlyAccounting({
       }
     });
   }, []);
+
+  const showRepositoryLink = false;
+
   console.log('needActivityStartSupport', needActivityStartSupport);
   return (
     <>
@@ -59,9 +68,11 @@ export default function SuccessfulSubscriptionMonthlyAccounting({
               Recibirá una notificacion, si tiene algún mensaje o requiremos alguna información
               adicional
             </p>
-            <Link to={'/dashboard/taxes_and_accounting/accounting'}>
-              <Button className="mt-5">Ir a mi repositorio</Button>
-            </Link>
+            {showRepositoryLink && (
+              <Link to={'/dashboard/taxes_and_accounting/accounting'}>
+                <Button className="mt-5">Ir a mi repositorio</Button>
+              </Link>
+            )}
             {showRequiredDocuments && <></>}
           </div>
 
@@ -71,6 +82,13 @@ export default function SuccessfulSubscriptionMonthlyAccounting({
             <MessageCircle className="w-5 h-5 inline mr-2" />
             Orientación por WhatsApp
           </Button>
+          {requires_appointment === 1 && (
+            <ScheduleAppointmentNotice
+              url={
+                appointment_url || 'https://calendly.com/contabilidadalphaconsulting/contabilidad'
+              }
+            />
+          )}
         </Switch.Item>
         <Switch.Item case={WIZARD_VIEW}>
           <MonthlyAccountingRequiredDocumentsWizard

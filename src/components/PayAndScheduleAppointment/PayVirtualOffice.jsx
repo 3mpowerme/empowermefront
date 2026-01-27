@@ -139,7 +139,6 @@ const PayVirtualOffice = forwardRef(({ onComplete = () => {} }, ref) => {
   }, []);
 
   const { plan: plans } = useServicePlan('virtual_office');
-  console.log('HERE plan', plans);
   return (
     <>
       {onComplete && (

@@ -8,10 +8,9 @@ export default function MonthlyAccountingRequiredDocumentsWizard({
   handleWizardSuccess,
   needActivityStartSupport,
 }) {
-  console.log('HERE needActivityStartSupport', needActivityStartSupport);
+  console.log('needActivityStartSupport', needActivityStartSupport);
   const { activeCompany: companyId } = useAccount();
   const getConfig = () => {
-    console.log('HERE 2 needActivityStartSupport', needActivityStartSupport);
     const fields = [
       {
         name: 'legal_representative_rut',
@@ -45,7 +44,7 @@ export default function MonthlyAccountingRequiredDocumentsWizard({
         required: true,
       },
     ].filter(Boolean);
-    console.log('HERE fields', fields);
+
     return [
       {
         id: 'step-1',
@@ -116,7 +115,6 @@ export default function MonthlyAccountingRequiredDocumentsWizard({
   };
 
   const config = getConfig();
-  console.log('HERE config', config);
   return (
     <WizardProvider
       onlyCreate

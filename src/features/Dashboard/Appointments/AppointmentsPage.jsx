@@ -6,14 +6,19 @@ import { useAppointment } from '../../../hooks/useAppointment';
 import AppointmentsTable from './AppointmentsTable';
 
 export default function AppointmentsPage() {
-  const { appointment: appointments } = useAppointment();
+  const { appointment: appointments, refetch } = useAppointment();
   const [searchParams] = useSearchParams();
   const sub = searchParams.get('sub');
   const tabs = [
     {
       id: 'scheduled',
       label: 'Agendadas',
-      content: <AppointmentsTable data={appointments} />,
+      content: (
+        <AppointmentsTable
+          data={appointments.filter((it) => it.requires_appointment)}
+          refetch={refetch}
+        />
+      ),
     },
   ];
 

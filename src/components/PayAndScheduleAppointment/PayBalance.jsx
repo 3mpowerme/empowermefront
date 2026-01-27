@@ -139,7 +139,7 @@ const PayBalance = forwardRef(({ onComplete = () => {} }, ref) => {
   }, []);
 
   const { plan: plans } = useServicePlan('balance');
-  console.log('HERE plan', plans);
+
   return (
     <>
       {onComplete && (

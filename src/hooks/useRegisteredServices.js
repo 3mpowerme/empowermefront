@@ -11,10 +11,12 @@ export function useRegisteredServies(page) {
   const fetchData = async () => {
     try {
       setIsLoading(true);
-      const data = await privateService.get(
-        `/company-registered-services/${companyId}?page=${page}`
-      );
-      setState(data);
+      if (companyId) {
+        const data = await privateService.get(
+          `/company-registered-services/${companyId}?page=${page}`
+        );
+        setState(data);
+      }
     } catch (err) {
       setError(err.message);
     } finally {
@@ -24,7 +26,7 @@ export function useRegisteredServies(page) {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [companyId]);
 
   return { services: state, isLoading, error, refetch: fetchData };
 }

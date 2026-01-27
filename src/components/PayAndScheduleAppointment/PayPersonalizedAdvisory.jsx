@@ -129,7 +129,6 @@ const PayPersonalizedAdvisory = forwardRef(({ onComplete = () => {} }, ref) => {
   }, []);
 
   const { plan: plans } = useServicePlan('personalized_advisory');
-  console.log('HERE plan', plans);
   return (
     <>
       {onComplete && (
@@ -231,7 +230,6 @@ const PayPersonalizedAdvisory = forwardRef(({ onComplete = () => {} }, ref) => {
             folio={paymentIntentId}
             goTo={'taxes_and_accounting/personalized_advisory'}
           />
-          <ScheduleAppointmentNotice url="https://koalendar.com/e/asesoria-personalizada-breve" />
         </Switch.Item>
       </Switch>
     </>

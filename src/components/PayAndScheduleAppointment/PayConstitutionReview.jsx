@@ -139,7 +139,6 @@ const PayConstitutionReview = forwardRef(({ onComplete = () => {} }, ref) => {
   }, []);
 
   const { plan: plans } = useServicePlan('constitution_review');
-  console.log('HERE plan', plans);
   return (
     <>
       {onComplete && (

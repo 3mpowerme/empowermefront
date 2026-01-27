@@ -140,7 +140,6 @@ const PayTaxPlanning = forwardRef(({ onComplete = () => {} }, ref) => {
   }, []);
 
   const { plan: plans } = useServicePlan('tax_planning');
-  console.log('HERE plan', plans);
   return (
     <>
       {onComplete && (
@@ -237,7 +236,6 @@ const PayTaxPlanning = forwardRef(({ onComplete = () => {} }, ref) => {
             folio={paymentIntentId}
             goTo={'taxes_and_accounting/tax_planning'}
           />
-          <ScheduleAppointmentNotice url="" />
         </Switch.Item>
       </Switch>
     </>

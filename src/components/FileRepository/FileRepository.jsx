@@ -56,8 +56,9 @@ function formatSize(sizeBytes) {
   return `${gb.toFixed(1)} GB`;
 }
 
-export default function FileRepository({ serviceId }) {
-  const { activeCompany } = useAccount();
+export default function FileRepository({ serviceId, companyId, isExecutive = false }) {
+  const { activeCompany: activeCompanyFromAccount } = useAccount();
+  const activeCompany = companyId || activeCompanyFromAccount;
   const { setToast } = useApp();
   const { auth } = useAuth();
   const location = useLocation();
@@ -91,6 +92,8 @@ export default function FileRepository({ serviceId }) {
     if (v === '' || v === '1' || v === 'true') return true;
     return Boolean(Number(v));
   }, [query]);
+  console.log('queryFileId', queryFileId);
+  console.log('queryHighlightComment', queryHighlightComment);
 
   async function fetchFiles() {
     if (!activeCompany) {
@@ -255,6 +258,7 @@ export default function FileRepository({ serviceId }) {
         `/company-documents/${activeCompany}/${serviceId}/${fileId}/comments`,
         {
           comment: text,
+          isExecutive,
         }
       );
       setNewCommentByFile((prev) => ({ ...prev, [fileId]: '' }));
@@ -285,7 +289,10 @@ export default function FileRepository({ serviceId }) {
       const formData = new FormData();
       formData.append('file', file);
 
-      await privateService.upload(`/company-documents/${activeCompany}/${serviceId}`, formData);
+      await privateService.upload(
+        `/company-documents/${activeCompany}/${serviceId}/${isExecutive}`,
+        formData
+      );
 
       setToast({
         show: true,
@@ -317,9 +324,12 @@ export default function FileRepository({ serviceId }) {
   const IalreadyViewedPage = storage.getItem('IalreadyViewedPage') == true;
 
   useEffect(() => {
+    console.log('queryFileId 2', queryFileId);
+    console.log('files', files);
     if (!queryFileId || !files.length) return;
 
     const targetFile = files.find((f) => String(f.id) === String(queryFileId));
+    console.log('targetFile', targetFile);
     if (!targetFile) return;
 
     const d = new Date(targetFile.uploaded_at);
@@ -596,7 +606,11 @@ export default function FileRepository({ serviceId }) {
                                           }`}>
                                           <div className="flex items-center justify-between gap-2 mb-1">
                                             <span className="text-[10px] font-semibold">
-                                              {isMine ? 'Tú' : 'Administrador'}
+                                              {isMine
+                                                ? 'Tú'
+                                                : isExecutive
+                                                  ? 'Cliente'
+                                                  : 'Administrador'}
                                             </span>
                                             {c.created_at && (
                                               <span className="text-[10px] opacity-80">

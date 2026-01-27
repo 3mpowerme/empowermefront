@@ -133,9 +133,6 @@ export default function SubscriptionsManager() {
     <div className="w-full">
       <div className="mb-4 mt-5">
         <h2 className="text-xl font-semibold text-slate-900">Mis suscripciones</h2>
-        <p className="text-sm text-slate-600">
-          Visualiza y gestiona tus suscripciones activas por servicio.
-        </p>
       </div>
 
       {loading && (
