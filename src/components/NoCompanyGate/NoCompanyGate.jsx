@@ -71,7 +71,7 @@ export default function NoCompanyGate({ supportPhone = null, supportEmail = null
               <input
                 value={companyName}
                 onChange={(e) => setCompanyName(e.target.value)}
-                placeholder="Ej. Mi Empresa SpA"
+                placeholder="Mi Empresa"
                 autoFocus
                 className="mt-2 w-full rounded-xl border border-[color:var(--color-opaque)] bg-white px-4 py-3 text-sm text-[color:var(--color-blue-strong)] outline-none transition placeholder:text-[color:var(--color-secondary)] focus:border-[color:var(--color-primary)] focus:ring-4 focus:ring-[color:var(--color-primary-opaque)] sm:text-base"
                 onKeyDown={(e) => {

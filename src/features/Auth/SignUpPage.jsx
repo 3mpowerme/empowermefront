@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import Input from '../../components/Input/Input';
 import Button from '../../components/Button/Button';
 import Link from '../../components/Link/Link';
-import { useNavigate } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 import { signup } from '../../services/authService';
 import { genericService } from '../../services/genericService';
 import { loginWithGoogle } from '../../utils/auth';
@@ -15,6 +15,9 @@ import { privateService } from '../../services/privateService';
 
 const SignUpPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  console.log('HERE location', location.state);
+  const { from = '' } = location.state || {};
   const {
     register,
     handleSubmit,

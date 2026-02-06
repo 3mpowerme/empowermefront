@@ -39,9 +39,11 @@ export default function DashboardHomePage() {
     return ws.map((w) => {
       w.onClick = async (link, alreadyRegistered, needsDocuments) => {
         console.log('link', link);
+        console.log('companyId', companyId);
         if (link === 'accounting_wizard') {
           await prefillInfoIfExist(`wizard_form/monthly-accounting/${companyId}`, companyId, {
-            contact_person_email: email,
+            email: email,
+            company_contact_email: email,
             company_name: companyName,
           });
           setServiceType('accounting');
@@ -74,7 +76,7 @@ export default function DashboardHomePage() {
     if (!Array.isArray(ws)) return [];
 
     return mapWizards([...ws]);
-  }, [ws]);
+  }, [ws, companyId]);
 
   useEffect(() => {
     setView(HOME_VIEW);

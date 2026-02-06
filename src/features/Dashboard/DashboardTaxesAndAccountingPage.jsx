@@ -54,9 +54,11 @@ export default function DashboardTaxesAndAccountingPage() {
       w.buttonType = undefined;
       w.onClick = async (link, alreadyRegistered, needsDocuments) => {
         console.log('link', link);
+        console.log('companyId', companyId);
         if (link === 'accounting_wizard') {
           await prefillInfoIfExist(`wizard_form/monthly-accounting/${companyId}`, companyId, {
-            contact_person_email: email,
+            email: email,
+            company_contact_email: email,
             company_name: companyName,
           });
 
@@ -110,9 +112,9 @@ export default function DashboardTaxesAndAccountingPage() {
             `wizard_form/virtual-office-request/${companyId}/virtual_office`,
             companyId,
             {
-              contact_person_email: email,
               company_name: companyName,
-            }
+            },
+            ['company_name', 'company_tax_id']
           );
           setServiceType('virtual_office');
           setView(
@@ -124,9 +126,9 @@ export default function DashboardTaxesAndAccountingPage() {
             `wizard_form/virtual-office-request/${companyId}/virtual_office_plus_ministorage`,
             companyId,
             {
-              contact_person_email: email,
               company_name: companyName,
-            }
+            },
+            ['company_name', 'company_tax_id']
           );
           setServiceType('virtual_office_plus_ministorage');
           setView(

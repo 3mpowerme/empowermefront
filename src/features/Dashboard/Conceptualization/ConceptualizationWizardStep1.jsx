@@ -1,11 +1,16 @@
 import React, { useEffect } from 'react';
 import { useConceptualization } from '../../../hooks/useConceptualization';
 
-const ConceptualizationWizardStep1 = () => {
+const ConceptualizationWizardStep1 = ({ withAutoContinue = false }) => {
   const { setStepState } = useConceptualization();
 
   useEffect(() => {
     setStepState(1, { canContinue: true });
+    if (withAutoContinue) {
+      setTimeout(() => {
+        document.getElementById('wizard-continue-button')?.click();
+      }, 100);
+    }
   }, []);
 
   return (

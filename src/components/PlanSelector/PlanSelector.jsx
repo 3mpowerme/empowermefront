@@ -32,7 +32,7 @@ export default function PlanSelector({
         const isOpen = openPlanKey === key;
         const includeList = plan?.includes || plan?.include || [];
         const descriptionCollapsed = truncateText(plan?.description, collapsedDescriptionChars);
-
+        const descriptionWasCollapsed = plan?.description.length > collapsedDescriptionChars;
         return (
           <div
             key={key}
@@ -93,7 +93,7 @@ export default function PlanSelector({
             </div>
 
             <div className="w-full px-4">
-              {!isOpen && (
+              {descriptionWasCollapsed && !isOpen && (
                 <button
                   type="button"
                   onClick={() => toggle(key)}

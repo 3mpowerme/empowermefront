@@ -123,17 +123,22 @@ export const dispatchCustomEvent = (eventName, detail) => {
   window.dispatchEvent(new CustomEvent(eventName, { detail }));
 };
 
-export const prefillInfoIfExist = async (keyFromStorage, companyId, currentInfo = {}) => {
+export const prefillInfoIfExist = async (
+  keyFromStorage,
+  companyId,
+  currentInfo = {},
+  fields = [
+    'company_name',
+    'company_tax_id',
+    'contact_person_name',
+    'contact_person_email',
+    'contact_person_phone',
+  ]
+) => {
   const info = storage.getItem(keyFromStorage) || {};
   try {
     const reusableValues = await privateService.create(`/intakes/${companyId}/reuse-values`, {
-      fields: [
-        'company_name',
-        'company_tax_id',
-        'contact_person_name',
-        'contact_person_email',
-        'contact_person_phone',
-      ],
+      fields,
     });
 
     storage.setItem(keyFromStorage, {

@@ -10,7 +10,7 @@ import Select from '../../../components/Select/Select';
 import { useConceptualization } from '../../../hooks/useConceptualization';
 import { useCustomEvent } from '../../../hooks/useCustomEvent';
 
-const ConceptualizationWizardStep3 = () => {
+const ConceptualizationWizardStep3 = ({ withAutoContinue = false }) => {
   const conceptualizationFromStorage = storage.getItem('conceptualization') || {};
   const {
     step3: {
@@ -62,6 +62,12 @@ const ConceptualizationWizardStep3 = () => {
       region: state.regionSelected,
       canContinue: value && text && text.length > 9 && state.regionSelected,
     });
+
+    if (withAutoContinue) {
+      setTimeout(() => {
+        document.getElementById('wizard-continue-button')?.click();
+      }, 100);
+    }
   }, [text, value, state.regionSelected]);
 
   useCustomEvent('cannot-continue', (data) => {

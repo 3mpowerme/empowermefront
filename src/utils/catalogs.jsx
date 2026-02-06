@@ -72,7 +72,8 @@ export const addIconsToMenu = (menu = []) => {
     'diseno de logo': Palette, // Nuevo hijo
     ordenes: Folder,
     dashboard: Home,
-    clientes: UsersRound,
+    empresas: UsersRound,
+    usuarios: UsersRound,
   };
 
   const ICON_BY_FEATURE = {
@@ -86,6 +87,7 @@ export const addIconsToMenu = (menu = []) => {
     10: Folder,
     11: Folder,
     12: Folder,
+    13: Folder,
   };
   return menu.map((m) => {
     const key = normalize(m.name);

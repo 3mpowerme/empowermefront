@@ -4,7 +4,7 @@ import FullScreenSpinner from '../../../components/FullScreenSpinner/FullScreenS
 import MarketAnalysis from '../../../features/Dashboard/Conceptualization/MarketAnalysis';
 import { useApp } from '../../../hooks/useApp';
 
-const ConceptualizationWizardStep4 = () => {
+const ConceptualizationWizardStep4 = ({ showTemplate = false }) => {
   const { setStepState, state: { marketAnalysis, isLoading } = {} } = useConceptualization();
   const { setToast } = useApp();
 
@@ -32,10 +32,11 @@ const ConceptualizationWizardStep4 = () => {
         });
       }
     };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [setToast, isLoading]);
+    if (!showTemplate) window.addEventListener('scroll', handleScroll);
+    return () => {
+      if (!showTemplate) window.removeEventListener('scroll', handleScroll);
+    };
+  }, [setToast, isLoading, showTemplate]);
 
   return (
     <>
@@ -46,7 +47,7 @@ const ConceptualizationWizardStep4 = () => {
           duration={40 * 1000} // 40 seconds
         />
       )}
-      {!isLoading && <MarketAnalysis data={marketAnalysis} />}
+      {!isLoading && <MarketAnalysis data={marketAnalysis} showTemplate={showTemplate} />}
     </>
   );
 };

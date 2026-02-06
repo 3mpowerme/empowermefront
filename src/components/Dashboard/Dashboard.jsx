@@ -17,8 +17,11 @@ import { useAuth } from '../../hooks/useAuth';
 import { useAccount } from '../../hooks/useAccount';
 import { useDashboard } from '../../hooks/useDashboard';
 import { privateService } from '../../services/privateService';
+import { storage } from '../../utils/storage';
+import { useConceptualization } from '../../hooks/useConceptualization';
+import { useApp } from '../../hooks/useApp';
 
-export default function Dashboard({ menuItems: mi = [], showAppointments = true }) {
+export default function Dashboard({ menuItems: mi = [] }) {
   const menuItems = mi.map((it) => {
     if (it.name === 'Diseño Gráfico') {
       delete it.link;
@@ -43,7 +46,7 @@ export default function Dashboard({ menuItems: mi = [], showAppointments = true 
 
   const { logout: authLogout, auth } = useAuth();
   const { account, activeCompany, setActiveCompany, activeCompanyInfo } = useAccount();
-
+  const showAppointments = account?.type == 3;
   const companies = account?.companies || [];
 
   const { setWizardsState } = useDashboard();
@@ -69,7 +72,7 @@ export default function Dashboard({ menuItems: mi = [], showAppointments = true 
     [activeCompanyInfo]
   );
   const activeCompanyInitials = useMemo(
-    () => getInitials(activeCompanyName || 'User'),
+    () => getInitials(activeCompanyName || account?.email || 'User'),
     [activeCompanyName]
   );
 
@@ -361,7 +364,7 @@ export default function Dashboard({ menuItems: mi = [], showAppointments = true 
               <div className="hidden md:flex items-center gap-2 mr-auto">
                 <div
                   className="w-9 h-9 rounded-lg bg-gray-200 text-gray-700 flex items-center justify-center font-semibold select-none border border-gray-300"
-                  title={activeCompanyName || 'Company'}>
+                  title={activeCompanyName || account?.email || 'Company'}>
                   {activeCompanyInitials}
                 </div>
 

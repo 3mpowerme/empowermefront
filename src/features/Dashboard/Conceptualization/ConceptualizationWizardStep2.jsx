@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import FullScreenSpinner from '../../../components/FullScreenSpinner/FullScreenSpinner';
 import { storage } from '../../../utils/storage';
 import { useOfferingServiceType } from '../../../hooks/useOfferingServiceType';
@@ -7,7 +7,7 @@ import { useConceptualization } from '../../../hooks/useConceptualization';
 import { addIconsToOfferingServiceType } from '../../../utils/catalogs';
 import { useCustomEvent } from '../../../hooks/useCustomEvent';
 
-const ConceptualizationWizardStep2 = () => {
+const ConceptualizationWizardStep2 = ({ withAutoContinue = false }) => {
   const currentOptionRef = useRef({});
   const { setStepState } = useConceptualization();
   const [error, setError] = useState('');
@@ -27,9 +27,18 @@ const ConceptualizationWizardStep2 = () => {
     setStepState(2, { ...currentOptionRef.current });
   };
 
-  useCustomEvent('cannot-continue', () => {
+  useCustomEvent('cannot-continue', (e) => {
+    console.log('HERE cannot-continue e', e);
     setError('Por favor elige una opción');
   });
+
+  useEffect(() => {
+    if (withAutoContinue) {
+      setTimeout(() => {
+        document.getElementById('wizard-continue-button')?.click();
+      }, 100);
+    }
+  }, []);
 
   if (isLoadingOfferingServiceType) {
     return <FullScreenSpinner />;

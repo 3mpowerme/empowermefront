@@ -40,6 +40,7 @@ import {
 } from 'lucide-react';
 import CardSection from '../../../components/CardSection/CardSection';
 import Button from '../../../components/Button/Button';
+import { TEMPLATE_DATA } from './Template';
 
 const SafeHtml = ({ html, className = '', fallback = '—' }) => {
   if (!html) return <p className={className}>{fallback}</p>;
@@ -257,8 +258,8 @@ const TabButton = ({ active, onClick, icon, label }) => (
   </button>
 );
 
-export default function MarketAnalysis({ data, showDownloadPDF = false }) {
-  const d = data || {};
+export default function MarketAnalysis({ data, showDownloadPDF = false, showTemplate }) {
+  const d = showTemplate ? TEMPLATE_DATA : data || {};
   const fmtCurrency = React.useMemo(() => getCurrencyFormatter(d.meta_moneda), [d.meta_moneda]);
   const fmtNumber = React.useMemo(() => getNumberFormatter(d.meta_moneda), [d.meta_moneda]);
 
@@ -420,7 +421,7 @@ export default function MarketAnalysis({ data, showDownloadPDF = false }) {
         />
       </nav>
 
-      <div className="rounded-3xl p-5 space-y-10">
+      <div className={`rounded-3xl p-5 space-y-10 ${showTemplate ? 'blur-xs' : ''}`}>
         <section ref={resumenRef} className="section-anchor">
           <motion.div
             initial={{ opacity: 0, y: 8 }}
@@ -564,7 +565,9 @@ export default function MarketAnalysis({ data, showDownloadPDF = false }) {
                     <div className="text-xs mt-2">
                       Disposición a pagar:{' '}
                       {d?.clientes?.tamaño_mercado?.disposicion_pagar?.rango
-                        ? `${fmtCurrency(d.clientes.tamaño_mercado.disposicion_pagar.rango.min)}–${fmtCurrency(d.clientes.tamaño_mercado.disposicion_pagar.rango.max)}`
+                        ? `${fmtCurrency(
+                            d.clientes.tamaño_mercado.disposicion_pagar.rango.min
+                          )}–${fmtCurrency(d.clientes.tamaño_mercado.disposicion_pagar.rango.max)}`
                         : '—'}
                     </div>
                   </div>

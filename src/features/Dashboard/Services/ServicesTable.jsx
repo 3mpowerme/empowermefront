@@ -1,12 +1,13 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import Switch from '../../../components/Switch/Switch';
-import { normalizePaymentStatus } from '../../../utils/utils';
 import { useFetch } from '../../../hooks/useFetch';
 import { privateService } from '../../../services/privateService';
 import { useNavigate } from 'react-router';
 import { Search, Info, X } from 'lucide-react';
+import { useApp } from '../../../hooks/useApp';
+import { useAccount } from '../../../hooks/useAccount';
 
 const statusOptions = [
   { value: 'in_progress', label: 'En progreso' },
@@ -14,18 +15,33 @@ const statusOptions = [
   { value: 'finished', label: 'Finalizado' },
 ];
 
+const toDateOnly = (d) => {
+  if (!d) return null;
+  const x = new Date(d);
+  if (Number.isNaN(x.getTime())) return null;
+  return new Date(x.getFullYear(), x.getMonth(), x.getDate());
+};
+
 const ServicesTable = ({ showAmount = false }) => {
+  const { account } = useAccount();
+  const { type } = account || {};
+  const showAssignButton = type === 1;
   const { data, isLoading, error, refetch } = useFetch('/executive', { initialState: [] });
   const [currentPage, setCurrentPage] = useState(1);
   const [search, setSearch] = useState('');
   const [viewMode, setViewMode] = useState('table');
   const rowsPerPage = 10;
   const navigate = useNavigate();
+  const { setToast } = useApp();
+
+  const [serviceType, setServiceType] = useState('');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
 
   const [statusModal, setStatusModal] = useState({
     open: false,
     serviceOrderId: null,
-    status: 'attending',
+    status: 'in_progress',
   });
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
   const [updateError, setUpdateError] = useState(null);
@@ -44,17 +60,88 @@ const ServicesTable = ({ showAmount = false }) => {
     fromStatus: null,
   });
 
-  const filteredData = useMemo(() => {
-    if (!search) return data;
-    const q = search.toLowerCase();
+  const [assignModal, setAssignModal] = useState({
+    open: false,
+    serviceOrderId: null,
+    userId: '',
+  });
+  const [executives, setExecutives] = useState([]);
+  const [isLoadingExecutives, setIsLoadingExecutives] = useState(false);
+  const [assignError, setAssignError] = useState(null);
+  const [isAssigning, setIsAssigning] = useState(false);
 
-    return data.filter((item) =>
-      [item.company_name, item.service_name, item.service_status, item.payment_status]
-        .join(' ')
-        .toLowerCase()
-        .includes(q)
-    );
-  }, [data, search]);
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, serviceType, dateFrom, dateTo]);
+
+  const serviceTypeOptions = useMemo(() => {
+    const map = new Map();
+    (data || []).forEach((item) => {
+      const id = item?.service_id != null ? String(item.service_id) : '';
+      const name = String(item?.service_name || '').trim();
+      const key = id ? `id:${id}` : name ? `name:${name}` : '';
+      if (!key) return;
+      if (!map.has(key)) {
+        map.set(key, {
+          value: key,
+          label: id && name ? `${name} (#${id})` : name || `Servicio #${id}`,
+        });
+      }
+    });
+    return Array.from(map.values()).sort((a, b) => a.label.localeCompare(b.label, 'es'));
+  }, [data]);
+
+  const filteredData = useMemo(() => {
+    const list = Array.isArray(data) ? data : [];
+    const q = String(search || '')
+      .trim()
+      .toLowerCase();
+
+    const from = dateFrom ? toDateOnly(`${dateFrom}T00:00:00`) : null;
+    const to = dateTo ? toDateOnly(`${dateTo}T00:00:00`) : null;
+
+    return list.filter((item) => {
+      if (q) {
+        const hay = [
+          item.company_name,
+          item.service_name,
+          item.service_status,
+          item.payment_status,
+          item.assigned_to,
+          item.service_order_id,
+          item.company_id,
+          item.service_id,
+        ]
+          .join(' ')
+          .toLowerCase();
+
+        if (!hay.includes(q)) return false;
+      }
+
+      if (serviceType) {
+        const parts = String(serviceType).split(':');
+        const kind = parts[0];
+        const val = parts.slice(1).join(':');
+
+        if (kind === 'id') {
+          if (String(item?.service_id ?? '') !== String(val)) return false;
+        } else if (kind === 'name') {
+          if (String(item?.service_name || '').trim() !== String(val).trim()) return false;
+        }
+      }
+
+      if (from || to) {
+        const createdRaw = item?.service_order_created_at;
+        const created = createdRaw ? toDateOnly(new Date(createdRaw)) : null;
+        if (!created) return false;
+
+        if (from && created < from) return false;
+        if (to && created > to) return false;
+      }
+
+      return true;
+    });
+  }, [data, search, serviceType, dateFrom, dateTo]);
 
   const totalPages = useMemo(
     () => Math.max(1, Math.ceil(filteredData.length / rowsPerPage)),
@@ -82,7 +169,6 @@ const ServicesTable = ({ showAmount = false }) => {
       in_progress: 'In Progress',
       finished: 'Finished',
       canceled: 'Canceled',
-      attending: 'Atendiendo',
       pending_payment: 'Pendiente',
     };
     return map[status] || status || 'Sin estado';
@@ -94,19 +180,18 @@ const ServicesTable = ({ showAmount = false }) => {
   const openStatusModal = (serviceOrderId, currentStatus) => {
     const safeStatus = statusOptions.some((x) => x.value === currentStatus)
       ? currentStatus
-      : 'attending';
+      : 'in_progress';
     setUpdateError(null);
     setStatusModal({ open: true, serviceOrderId, status: safeStatus });
   };
 
   const closeStatusModal = () => {
     if (isUpdatingStatus) return;
-    setStatusModal({ open: false, serviceOrderId: null, status: 'attending' });
+    setStatusModal({ open: false, serviceOrderId: null, status: 'in_progress' });
     setUpdateError(null);
   };
 
   const handleGoToRepository = (item) => {
-    console.log(item);
     navigate(`/dashboard/repository/${item.service_code}/${item.company_id}`);
   };
 
@@ -119,6 +204,12 @@ const ServicesTable = ({ showAmount = false }) => {
       });
       closeStatusModal();
       await refetch();
+      setToast({
+        show: true,
+        message: 'Se actualizo el estado correctamente',
+        type: 'success',
+        button: {},
+      });
     } catch (e) {
       setUpdateError(e?.message || 'Error actualizando estado');
     } finally {
@@ -186,10 +277,16 @@ const ServicesTable = ({ showAmount = false }) => {
 
     try {
       setIsUpdatingStatus(true);
-      await privateService.update(
-        `/executive/update-status/${dragging.service_order_id}/${toStatus}`
-      );
+      await privateService.update(`/executive/${dragging.service_order_id}/status`, {
+        status: toStatus,
+      });
       await refetch();
+      setToast({
+        show: true,
+        message: 'Se actualizo el estado correctamente',
+        type: 'success',
+        button: {},
+      });
     } catch (e) {
       setUpdateError(e?.message || 'Error actualizando estado');
     } finally {
@@ -214,6 +311,76 @@ const ServicesTable = ({ showAmount = false }) => {
 
     return base;
   }, [filteredData]);
+
+  const openAssignModal = async (serviceOrderId, serviceId) => {
+    setAssignError(null);
+    setAssignModal({ open: true, serviceOrderId, userId: '' });
+
+    if (executives.length > 0) return;
+
+    try {
+      setIsLoadingExecutives(true);
+      const res = await privateService.get('/executive/executives/' + serviceId);
+      const list = res?.data ?? res ?? [];
+      setExecutives(Array.isArray(list) ? list : []);
+    } catch (e) {
+      setAssignError(e?.message || 'Error cargando ejecutivos');
+    } finally {
+      setIsLoadingExecutives(false);
+    }
+  };
+
+  const closeAssignModal = () => {
+    if (isAssigning) return;
+    setAssignModal({ open: false, serviceOrderId: null, userId: '' });
+    setAssignError(null);
+  };
+
+  const handleAssign = async () => {
+    if (!assignModal.serviceOrderId) return;
+
+    const userIdNum = Number(assignModal.userId);
+    if (!Number.isFinite(userIdNum) || userIdNum <= 0) {
+      setAssignError('Selecciona un ejecutivo');
+      return;
+    }
+
+    try {
+      setIsAssigning(true);
+      setAssignError(null);
+
+      await privateService.update(`/executive/${assignModal.serviceOrderId}/assigne`, {
+        userId: userIdNum,
+      });
+
+      closeAssignModal();
+      await refetch();
+      setToast({
+        show: true,
+        message: 'Se asignó correctamente',
+        type: 'success',
+        button: {},
+      });
+    } catch (e) {
+      setAssignError(e?.message || 'Error asignando');
+    } finally {
+      setIsAssigning(false);
+    }
+  };
+
+  const getAssignedInitial = (email) => {
+    const s = String(email || '').trim();
+    if (!s) return '?';
+    return s[0].toUpperCase();
+  };
+
+  const clearFilters = () => {
+    setSearch('');
+    setServiceType('');
+    setDateFrom('');
+    setDateTo('');
+    setCurrentPage(1);
+  };
 
   if (isLoading) {
     return (
@@ -242,35 +409,88 @@ const ServicesTable = ({ showAmount = false }) => {
 
   return (
     <div className="w-full max-w-6xl mx-auto mt-10">
-      <div className="flex justify-between items-center mb-4 gap-3">
-        <div className="inline-flex rounded-xl border border-gray-300 overflow-hidden">
-          <button
-            onClick={() => setViewMode('table')}
-            className={`px-4 py-2 text-sm ${
-              viewMode === 'table' ? 'bg-gray-200' : 'bg-white hover:bg-gray-100'
-            }`}>
-            Tabla
-          </button>
-          <button
-            onClick={() => setViewMode('board')}
-            className={`px-4 py-2 text-sm ${
-              viewMode === 'board' ? 'bg-gray-200' : 'bg-white hover:bg-gray-100'
-            }`}>
-            Tablero
-          </button>
+      <Switch value={isUpdatingStatus || isAssigning}>
+        <Switch.Item case={true}>
+          <div className="mb-4 border border-gray-300 rounded-xl px-4 py-3 bg-primary text-white">
+            Cargando...
+          </div>
+        </Switch.Item>
+      </Switch>
+
+      <div className="flex flex-col gap-3 mb-4">
+        <div className="flex justify-between items-center gap-3 flex-wrap">
+          <div className="inline-flex rounded-xl border border-gray-300 overflow-hidden">
+            <button
+              onClick={() => setViewMode('table')}
+              className={`px-4 py-2 text-sm ${
+                viewMode === 'table' ? 'bg-gray-200' : 'bg-white hover:bg-gray-100'
+              }`}>
+              Tabla
+            </button>
+            <button
+              onClick={() => setViewMode('board')}
+              className={`px-4 py-2 text-sm ${
+                viewMode === 'board' ? 'bg-gray-200' : 'bg-white hover:bg-gray-100'
+              }`}>
+              Tablero
+            </button>
+          </div>
+
+          <div className="relative w-full max-w-xs">
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Buscar"
+              className="w-full border border-gray-300 rounded-xl px-4 py-2 pr-10 focus:outline-none"
+            />
+            <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+          </div>
         </div>
 
-        <div className="relative w-full max-w-xs">
-          <input
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setCurrentPage(1);
-            }}
-            placeholder="Buscar"
-            className="w-full border border-gray-300 rounded-xl px-4 py-2 pr-10 focus:outline-none"
-          />
-          <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+          <div className="w-full">
+            <label className="text-xs text-gray-600 mb-1 block">Tipo de servicio</label>
+            <select
+              value={serviceType}
+              onChange={(e) => setServiceType(e.target.value)}
+              className="w-full border border-gray-300 rounded-xl px-4 py-2 bg-white">
+              <option value="">Todos</option>
+              {serviceTypeOptions.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="w-full">
+            <label className="text-xs text-gray-600 mb-1 block">Desde</label>
+            <input
+              type="date"
+              value={dateFrom}
+              onChange={(e) => setDateFrom(e.target.value)}
+              className="w-full border border-gray-300 rounded-xl px-4 py-2 bg-white"
+            />
+          </div>
+
+          <div className="w-full">
+            <label className="text-xs text-gray-600 mb-1 block">Hasta</label>
+            <input
+              type="date"
+              value={dateTo}
+              onChange={(e) => setDateTo(e.target.value)}
+              className="w-full border border-gray-300 rounded-xl px-4 py-2 bg-white"
+            />
+          </div>
+
+          <div className="w-full flex items-end">
+            <button
+              onClick={clearFilters}
+              className="w-full px-4 py-2 rounded-xl bg-gray-200 hover:bg-gray-300 transition inline-flex items-center justify-center gap-2">
+              <X className="w-4 h-4" />
+              Limpiar
+            </button>
+          </div>
         </div>
       </div>
 
@@ -285,6 +505,7 @@ const ServicesTable = ({ showAmount = false }) => {
                       <th className="py-3 px-4">ID Servicio</th>
                       <th className="py-3 px-4">Empresa</th>
                       <th className="py-3 px-4">Servicio</th>
+                      <th className="py-3 px-4">Asignado a</th>
                       <th className="py-3 px-4">Estado servicio</th>
                       <th className="py-3 px-4">Estado pago</th>
                       {showAmount && <th className="py-3 px-4">Monto</th>}
@@ -295,10 +516,27 @@ const ServicesTable = ({ showAmount = false }) => {
 
                   <tbody>
                     {paginatedData.map((item) => (
-                      <tr key={`${item.service_id}-${item.company_id}`}>
-                        <td className="py-3 px-4">{item.service_id}</td>
+                      <tr key={`${item.service_order_id}-${item.company_id}`}>
+                        <td className="py-3 px-4">{item.service_order_id}</td>
                         <td className="py-3 px-4">{item.company_name}</td>
                         <td className="py-3 px-4">{item.service_name}</td>
+
+                        <td className="py-3 px-4">
+                          <div className="flex items-center gap-2">
+                            <div className="w-7 h-7 rounded-full bg-gray-200 flex items-center justify-center text-xs font-semibold text-gray-700">
+                              {getAssignedInitial(item.assigned_to)}
+                            </div>
+
+                            <div className="relative group inline-flex items-center">
+                              <Info className="w-4 h-4 text-gray-500" />
+                              <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 hidden group-hover:block z-10">
+                                <div className="whitespace-nowrap text-xs bg-black text-white rounded-lg px-3 py-2 shadow-lg">
+                                  {item.assigned_to || 'Sin asignación'}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </td>
 
                         <td className="py-3 px-4">
                           <span className="px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-700">
@@ -339,8 +577,20 @@ const ServicesTable = ({ showAmount = false }) => {
                               Info
                             </button>
 
+                            {showAssignButton && (
+                              <button
+                                onClick={() =>
+                                  openAssignModal(item.service_order_id, item.service_id)
+                                }
+                                className="px-3 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 transition text-sm">
+                                Asignar
+                              </button>
+                            )}
+
                             <button
-                              onClick={() => openStatusModal(item.service_id, item.service_status)}
+                              onClick={() =>
+                                openStatusModal(item.service_order_id, item.service_status)
+                              }
                               className="px-3 py-2 rounded-lg bg-primary text-white hover:opacity-90 transition text-sm">
                               Estado
                             </button>
@@ -414,6 +664,21 @@ const ServicesTable = ({ showAmount = false }) => {
 
                           <div className="mt-2 text-sm font-semibold">{item.service_name}</div>
 
+                          <div className="mt-2 flex items-center gap-2">
+                            <div className="w-7 h-7 rounded-full bg-gray-200 flex items-center justify-center text-xs font-semibold text-gray-700">
+                              {getAssignedInitial(item.assigned_to)}
+                            </div>
+
+                            <div className="relative group inline-flex items-center">
+                              <Info className="w-4 h-4 text-gray-500" />
+                              <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 hidden group-hover:block z-10">
+                                <div className="whitespace-nowrap text-xs bg-black text-white rounded-lg px-3 py-2 shadow-lg">
+                                  {item.assigned_to || 'Sin asignación'}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
                           <div className="mt-2 text-xs text-gray-600">
                             {item.service_order_created_at
                               ? format(
@@ -444,6 +709,12 @@ const ServicesTable = ({ showAmount = false }) => {
                               className="px-3 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 transition text-xs inline-flex items-center gap-2">
                               <Info className="w-4 h-4" />
                               Info
+                            </button>
+
+                            <button
+                              onClick={() => openAssignModal(item.service_order_id)}
+                              className="px-3 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 transition text-xs">
+                              Asignar
                             </button>
                           </div>
                         </div>
@@ -489,9 +760,65 @@ const ServicesTable = ({ showAmount = false }) => {
                 </button>
                 <button
                   onClick={handleUpdateStatus}
-                  className="px-4 py-2 rounded-lg bg-primary text-white">
-                  Guardar
+                  disabled={isUpdatingStatus}
+                  className="px-4 py-2 rounded-lg bg-primary text-white disabled:opacity-50">
+                  {isUpdatingStatus ? 'Cargando...' : 'Guardar'}
                 </button>
+              </div>
+            </div>
+          </div>
+        </Switch.Item>
+      </Switch>
+
+      <Switch value={assignModal.open}>
+        <Switch.Item case={true}>
+          <div className="fixed inset-0 z-50 flex items-center justify-center">
+            <div className="absolute inset-0 bg-black/40" onClick={closeAssignModal} />
+            <div className="relative bg-white w-full max-w-md mx-4 rounded-2xl p-6">
+              <div className="flex items-center justify-between gap-4 mb-4">
+                <h3 className="text-lg font-semibold">Asignar orden</h3>
+                <button
+                  onClick={closeAssignModal}
+                  disabled={isAssigning}
+                  className="px-4 py-2 rounded-lg hover:bg-gray-300 transition disabled:opacity-50">
+                  <X />
+                </button>
+              </div>
+
+              <div className="flex flex-col gap-3">
+                <div className="text-sm text-gray-600">Orden #{assignModal.serviceOrderId}</div>
+
+                <Switch value={isLoadingExecutives}>
+                  <Switch.Item case={true}>
+                    <div className="border border-gray-300 rounded-xl px-4 py-3 bg-gray-50">
+                      Cargando ejecutivos...
+                    </div>
+                  </Switch.Item>
+                </Switch>
+
+                <select
+                  value={assignModal.userId}
+                  onChange={(e) => setAssignModal((prev) => ({ ...prev, userId: e.target.value }))}
+                  disabled={isLoadingExecutives || isAssigning}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2">
+                  <option value="">Selecciona un ejecutivo</option>
+                  {(executives || []).map((u) => (
+                    <option key={u.user_id ?? u.id} value={u.user_id ?? u.id}>
+                      {(u.name || '').trim() ? `${u.name} (${u.email})` : u.email}
+                    </option>
+                  ))}
+                </select>
+
+                {assignError && <div className="text-red-600 text-sm">{assignError}</div>}
+
+                <div className="flex justify-end mt-2">
+                  <button
+                    onClick={handleAssign}
+                    disabled={isLoadingExecutives || isAssigning}
+                    className="px-4 py-2 rounded-lg bg-primary text-white disabled:opacity-50">
+                    {isAssigning ? 'Cargando...' : 'Asignar'}
+                  </button>
+                </div>
               </div>
             </div>
           </div>

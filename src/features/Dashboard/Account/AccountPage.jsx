@@ -32,7 +32,7 @@ export default function AccountPage() {
   const sub = searchParams.get('sub');
   const { currentWizardConfig, globalAPI, successMessage, errorMessage, successButton } = state;
   const { setToast } = useApp();
-  const { activeCompany: companyId } = useAccount();
+  const { activeCompany: companyId, account } = useAccount();
 
   const handleWizardClose = () => {
     storage.removeItem(`wizard_form/company-shareholder/${companyId}`);
@@ -53,13 +53,18 @@ export default function AccountPage() {
     {
       id: 'general',
       label: 'General',
-      content: regions.length > 0 ? <AccountInfo companyId={companyId} regions={regions} /> : null,
+      content:
+        account?.type === 3 && regions.length > 0 ? (
+          <AccountInfo companyId={companyId} regions={regions} />
+        ) : null,
     },
-    {
-      id: 'subscriptions',
-      label: 'Subscripciones',
-      content: <SubscriptionsList />,
-    },
+    account?.type === 3
+      ? {
+          id: 'subscriptions',
+          label: 'Subscripciones',
+          content: <SubscriptionsList />,
+        }
+      : null,
     /*{
       id: 'settings',
       label: 'Configuración',
@@ -83,7 +88,7 @@ export default function AccountPage() {
       )}
       <div className="flex flex-col h-full w-full gap-5 px-5 md:px-10 animate-slide-in mt-10">
         <h1 className="text-2xl text-black font-bold">Cuenta</h1>
-        <Tabs tabs={tabs} initialTab={sub} />
+        <Tabs tabs={tabs.filter((it) => Boolean(it))} initialTab={sub} />
       </div>
     </>
   );

@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import Switch from '../../../components/Switch/Switch';
 import { useFetch } from '../../../hooks/useFetch';
-import { Search } from 'lucide-react';
+import { Megaphone, Search, X } from 'lucide-react';
 import { privateService } from '../../../services/privateService';
 
 const CompaniesTable = () => {
@@ -165,8 +165,9 @@ const CompaniesTable = () => {
                       <div className="flex justify-center">
                         <button
                           onClick={() => openNotificationModal(item.company_id)}
-                          className="px-3 py-2 rounded-lg bg-primary text-white hover:opacity-90 transition text-sm">
-                          Enviar notificación
+                          className="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-primary text-white cursor-pointer transition"
+                          title="Enviar notificación">
+                          <Megaphone className="w-4 h-4" />
                         </button>
                       </div>
                     </td>
@@ -212,8 +213,8 @@ const CompaniesTable = () => {
                 <button
                   onClick={closeNotificationModal}
                   disabled={isSending}
-                  className="px-3 py-1 rounded-lg bg-gray-200 hover:bg-gray-300 transition disabled:opacity-50">
-                  Cerrar
+                  className="px-3 py-1 rounded-lg  hover:bg-gray-300 transition disabled:opacity-50">
+                  <X />
                 </button>
               </div>
 

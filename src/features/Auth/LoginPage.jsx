@@ -10,6 +10,7 @@ import { useApp } from '../../hooks/useApp';
 import { useAuth } from '../../hooks/useAuth';
 import { AUTHENTICATED } from '../../context/AuthContext/AuthProvider';
 import FullScreenSpinner from '../../components/FullScreenSpinner/FullScreenSpinner';
+import { storage } from '../../utils/storage';
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -26,6 +27,12 @@ const LoginPage = () => {
       setIsLoading(true);
       const loginResponse = await login(data);
       setAuthState({ auth: loginResponse, status: AUTHENTICATED });
+      // start conceptualization
+      const existingConceptualization = storage.getItem('conceptualization');
+      if (existingConceptualization) {
+        navigate('/dashboard/conceptualization/continue');
+        return;
+      }
       if (loginResponse?.todayFocusUrl) {
         setTimeout(() => {
           navigate(loginResponse.todayFocusUrl, { replace: true });

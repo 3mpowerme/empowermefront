@@ -90,6 +90,12 @@ export default function CallbackPage() {
                 }
               });
             } else {
+              // start conceptualization
+              const existingConceptualization = storage.getItem('conceptualization');
+              if (existingConceptualization) {
+                navigate('/dashboard/conceptualization/continue');
+                return;
+              }
               if (googleResponse?.todayFocusUrl) {
                 setTimeout(() => {
                   console.log('vamos a navegar');

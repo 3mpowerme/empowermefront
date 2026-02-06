@@ -11,6 +11,7 @@ export default function Wizard({
   onComplete,
   className,
   firstStepButtonText,
+  lastStepButtonText,
   showProgress = true,
   onContinue = () => {},
   hidePreviousStepInStep = [],
@@ -36,6 +37,8 @@ export default function Wizard({
       }
     }
     if (withCanContinue) {
+      console.log('HERE currentStep', currentStep);
+      console.log('HERE state', state);
       if (state[`step${currentStep + 1}`]?.canContinue) {
         if (!isLastStep) setCurrentStep((prev) => prev + 1);
       } else {
@@ -92,12 +95,15 @@ export default function Wizard({
               </Button>
             )}
             {!isLastStep ? (
-              <Button onClick={nextStep} className="w-full sm:w-auto justify-center">
+              <Button
+                id="wizard-continue-button"
+                onClick={nextStep}
+                className="w-full sm:w-auto justify-center">
                 {(isFirstStep && firstStepButtonText) || 'Continuar'}
               </Button>
             ) : (
               <Button onClick={onComplete} className="w-full sm:w-auto justify-center">
-                Finalizar
+                {lastStepButtonText || 'Finalizar'}
               </Button>
             )}
           </div>

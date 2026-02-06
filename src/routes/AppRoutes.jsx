@@ -35,6 +35,9 @@ import ServicesPage from '../features/Dashboard/Services/ServicesPage';
 import PanelPage from '../features/Dashboard/Panel/Panel';
 import RepositoryPage from '../features/Dashboard/Repository/Repository';
 import CompaniesPage from '../features/Dashboard/Companies/Companies';
+import UsersPage from '../features/Dashboard/Users/UsersPage';
+import StartConceptualizationPage from '../features/StartConceptualization/StartConceptualization';
+import ContinueConceptualizationPage from '../features/Dashboard/Conceptualization/ContinueConceptualizationPage';
 
 const AppRoutes = () => {
   return (
@@ -48,6 +51,7 @@ const AppRoutes = () => {
         <Route path="/verifyEmail" element={<VerifyEmailPage />} />
         <Route path="/auth/callback" element={<CallbackPage />} />
         <Route path="/buildCompany" element={<BuildCompanyWizardPage />} />
+        <Route path="/start-conceptualization" element={<StartConceptualizationPage />} />
         <Route
           path="/dashboard/*"
           element={
@@ -67,7 +71,6 @@ const AppRoutes = () => {
           <Route path="appointments" element={<AppointmentsPage />} />
           <Route path="buildCompany" element={<DashboardBuildCompanyPage />} />
           <Route path="taxes_and_accounting" element={<DashboardTaxesAndAccountingPage />} />
-
           <Route
             path="taxes_and_accounting/:serviceId"
             element={<FileRepositoryWrapper parentPath="taxes_and_accounting" />}
@@ -82,14 +85,8 @@ const AppRoutes = () => {
             path="legal_services/:serviceId"
             element={<FileRepositoryWrapper parentPath="legal_services" />}
           />
-          <Route
-            path="conceptualization"
-            element={
-              <ConceptualizationProvider>
-                <ConceptualizationPage />
-              </ConceptualizationProvider>
-            }
-          />
+          <Route path="conceptualization" element={<ConceptualizationPage />} />
+          <Route path="conceptualization/continue" element={<ContinueConceptualizationPage />} />
           <Route path="business_orientation" element={<BusinessOrientationPage />} />
           <Route path="graphic_design" element={<DashboardGraphicDesignPage />} />
           <Route
@@ -105,6 +102,7 @@ const AppRoutes = () => {
           <Route path="services" element={<ServicesPage />} />
           <Route path="panel" element={<PanelPage />} />
           <Route path="companies" element={<CompaniesPage />} />
+          <Route path="users" element={<UsersPage />} />
           <Route path="repository/:serviceId/:companyId" element={<RepositoryPage />} />
         </Route>
         <Route path="*" element={<PageNotFound />} />
