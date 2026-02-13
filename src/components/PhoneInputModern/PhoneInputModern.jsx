@@ -32,7 +32,7 @@ const PhoneInputModern = ({
     if (onChange) {
       onChange({ countryCode, phone, phone_code: prefix });
     }
-  }, [countryCode, phone]);
+  }, [countryCode, phone, prefix]);
 
   const handlePhoneChange = (e) => {
     console.log('e', e);

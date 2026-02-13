@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import Input from '../../components/Input/Input';
 import Button from '../../components/Button/Button';
 import Link from '../../components/Link/Link';
-import { useNavigate } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 import { login } from '../../services/authService';
 import { loginWithGoogle } from '../../utils/auth';
 import { useApp } from '../../hooks/useApp';
@@ -11,8 +11,13 @@ import { useAuth } from '../../hooks/useAuth';
 import { AUTHENTICATED } from '../../context/AuthContext/AuthProvider';
 import FullScreenSpinner from '../../components/FullScreenSpinner/FullScreenSpinner';
 import { storage } from '../../utils/storage';
+import { isEmptyObject } from '../../utils/utils';
+import { privateService } from '../../services/privateService';
 
 const LoginPage = () => {
+  const location = useLocation();
+  const { email = '', from = '' } = location.state || {};
+  console.log('location from', location.state?.from);
   const navigate = useNavigate();
   const {
     register,
@@ -20,22 +25,108 @@ const LoginPage = () => {
     formState: { errors },
   } = useForm();
   const { setIsLoading, setToast } = useApp();
-  const { setAuthState, isAuthenticated, auth } = useAuth();
+  const { setAuthState, isAuthenticated } = useAuth();
+  const buildCompany = storage.getItem('buildCompany');
+  const {
+    step0 = {},
+    step2 = {},
+    step3 = {},
+    step4 = {},
+    step5 = {},
+    step6 = {},
+    step7 = {},
+    step8 = {},
+    step9 = {},
+  } = buildCompany || {};
+  const shouldBuildCompany =
+    !isEmptyObject(step0) &&
+    !isEmptyObject(step2) &&
+    !isEmptyObject(step3) &&
+    !isEmptyObject(step4) &&
+    !isEmptyObject(step5) &&
+    !isEmptyObject(step6) &&
+    !isEmptyObject(step6) &&
+    !isEmptyObject(step7) &&
+    !isEmptyObject(step8) &&
+    !isEmptyObject(step9);
+  console.log('shouldBuildCompany', shouldBuildCompany);
 
   const onSubmit = async (data) => {
     try {
       setIsLoading(true);
+
       const loginResponse = await login(data);
+      console.log('loginResponse', loginResponse);
+      console.log('from', from);
       setAuthState({ auth: loginResponse, status: AUTHENTICATED });
-      // start conceptualization
-      const existingConceptualization = storage.getItem('conceptualization');
-      if (existingConceptualization) {
-        navigate('/dashboard/conceptualization/continue');
-        return;
+
+      if (shouldBuildCompany) {
+        const {
+          step0: { companyName },
+          step2: { todayFocus: today_focus } = {},
+          step3: {
+            companyOffering: company_offering,
+            customerServiceChannel: customer_service_channel,
+          } = {},
+          step4: { business_sectors, business_sector_other, about } = {},
+          step5: { phone_number, region_id, zip_code, street } = {},
+          step6: { hasEmployees } = {},
+          step7: { isRegisteredCompany } = {},
+          step8: { hasStartedActivities } = {},
+          step9: { marketingSource: marketing_source } = {},
+        } = buildCompany;
+
+        const parsedId = Number(business_sectors?.[0]);
+        const isNumericId = !Number.isNaN(parsedId);
+
+        const body = {
+          company_name: companyName,
+          today_focus,
+          company_offering,
+          marketing_source,
+          business_sector_id: isNumericId ? parsedId : 11,
+          business_sector_other: business_sector_other || '',
+          customer_service_channel,
+          phone_number,
+          is_registered_company: isRegisteredCompany?.[0],
+          hasStartedActivities: hasStartedActivities?.[0],
+          has_employees: hasEmployees?.[0],
+          region_id,
+          zip_code,
+          about,
+          street,
+        };
+        const config = { headers: {} };
+        config.headers.Authorization = `Bearer ${loginResponse.accessToken}`;
+
+        privateService
+          .create('/build-company', body, config)
+          .then(() => {
+            storage.removeItem('buildCompany');
+            console.log('company created');
+            setToast({ show: true, message: '¡Empresa creada!', type: 'success' });
+            window.location.href = '/dashboard/buildCompany';
+          })
+          .catch((e) => {
+            setIsLoading(false);
+            setToast({ show: true, message: 'Error creando empresa', type: 'error' });
+            console.log('error creating company', e);
+          });
+      } else {
+        // start conceptualization
+        const existingConceptualization = storage.getItem('conceptualization');
+        if (existingConceptualization) {
+          setIsLoading(false);
+          console.log('navigating to /dashboard/conceptualization/pay withAutoContinue: true');
+          navigate('/dashboard/conceptualization/pay', { state: { withAutoContinue: true } });
+          return;
+        }
       }
-      if (loginResponse?.todayFocusUrl) {
+
+      if (loginResponse?.postLoginRedirect && !shouldBuildCompany) {
         setTimeout(() => {
-          navigate(loginResponse.todayFocusUrl, { replace: true });
+          console.log('navigating to ' + loginResponse.postLoginRedirect);
+          navigate(loginResponse.postLoginRedirect, { replace: true });
         }, 100);
       }
     } catch (err) {
@@ -48,7 +139,6 @@ const LoginPage = () => {
       if (err?.error?.includes('User is not confirmed')) {
         navigate('/verifyEmail');
       }
-    } finally {
       setIsLoading(false);
     }
   };
@@ -58,10 +148,11 @@ const LoginPage = () => {
   };
 
   useEffect(() => {
-    if (isAuthenticated) {
+    // if user is authenticated and does not come from conceptualization or build-company wizard
+    if (isAuthenticated && from === '') {
       navigate(`/dashboard`, { replace: true });
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, from]);
 
   return (
     <div className="min-h-screen w-full grid grid-cols-1 md:grid-cols-2">
@@ -102,6 +193,7 @@ const LoginPage = () => {
 
           <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4 w-full">
             <Input
+              defaultValue={email || ''}
               label="Email"
               type="email"
               placeholder="Ingresa tu email"

@@ -46,7 +46,7 @@ export default function Dashboard({ menuItems: mi = [] }) {
 
   const { logout: authLogout, auth } = useAuth();
   const { account, activeCompany, setActiveCompany, activeCompanyInfo } = useAccount();
-  const showAppointments = account?.type == 3;
+  const showAppointments = account?.userType == 3;
   const companies = account?.companies || [];
 
   const { setWizardsState } = useDashboard();

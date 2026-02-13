@@ -1,6 +1,7 @@
 import { isToday, isAfter, startOfDay } from 'date-fns';
 import { privateService } from '../services/privateService';
 import { storage } from './storage';
+import global from '../constants/global';
 
 export function capitalizeFirst(str) {
   if (!str) return '';
@@ -154,3 +155,31 @@ export const prefillInfoIfExist = async (
     console.error('Error getting reusable info: ', error);
   }
 };
+
+export function isEmptyObject(obj) {
+  return obj && typeof obj === 'object' && Object.keys(obj).length === 0;
+}
+
+export function getBrowserCountryCode() {
+  const defaultCode = global.countryCode;
+  return defaultCode;
+  try {
+    if (typeof window === 'undefined') {
+      return defaultCode;
+    }
+
+    const language = navigator.languages?.[0] || navigator.language || navigator.userLanguage;
+
+    if (!language) return defaultCode;
+
+    const parts = language.split('-');
+
+    if (parts.length === 2 && parts[1].length === 2) {
+      return parts[1];
+    }
+
+    return defaultCode;
+  } catch {
+    return defaultCode;
+  }
+}

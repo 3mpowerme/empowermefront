@@ -99,7 +99,7 @@ function LogoCard({ item, optionNumber }) {
         />
       </div>
 
-      {!item?.chosen && (
+      {!item?.chosen && false && (
         <div className="mt-auto">
           <button
             onClick={() => handleChooseMockup(item.history_id)}

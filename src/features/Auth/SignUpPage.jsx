@@ -5,128 +5,120 @@ import Button from '../../components/Button/Button';
 import Link from '../../components/Link/Link';
 import { useLocation, useNavigate } from 'react-router';
 import { signup } from '../../services/authService';
-import { genericService } from '../../services/genericService';
 import { loginWithGoogle } from '../../utils/auth';
 import { storage } from '../../utils/storage';
-import globalConstants from '../../constants/global';
 import { useApp } from '../../hooks/useApp';
-import { isTokenExpired } from '../../utils/utils';
+import { getBrowserCountryCode, isEmptyObject, isTokenExpired } from '../../utils/utils';
 import { privateService } from '../../services/privateService';
+import Tooltip from '../../components/Tooltip/Tooltip';
+import { Info } from 'lucide-react';
+import { useAuth } from '../../hooks/useAuth';
 
 const SignUpPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  console.log('HERE location', location.state);
+  console.log('location from', location.state?.from);
   const { from = '' } = location.state || {};
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm();
+  const { isAuthenticated, auth } = useAuth();
 
   const { setIsLoading, setToast } = useApp();
-
-  const buildCompanyRequest = (companyId, startCB = () => {}, endCB = () => {}) => {
-    const buildCompany = storage.getItem('buildCompany');
-    startCB();
-    if (buildCompany) {
-      const {
-        step2: { todayFocus: today_focus } = {},
-        step3: {
-          companyOffering: company_offering,
-          customerServiceChannel: customer_service_channel,
-        } = {},
-        step4: { business_sectors, business_sector_other, about } = {},
-        step5: { phone_number, region_id, zip_code, street } = {},
-        step6: { hasEmployees } = {},
-        step7: { isRegisteredCompany } = {},
-        step8: { hasStartedActivities } = {},
-        step9: { marketingSource: marketing_source } = {},
-      } = buildCompany;
-
-      const parsedId = Number(business_sectors?.[0]);
-      const isNumericId = !Number.isNaN(parsedId);
-
-      const body = {
-        company_id: companyId,
-        today_focus,
-        company_offering,
-        marketing_source,
-        business_sector_id: isNumericId ? parsedId : 11,
-        business_sector_other: business_sector_other || '',
-        customer_service_channel,
-        phone_number,
-        is_registered_company: isRegisteredCompany?.[0],
-        hasStartedActivities: hasStartedActivities?.[0],
-        has_employees: hasEmployees?.[0],
-        region_id,
-        zip_code,
-        about,
-        street,
-      };
-      genericService
-        .create('/build-company', body)
-        .then(() => {
-          storage.removeItem('buildCompany');
-        })
-        .catch((error) => {
-          setToast({
-            show: true,
-            message: error?.error || 'Ocurrio un error',
-            type: 'error',
-            button: {},
-          });
-          navigate('..');
-          console.error('Error building company', error);
-        })
-        .finally(() => {
-          endCB();
-        });
-    }
-  };
 
   useEffect(() => {
     const storedAuth = storage.getItem('auth');
     const buildCompany = storage.getItem('buildCompany');
-
-    if (storedAuth?.accessToken && !isTokenExpired(storedAuth.accessToken) && buildCompany) {
+    const {
+      step0 = {},
+      step2 = {},
+      step3 = {},
+      step4 = {},
+      step5 = {},
+      step6 = {},
+      step7 = {},
+      step8 = {},
+      step9 = {},
+    } = buildCompany || {};
+    const shouldBuildCompany =
+      !isEmptyObject(step0) &&
+      !isEmptyObject(step2) &&
+      !isEmptyObject(step3) &&
+      !isEmptyObject(step4) &&
+      !isEmptyObject(step5) &&
+      !isEmptyObject(step6) &&
+      !isEmptyObject(step6) &&
+      !isEmptyObject(step7) &&
+      !isEmptyObject(step8) &&
+      !isEmptyObject(step9);
+    console.log('shouldBuildCompany', shouldBuildCompany);
+    // case when user is logged in and he is redirected to /signup
+    if (isAuthenticated && !isTokenExpired(auth.accessToken) && buildCompany) {
       // user is logged in
+      console.log('user is logged in');
+      if (shouldBuildCompany) {
+        const {
+          step0: { companyName },
+          step2: { todayFocus: today_focus } = {},
+          step3: {
+            companyOffering: company_offering,
+            customerServiceChannel: customer_service_channel,
+          } = {},
+          step4: { business_sectors, business_sector_other, about } = {},
+          step5: { phone_number, region_id, zip_code, street } = {},
+          step6: { hasEmployees } = {},
+          step7: { isRegisteredCompany } = {},
+          step8: { hasStartedActivities } = {},
+          step9: { marketingSource: marketing_source } = {},
+        } = buildCompany;
 
-      const {
-        step0: { companyName },
-      } = buildCompany;
-      setIsLoading(true);
-      privateService
-        .create('/intakes/create-company', {
-          userId: storedAuth?.userId,
-          companyName: companyName,
-        })
-        .then(({ companyId }) => {
-          buildCompanyRequest(
-            companyId,
-            () => {},
-            () => {
-              setIsLoading(false);
-              setTimeout(() => {
-                navigate('/dashboard/buildCompany', { replace: true });
-              }, 100);
-            }
-          );
-        })
-        .catch((error) => {
-          setToast({
-            show: true,
-            message: 'Ocurrio un error',
-            type: 'error',
-            button: {},
+        const parsedId = Number(business_sectors?.[0]);
+        const isNumericId = !Number.isNaN(parsedId);
+
+        const body = {
+          company_name: companyName,
+          today_focus,
+          company_offering,
+          marketing_source,
+          business_sector_id: isNumericId ? parsedId : 11,
+          business_sector_other: business_sector_other || '',
+          customer_service_channel,
+          phone_number,
+          is_registered_company: isRegisteredCompany?.[0],
+          hasStartedActivities: hasStartedActivities?.[0],
+          has_employees: hasEmployees?.[0],
+          region_id,
+          zip_code,
+          about,
+          street,
+        };
+        setIsLoading(true);
+        privateService
+          .create('/build-company', body)
+          .then(() => {
+            storage.removeItem('buildCompany');
+            setIsLoading(false);
+            setTimeout(() => {
+              navigate('/dashboard/buildCompany', { replace: true });
+            }, 100);
+            console.log('company created');
+          })
+          .catch((error) => {
+            setIsLoading(false);
+            setToast({
+              show: true,
+              message: 'Ocurrio un error',
+              type: 'error',
+              button: {},
+            });
+            navigate('..');
+            console.error('Error creating company', error);
           });
-          navigate('..');
-          console.error('Error creating company', error);
-        });
+      }
     }
   }, []);
-
-  const buildCompany = storage.getItem('buildCompany');
 
   const onSubmit = async (data) => {
     try {
@@ -134,12 +126,10 @@ const SignUpPage = () => {
       const signupResponse = await signup({
         email: data.email,
         password: data.password,
-        companyName: data.companyName,
-        countryCode: globalConstants.countryCode,
+        countryCode: getBrowserCountryCode(),
       });
-      const { companyId } = signupResponse;
-      buildCompanyRequest(companyId);
-      navigate('/verifyEmail');
+      console.log('signupResponse', signupResponse);
+      navigate('/verifyEmail', { state: { email: data.email, from } });
     } catch (err) {
       console.error('Signup error:', err);
       if (err?.error) {
@@ -196,22 +186,12 @@ const SignUpPage = () => {
 
           <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4 w-full">
             <Input
-              defaultValue={buildCompany?.step0?.companyName}
-              label="Nombre de la empresa*"
-              type="text"
-              placeholder="Ingresa nombre de la empresa"
-              {...register('companyName', { required: 'El nombre de la empresa es obligatorio' })}
-              error={errors.companyName?.message}
-            />
-
-            <Input
               label="Correo electrónico*"
               type="email"
               placeholder="Ingresa correo electrónico"
               {...register('email', { required: 'El correo electrónico es obligatoria' })}
               error={errors.email?.message}
             />
-
             <Input
               label="Contraseña*"
               type="password"
@@ -221,6 +201,7 @@ const SignUpPage = () => {
                 minLength: { value: 8, message: 'Mínimo 8 caracteres' },
               })}
               error={errors.password?.message}
+              tooltip="La contraseña debe tener al menos una minúscula, al menos una mayúscula, al menos un número y al menos un carácter especial"
             />
 
             <Input
@@ -232,14 +213,13 @@ const SignUpPage = () => {
                 minLength: { value: 8, message: 'Mínimo 8 caracteres' },
               })}
               error={errors.passwordRepeat?.message}
+              tooltip="La contraseña debe tener al menos una minúscula, al menos una mayúscula, al menos un número y al menos un carácter especial"
             />
-
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 justify-between mt-2">
-              <Link to="/login" className="text-sm">
+              <Link to="/login" state={{ from }} className="text-sm">
                 Tienes una cuenta, inicia sesión
               </Link>
             </div>
-
             <div className="flex flex-col gap-3 sm:gap-4 justify-between mt-6 md:mt-8 px-0 sm:px-30">
               <Button variant="primary" type="submit" className="w-full sm:w-auto justify-center">
                 Registrarse

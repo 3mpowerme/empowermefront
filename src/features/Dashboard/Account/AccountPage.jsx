@@ -54,11 +54,11 @@ export default function AccountPage() {
       id: 'general',
       label: 'General',
       content:
-        account?.type === 3 && regions.length > 0 ? (
+        account?.userType === 3 && regions.length > 0 ? (
           <AccountInfo companyId={companyId} regions={regions} />
         ) : null,
     },
-    account?.type === 3
+    account?.userType === 3
       ? {
           id: 'subscriptions',
           label: 'Subscripciones',

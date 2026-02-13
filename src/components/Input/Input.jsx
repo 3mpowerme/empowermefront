@@ -1,7 +1,17 @@
 import React, { useState } from 'react';
-import { EyeOff, Eye } from 'lucide-react';
+import { EyeOff, Eye, Info } from 'lucide-react';
+import Tooltip from '../Tooltip/Tooltip';
 
-const Input = ({ label, error, type = 'text', inputMode, maxLength, onChange, ...props }) => {
+const Input = ({
+  label,
+  error,
+  type = 'text',
+  inputMode,
+  maxLength,
+  onChange,
+  tooltip,
+  ...props
+}) => {
   const [showPassword, setShowPassword] = useState(false);
   const inputType = type === 'password' && showPassword ? 'text' : type;
 
@@ -23,10 +33,20 @@ const Input = ({ label, error, type = 'text', inputMode, maxLength, onChange, ..
 
   return (
     <div className="flex flex-col w-full relative">
-      {label && (
+      {!tooltip && label && (
         <label className="pb-2.5" htmlFor={props.id || props.name}>
           {label}
         </label>
+      )}
+      {tooltip && (
+        <Tooltip content={tooltip}>
+          {label && (
+            <label className="pb-2.5" htmlFor={props.id || props.name}>
+              {label}
+            </label>
+          )}
+          <Info className="ml-2 w-5 h-5 inline text-primary" />
+        </Tooltip>
       )}
       <div className="relative w-full">
         <input

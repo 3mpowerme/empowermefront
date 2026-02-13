@@ -263,15 +263,25 @@ export default function MarketAnalysis({ data, showDownloadPDF = false, showTemp
   const fmtCurrency = React.useMemo(() => getCurrencyFormatter(d.meta_moneda), [d.meta_moneda]);
   const fmtNumber = React.useMemo(() => getNumberFormatter(d.meta_moneda), [d.meta_moneda]);
 
+  const [isPrinting, setIsPrinting] = React.useState(false);
+
+  React.useEffect(() => {
+    const onAfterPrint = () => setIsPrinting(false);
+    window.addEventListener('afterprint', onAfterPrint);
+    return () => window.removeEventListener('afterprint', onAfterPrint);
+  }, []);
+
   const fin = d.finanzas || {};
   const inv = fin.inversion_inicial || {};
   const costosFijos = fin.costos_fijos_mensuales || [];
-  const donutInversion = (inv.rubro || [])
-    .slice(0, 6)
-    .map((r) => ({ name: r.concepto, value: Number(r.amount || 0) }));
-  const barsCostosFijos = (costosFijos || [])
-    .slice(0, 6)
-    .map((c) => ({ name: c.concepto, value: Number(c.amount || 0) }));
+  const donutInversion = (inv.rubro || []).slice(0, 6).map((r) => ({
+    name: r.concepto,
+    value: Number(r.amount || 0),
+  }));
+  const barsCostosFijos = (costosFijos || []).slice(0, 6).map((c) => ({
+    name: c.concepto,
+    value: Number(c.amount || 0),
+  }));
   const lineVolumen = (() => {
     const vol = fin.volumen_mensual_estimado || { min: 0, max: 0 };
     const min = Number(vol.min || 0);
@@ -334,10 +344,16 @@ export default function MarketAnalysis({ data, showDownloadPDF = false, showTemp
     ref.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
-  const handleDownloadPdf = () => window.print();
+  const handleDownloadPdf = async () => {
+    setIsPrinting(true);
+    await new Promise((r) => setTimeout(r, 50));
+    window.print();
+  };
 
   return (
-    <div className="relative w-full mx-auto max-w-7xl print-container py-5 text-black bg-transparent">
+    <div
+      key={isPrinting ? 'printing' : 'normal'}
+      className="relative w-full mx-auto max-w-7xl print-container py-5 text-black bg-transparent">
       <style>{`
         .allow-overflow .recharts-wrapper { overflow: visible !important; }
         .print-container .recharts-surface text { fill: #000000 !important; }
@@ -345,6 +361,7 @@ export default function MarketAnalysis({ data, showDownloadPDF = false, showTemp
         .section-anchor { scroll-margin-top: 96px; }
         @page { margin: 16mm; }
         @media print {
+          html, body { height: auto !important; overflow: visible !important; }
           .print-container { background: #fff !important; color: #000 !important; }
           .print-container * {
             color: #000 !important;
@@ -364,7 +381,7 @@ export default function MarketAnalysis({ data, showDownloadPDF = false, showTemp
         }
       `}</style>
 
-      <div className="flex items-center justify-between gap-4 sticky top-0 z-30 bg-white px-1 py-3 print:hidden">
+      <div className="flex items-center justify-between gap-4 sticky top-0 bg-white px-1 py-3 print:hidden">
         <h2 className="text-2xl sm:text-3xl font-bold">Análisis de viabilidad</h2>
         {showDownloadPDF && (
           <Button variant="wizard" className="flex py-2 print:hidden" onClick={handleDownloadPdf}>
@@ -376,7 +393,7 @@ export default function MarketAnalysis({ data, showDownloadPDF = false, showTemp
         )}
       </div>
 
-      <nav className="mb-6 flex flex-wrap gap-2 sticky top-[56px] z-20 px-1 py-2 print:hidden">
+      <nav className="mb-6 flex flex-wrap gap-2 sticky top-[56px] px-1 py-2 print:hidden">
         <TabButton
           active={activeTab === 'resumen'}
           onClick={() => scrollTo(resumenRef, 'resumen')}
@@ -424,10 +441,11 @@ export default function MarketAnalysis({ data, showDownloadPDF = false, showTemp
       <div className={`rounded-3xl p-5 space-y-10 ${showTemplate ? 'blur-xs' : ''}`}>
         <section ref={resumenRef} className="section-anchor">
           <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.25 }}
+            initial={false}
+            animate={isPrinting ? { opacity: 1, y: 0 } : undefined}
+            whileInView={isPrinting ? undefined : { opacity: 1, y: 0 }}
+            viewport={isPrinting ? undefined : { once: true }}
+            transition={isPrinting ? undefined : { duration: 0.25 }}
             className="grid grid-cols-1 lg:grid-cols-3 gap-5">
             <CardSection className="lg:col-span-2 card-white">
               <div className="flex items-center gap-3 mb-5">
@@ -494,10 +512,11 @@ export default function MarketAnalysis({ data, showDownloadPDF = false, showTemp
 
         <section ref={clientesRef} className="section-anchor">
           <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.25 }}
+            initial={false}
+            animate={isPrinting ? { opacity: 1, y: 0 } : undefined}
+            whileInView={isPrinting ? undefined : { opacity: 1, y: 0 }}
+            viewport={isPrinting ? undefined : { once: true }}
+            transition={isPrinting ? undefined : { duration: 0.25 }}
             className="grid grid-cols-1 lg:grid-cols-3 gap-5">
             <CardSection className="lg:col-span-2 card-white">
               <div className="flex items-center gap-3 mb-5">
@@ -553,9 +572,9 @@ export default function MarketAnalysis({ data, showDownloadPDF = false, showTemp
                     <div className="text-xs">
                       Estimación clientes:{' '}
                       {d?.clientes?.tamaño_mercado?.estimacion_clientes
-                        ? `${fmtNumber(
-                            d.clientes.tamaño_mercado.estimacion_clientes.min
-                          )}–${fmtNumber(d.clientes.tamaño_mercado.estimacion_clientes.max)}`
+                        ? `${fmtNumber(d.clientes.tamaño_mercado.estimacion_clientes.min)}–${fmtNumber(
+                            d.clientes.tamaño_mercado.estimacion_clientes.max
+                          )}`
                         : '—'}
                     </div>
                     <div className="text-xs">
@@ -565,9 +584,9 @@ export default function MarketAnalysis({ data, showDownloadPDF = false, showTemp
                     <div className="text-xs mt-2">
                       Disposición a pagar:{' '}
                       {d?.clientes?.tamaño_mercado?.disposicion_pagar?.rango
-                        ? `${fmtCurrency(
-                            d.clientes.tamaño_mercado.disposicion_pagar.rango.min
-                          )}–${fmtCurrency(d.clientes.tamaño_mercado.disposicion_pagar.rango.max)}`
+                        ? `${fmtCurrency(d.clientes.tamaño_mercado.disposicion_pagar.rango.min)}–${fmtCurrency(
+                            d.clientes.tamaño_mercado.disposicion_pagar.rango.max
+                          )}`
                         : '—'}
                     </div>
                   </div>
@@ -601,10 +620,11 @@ export default function MarketAnalysis({ data, showDownloadPDF = false, showTemp
 
         <section ref={competenciaRef} className="section-anchor">
           <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.25 }}
+            initial={false}
+            animate={isPrinting ? { opacity: 1, y: 0 } : undefined}
+            whileInView={isPrinting ? undefined : { opacity: 1, y: 0 }}
+            viewport={isPrinting ? undefined : { once: true }}
+            transition={isPrinting ? undefined : { duration: 0.25 }}
             className="grid grid-cols-1 lg:grid-cols-2 gap-5">
             <CardSection className="card-white">
               <div className="flex items-center gap-3 mb-5">
@@ -678,10 +698,11 @@ export default function MarketAnalysis({ data, showDownloadPDF = false, showTemp
 
         <section ref={canalRef} className="section-anchor">
           <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.25 }}
+            initial={false}
+            animate={isPrinting ? { opacity: 1, y: 0 } : undefined}
+            whileInView={isPrinting ? undefined : { opacity: 1, y: 0 }}
+            viewport={isPrinting ? undefined : { once: true }}
+            transition={isPrinting ? undefined : { duration: 0.25 }}
             className="grid grid-cols-1 gap-5">
             <CardSection className="card-white">
               <div className="flex items-center gap-3 mb-5">
@@ -724,10 +745,11 @@ export default function MarketAnalysis({ data, showDownloadPDF = false, showTemp
 
         <section ref={identidadRef} className="section-anchor">
           <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.25 }}
+            initial={false}
+            animate={isPrinting ? { opacity: 1, y: 0 } : undefined}
+            whileInView={isPrinting ? undefined : { opacity: 1, y: 0 }}
+            viewport={isPrinting ? undefined : { once: true }}
+            transition={isPrinting ? undefined : { duration: 0.25 }}
             className="grid grid-cols-1 lg:grid-cols-2 gap-5">
             <CardSection className="card-white">
               <div className="flex items-center gap-3 mb-5">
@@ -762,10 +784,11 @@ export default function MarketAnalysis({ data, showDownloadPDF = false, showTemp
 
         <section ref={finanzasRef} className="section-anchor">
           <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.25 }}
+            initial={false}
+            animate={isPrinting ? { opacity: 1, y: 0 } : undefined}
+            whileInView={isPrinting ? undefined : { opacity: 1, y: 0 }}
+            viewport={isPrinting ? undefined : { once: true }}
+            transition={isPrinting ? undefined : { duration: 0.25 }}
             className="lg:col-span-3 gap-5 mb-10">
             <CardSection className="card-white">
               <div className="flex items-center gap-3 mb-5">
@@ -781,10 +804,11 @@ export default function MarketAnalysis({ data, showDownloadPDF = false, showTemp
             </CardSection>
           </motion.div>
           <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.25 }}
+            initial={false}
+            animate={isPrinting ? { opacity: 1, y: 0 } : undefined}
+            whileInView={isPrinting ? undefined : { opacity: 1, y: 0 }}
+            viewport={isPrinting ? undefined : { once: true }}
+            transition={isPrinting ? undefined : { duration: 0.25 }}
             className="lg:col-span-3 gap-5 mb-10">
             <CardSection className="card-white">
               <div className="flex items-center gap-3 mb-5">
@@ -799,10 +823,11 @@ export default function MarketAnalysis({ data, showDownloadPDF = false, showTemp
             </CardSection>
           </motion.div>
           <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.25 }}
+            initial={false}
+            animate={isPrinting ? { opacity: 1, y: 0 } : undefined}
+            whileInView={isPrinting ? undefined : { opacity: 1, y: 0 }}
+            viewport={isPrinting ? undefined : { once: true }}
+            transition={isPrinting ? undefined : { duration: 0.25 }}
             className="grid grid-cols-1 lg:grid-cols-2 gap-5">
             <CardSection className="card-white">
               <div className="flex items-center gap-3 mb-5">
@@ -848,10 +873,11 @@ export default function MarketAnalysis({ data, showDownloadPDF = false, showTemp
 
         <section ref={riesgosRef} className="section-anchor">
           <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.25 }}
+            initial={false}
+            animate={isPrinting ? { opacity: 1, y: 0 } : undefined}
+            whileInView={isPrinting ? undefined : { opacity: 1, y: 0 }}
+            viewport={isPrinting ? undefined : { once: true }}
+            transition={isPrinting ? undefined : { duration: 0.25 }}
             className="grid grid-cols-1 lg:grid-cols-3 gap-5">
             <CardSection className="lg:col-span-2 card-white">
               <div className="flex items-center gap-3 mb-5">

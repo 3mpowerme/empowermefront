@@ -8,10 +8,26 @@ import { genericService } from '../../services/genericService';
 import globalConstants from '../../constants/global';
 import { useAuth } from '../../hooks/useAuth';
 import { AUTHENTICATED } from '../../context/AuthContext/AuthProvider';
+import { getBrowserCountryCode, isEmptyObject } from '../../utils/utils';
+import { privateService } from '../../services/privateService';
+import { useApp } from '../../hooks/useApp';
 
 export default function CallbackPage() {
   const [searchParams] = useSearchParams();
   const buildCompany = storage.getItem('buildCompany');
+  const {
+    step0 = {},
+    step2 = {},
+    step3 = {},
+    step4 = {},
+    step5 = {},
+    step6 = {},
+    step7 = {},
+    step8 = {},
+    step9 = {},
+  } = buildCompany || {};
+
+  const { setToast } = useApp();
   const navigate = useNavigate();
   const didRun = useRef(false);
   const [error, setError] = useState('');
@@ -20,14 +36,22 @@ export default function CallbackPage() {
     if (didRun.current) return;
     didRun.current = true;
 
+    const shouldBuildCompany =
+      !isEmptyObject(step0) &&
+      !isEmptyObject(step2) &&
+      !isEmptyObject(step3) &&
+      !isEmptyObject(step4) &&
+      !isEmptyObject(step5) &&
+      !isEmptyObject(step6) &&
+      !isEmptyObject(step6) &&
+      !isEmptyObject(step7) &&
+      !isEmptyObject(step8) &&
+      !isEmptyObject(step9);
+    console.log('shouldBuildCompany', shouldBuildCompany);
     const code = searchParams.get('code');
     if (code) {
       console.log('buildCompany', buildCompany);
-      fetchTokens(
-        code,
-        buildCompany?.step0?.companyName,
-        buildCompany?.step0?.countryCode ?? globalConstants.countryCode
-      )
+      fetchTokens(code, getBrowserCountryCode())
         .then(({ tokens, googleResponse }) => {
           if (tokens && googleResponse) {
             console.log('done with api call googleResponse', googleResponse);
@@ -37,15 +61,15 @@ export default function CallbackPage() {
                 accessToken: tokens.access_token,
                 idToken: tokens.id_token,
                 refreshToken: tokens.refresh_token,
-                todayFocus: googleResponse.todayFocus,
-                todayFocusFeatureId: googleResponse.todayFocusFeatureId,
-                todayFocusUrl: googleResponse.todayFocusUrl,
+                postLoginRedirect: googleResponse.postLoginRedirect,
                 userId: googleResponse.userId,
+                userType: googleResponse.userType,
               },
               status: AUTHENTICATED,
             });
-            if (buildCompany) {
+            if (shouldBuildCompany) {
               const {
+                step0: { companyName },
                 step2: { todayFocus: today_focus } = {},
                 step3: {
                   companyOffering: company_offering,
@@ -63,7 +87,7 @@ export default function CallbackPage() {
               const isNumericId = !Number.isNaN(parsedId);
 
               const body = {
-                company_id: googleResponse.companyId,
+                company_name: companyName,
                 today_focus,
                 company_offering,
                 marketing_source,
@@ -79,29 +103,37 @@ export default function CallbackPage() {
                 about,
                 street,
               };
-              genericService.create('/build-company', body).then((r) => {
-                console.log('r', r);
-                storage.removeItem('buildCompany');
-                if (r?.todayFocusUrl) {
-                  setTimeout(() => {
-                    console.log('vamos a navegar');
-                    navigate(r.todayFocusUrl, { replace: true });
-                  }, 100);
-                }
-              });
+              const config = { headers: {} };
+              config.headers.Authorization = `Bearer ${tokens.access_token}`;
+              privateService
+                .create('/build-company', body, config)
+                .then(() => {
+                  console.log('company created');
+                  storage.removeItem('buildCompany');
+                  setToast({ show: true, message: '¡Empresa creada!', type: 'success' });
+                  window.location.href = '/dashboard/buildCompany';
+                })
+                .catch((e) => {
+                  console.log('error creating company', e);
+                });
             } else {
               // start conceptualization
               const existingConceptualization = storage.getItem('conceptualization');
               if (existingConceptualization) {
-                navigate('/dashboard/conceptualization/continue');
+                console.log(
+                  'navigating to /dashboard/conceptualization/pay withAutoContinue: true'
+                );
+                navigate('/dashboard/conceptualization/pay', {
+                  state: { withAutoContinue: true },
+                });
                 return;
               }
-              if (googleResponse?.todayFocusUrl) {
-                setTimeout(() => {
-                  console.log('vamos a navegar');
-                  navigate(googleResponse.todayFocusUrl, { replace: true });
-                }, 1000);
-              }
+            }
+            if (googleResponse?.postLoginRedirect) {
+              setTimeout(() => {
+                console.log('navigating to ' + googleResponse.postLoginRedirect);
+                navigate(googleResponse.postLoginRedirect, { replace: true });
+              }, 1000);
             }
           }
         })

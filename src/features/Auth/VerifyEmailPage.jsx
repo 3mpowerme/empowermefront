@@ -3,10 +3,13 @@ import { useForm } from 'react-hook-form';
 import Input from '../../components/Input/Input';
 import Button from '../../components/Button/Button';
 import { verifyEmail } from '../../services/authService';
-import { useNavigate } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 import { useApp } from '../../hooks/useApp';
 
 const VerifyEmailPage = () => {
+  const location = useLocation();
+  console.log('location from', location.state?.from);
+  const { email = '', from = '' } = location.state || {};
   const navigate = useNavigate();
   const {
     register,
@@ -20,7 +23,7 @@ const VerifyEmailPage = () => {
       const result = await verifyEmail(data);
       console.log('result:', result);
       if (result?.message?.includes('Email verified')) {
-        navigate('/login');
+        navigate('/login', { state: { email: data.email, from } });
       }
     } catch (err) {
       console.error('Error verifyEmail:', err);
@@ -54,6 +57,7 @@ const VerifyEmailPage = () => {
 
           <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4 w-full">
             <Input
+              defaultValue={email || ''}
               label="Email"
               type="email"
               placeholder="Ingresa tu email"

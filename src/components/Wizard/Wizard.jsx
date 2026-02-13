@@ -18,6 +18,7 @@ export default function Wizard({
   withCanContinue = false,
   withCanContinueBuildCompany = false,
   onClose,
+  lastStepOnTheTop = false,
 }) {
   const [currentStep, setCurrentStep] = useState(0);
   const { state = {} } = useConceptualization();
@@ -58,7 +59,7 @@ export default function Wizard({
     <div className={classNames('max-w-screen min-h-screen h-auto flex flex-col', className)}>
       {showProgress && (
         <div className="relative w-full">
-          <span className="absolute left-18 top-5 text-xl font-bold text-black">
+          <span className="absolute sm:left-18 left-5 top-5 text-xl font-bold text-black">
             {currentStep + 1}/{totalSteps}
           </span>
 
@@ -85,7 +86,14 @@ export default function Wizard({
       <div className="flex-1 w-full flex flex-col items-center justify-center py-5">
         <div className="max-w-6xl mx-auto">
           {steps[currentStep].component}
-          <div className="mt-5 sm:mt-5 flex flex-col sm:flex-row gap-3 sm:gap-6 justify-center mx-5">
+          <div
+            className={classNames({
+              'flex flex-row gap-0 sm:gap-6 justify-center mx-5 sm:top-15 top-5 sm:left-50 left-30 absolute sm:w-full w-40 z-50':
+                lastStepOnTheTop && isLastStep,
+              'flex flex-col sm:flex-row gap-3 sm:gap-6 justify-center mx-5 mt-5 sm:mt-5 ': !(
+                lastStepOnTheTop && isLastStep
+              ),
+            })}>
             {!isFirstStep && shouldShowPreviousStep && (
               <Button
                 onClick={prevStep}

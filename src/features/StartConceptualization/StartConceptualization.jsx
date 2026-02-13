@@ -30,6 +30,7 @@ const StartConceptualizationPage = () => {
       lastStepButtonText="Desbloquear"
       onComplete={handleComplete}
       className="bg-gradient-to-b from-[#FFFFFF] to-[#FDECDA]"
+      lastStepOnTheTop
     />
   );
 };

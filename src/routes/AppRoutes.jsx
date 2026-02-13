@@ -37,7 +37,7 @@ import RepositoryPage from '../features/Dashboard/Repository/Repository';
 import CompaniesPage from '../features/Dashboard/Companies/Companies';
 import UsersPage from '../features/Dashboard/Users/UsersPage';
 import StartConceptualizationPage from '../features/StartConceptualization/StartConceptualization';
-import ContinueConceptualizationPage from '../features/Dashboard/Conceptualization/ContinueConceptualizationPage';
+import PayConceptualizationPage from '../features/Dashboard/Conceptualization/PayConceptualizationPage';
 
 const AppRoutes = () => {
   return (
@@ -86,7 +86,7 @@ const AppRoutes = () => {
             element={<FileRepositoryWrapper parentPath="legal_services" />}
           />
           <Route path="conceptualization" element={<ConceptualizationPage />} />
-          <Route path="conceptualization/continue" element={<ContinueConceptualizationPage />} />
+          <Route path="conceptualization/pay" element={<PayConceptualizationPage />} />
           <Route path="business_orientation" element={<BusinessOrientationPage />} />
           <Route path="graphic_design" element={<DashboardGraphicDesignPage />} />
           <Route

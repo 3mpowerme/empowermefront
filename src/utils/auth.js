@@ -12,7 +12,7 @@ export function loginWithGoogle() {
   window.location.href = url;
 }
 
-export async function fetchTokens(code, companyName, countryCode) {
+export async function fetchTokens(code, countryCode) {
   try {
     const data = new URLSearchParams({
       grant_type: 'authorization_code',
@@ -34,7 +34,6 @@ export async function fetchTokens(code, companyName, countryCode) {
     const googleResponse = await google({
       idToken: tokens.id_token,
       countryCode,
-      companyName,
     });
     console.log('googleResponse', googleResponse);
     return { tokens, googleResponse };

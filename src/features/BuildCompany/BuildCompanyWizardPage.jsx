@@ -12,12 +12,13 @@ import BuildCompanyWizardStep8 from './BuildCompanyWizardStep8';
 import BuildCompanyWizardStep9 from './BuildCompanyWizardStep9';
 import { useBuildCompany } from '../../hooks/useBuildCompany';
 import globalConstants from '../../constants/global';
+import { dispatchCustomEvent, isEmptyObject } from '../../utils/utils';
 
 const BuildCompanyWizardPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const name = searchParams.get('name');
-  const { setStepState } = useBuildCompany();
+  const { setStepState, state: { step9 } = {} } = useBuildCompany();
 
   const steps = [
     { id: 1, component: <BuildCompanyWizardStep1 name={name} /> },
@@ -32,7 +33,12 @@ const BuildCompanyWizardPage = () => {
   ];
 
   const handleComplete = () => {
-    navigate('/signup');
+    console.log('step9', step9);
+    if (isEmptyObject(step9)) {
+      dispatchCustomEvent('cannot-continue');
+    } else {
+      navigate('/signup', { state: { from: 'build-company-wizard' } });
+    }
   };
 
   useEffect(() => {

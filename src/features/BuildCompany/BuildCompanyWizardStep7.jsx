@@ -1,13 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import CardSelector from '../../components/CardSelector/CardSelector';
 import { useBuildCompany } from '../../hooks/useBuildCompany';
 import { storage } from '../../utils/storage';
+import { useCustomEvent } from '../../hooks/useCustomEvent';
 
 const BuildCompanyWizardStep7 = () => {
   const { setStepState } = useBuildCompany();
   const buildCompanyFromStorage = storage.getItem('buildCompany') || {};
   const { step7: { isRegisteredCompany: isRegisteredCompanyFromStorage } = {} } =
     buildCompanyFromStorage;
+  const [showErrors, setShowErrors] = useState(false);
 
   const cards = [
     { id: 'SI', name: 'Sí', image: '' },
@@ -17,6 +19,12 @@ const BuildCompanyWizardStep7 = () => {
   const handleCardChange = (ids) => {
     setStepState(7, { isRegisteredCompany: ids, canContinue: true });
   };
+
+  useCustomEvent('cannot-continue', () => {
+    setShowErrors(true);
+  });
+
+  const hasError = showErrors;
 
   return (
     <div className="w-full px-4 sm:px-6 md:px-10 lg:px-16 py-10 sm:py-10 md:py-10 flex flex-col items-center gap-8">
@@ -41,6 +49,11 @@ const BuildCompanyWizardStep7 = () => {
           initialValues={isRegisteredCompanyFromStorage}
           className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6"
         />
+        {hasError && (
+          <p className="mt-3 text-sm text-red-600 text-center">
+            Selecciona una opción para continuar.
+          </p>
+        )}
       </div>
     </div>
   );

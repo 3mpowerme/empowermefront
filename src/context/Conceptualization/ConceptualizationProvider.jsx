@@ -3,6 +3,7 @@ import { storage } from '../../utils/storage';
 import { ConceptualizationContext } from './ConceptualizationContext';
 import { privateService } from '../../services/privateService';
 import { useApp } from '../../hooks/useApp';
+import { useAuth } from '../../hooks/useAuth';
 
 export function ConceptualizationProvider({ children }) {
   const conceptualizationFromStorage = storage.getItem('conceptualization');
@@ -29,6 +30,8 @@ export function ConceptualizationProvider({ children }) {
     conceptualizations: [],
     isLoading: false,
   };
+
+  const { isAuthenticated } = useAuth();
   const { setIsLoading } = useApp();
   const [state, setState] = useState(initialState);
 
@@ -119,8 +122,8 @@ export function ConceptualizationProvider({ children }) {
   };
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    if (isAuthenticated) fetchData();
+  }, [isAuthenticated]);
 
   console.log('ConceptualizationProvider state:', state);
 
