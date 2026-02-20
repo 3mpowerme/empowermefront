@@ -259,6 +259,7 @@ export default function FileRepository({ serviceId, companyId, isExecutive = fal
         {
           comment: text,
           isExecutive,
+          serviceCode: serviceId,
         }
       );
       setNewCommentByFile((prev) => ({ ...prev, [fileId]: '' }));

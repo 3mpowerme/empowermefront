@@ -26,7 +26,7 @@ const BALANCE_WIZARD_VIEW = 'balance-wizard-view';
 export default function DashboardHomePage() {
   const {
     activeCompanyInfo: { companyName = '', createdAt, info: { hasStartedActivities } = {} } = {},
-    account: { email = '' } = {},
+    account: { email = '', userType } = {},
     activeCompany: companyId,
   } = useAccount();
   console.log('hasStartedActivities', hasStartedActivities);
@@ -41,20 +41,48 @@ export default function DashboardHomePage() {
         console.log('link', link);
         console.log('companyId', companyId);
         if (link === 'accounting_wizard') {
-          await prefillInfoIfExist(`wizard_form/monthly-accounting/${companyId}`, companyId, {
-            email: email,
-            company_contact_email: email,
-            company_name: companyName,
-          });
+          await prefillInfoIfExist(
+            `wizard_form/monthly-accounting/${companyId}`,
+            companyId,
+            {
+              email: email,
+              company_contact_email: email,
+              company_name: companyName,
+            },
+            [
+              'company_name',
+              'company_tax_id',
+              'contact_person_name',
+              'contact_person_email',
+              'contact_person_phone',
+              'company_tax_address',
+              'legal_representative_name',
+              'legal_representative_tax_id',
+            ]
+          );
           setServiceType('accounting');
           setView(alreadyRegistered ? PAY_AND_SCHEDULE_APPOINTMENT_VIEW : ACCOUNTING_WIZARD_VIEW);
           //setView(PAY_AND_SCHEDULE_APPOINTMENT_VIEW);
         }
         if (link === 'balance_wizard') {
-          await prefillInfoIfExist(`wizard_form/company-balance-request/${companyId}`, companyId, {
-            contact_person_email: email,
-            company_name: companyName,
-          });
+          await prefillInfoIfExist(
+            `wizard_form/company-balance-request/${companyId}`,
+            companyId,
+            {
+              contact_person_email: email,
+              company_name: companyName,
+            },
+            [
+              'company_name',
+              'company_tax_id',
+              'contact_person_name',
+              'contact_person_email',
+              'contact_person_phone',
+              'company_tax_address',
+              'legal_representative_name',
+              'legal_representative_tax_id',
+            ]
+          );
           setServiceType('balance');
           //setView(PAY_AND_SCHEDULE_APPOINTMENT_VIEW);
           setView(alreadyRegistered ? PAY_AND_SCHEDULE_APPOINTMENT_VIEW : BALANCE_WIZARD_VIEW);
@@ -167,7 +195,7 @@ export default function DashboardHomePage() {
                 )}
               </div>
             )}
-            {!companyName && <NoCompanyGate />}
+            {!companyName && userType === 3 && <NoCompanyGate />}
             {companyName && createdAt && (
               <h2 className="text-xl text-black font-bold">Próximos pasos</h2>
             )}

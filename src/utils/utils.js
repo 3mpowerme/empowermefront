@@ -160,6 +160,31 @@ export function isEmptyObject(obj) {
   return obj && typeof obj === 'object' && Object.keys(obj).length === 0;
 }
 
+export function getSubPathByServiceCode(serviceCode) {
+  switch (serviceCode) {
+    case 'business_creation':
+      return 'buildCompany';
+    case 'audit':
+    case 'accounting':
+    case 'balance':
+    case 'start_activities':
+    case 'tax_planning':
+    case 'virtual_office':
+    case 'virtual_office_plus_ministorage':
+      return 'taxes_and_accounting';
+    case 'shareholders_registry':
+    case 'personalized_advice':
+    case 'company_modifications_spa':
+    case 'company_modifications_srl':
+    case 'ordinary_shareholders_meeting':
+    case 'dissolution_of_spa':
+    case 'dissolution_of_eirl':
+    case 'dissolution_of_srl':
+    case 'constitution_review':
+      return 'legal_services';
+  }
+}
+
 export function getBrowserCountryCode() {
   const defaultCode = global.countryCode;
   return defaultCode;

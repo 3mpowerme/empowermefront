@@ -38,8 +38,16 @@ import CompaniesPage from '../features/Dashboard/Companies/Companies';
 import UsersPage from '../features/Dashboard/Users/UsersPage';
 import StartConceptualizationPage from '../features/StartConceptualization/StartConceptualization';
 import PayConceptualizationPage from '../features/Dashboard/Conceptualization/PayConceptualizationPage';
+import { useAuth } from '../hooks/useAuth';
+import RoleGuard from '../components/RoleGuard/RoleGuard';
 
 const AppRoutes = () => {
+  const { auth = {} } = useAuth();
+  let userType;
+  if (auth?.userType) {
+    userType = auth.userType;
+  }
+  console.log('auth userType', userType);
   return (
     <BrowserRouter>
       <Routes>
@@ -99,10 +107,60 @@ const AppRoutes = () => {
           />
           <Route path="legal_and_tax_compliance" element={<DashboardLegalAndTaxCompliancePage />} />
           <Route path="business_profile" element={<DashboardBusinessProfilePage />} />
-          <Route path="services" element={<ServicesPage />} />
-          <Route path="panel" element={<PanelPage />} />
-          <Route path="companies" element={<CompaniesPage />} />
-          <Route path="users" element={<UsersPage />} />
+
+          <Route
+            path="services"
+            element={
+              <RoleGuard
+                userRoleId={userType}
+                allow={[1, 2]}
+                isLoading={false}
+                unauthorizedRedirectTo=".."
+                unauthenticatedRedirectTo="/login">
+                <ServicesPage />
+              </RoleGuard>
+            }
+          />
+
+          <Route
+            path="panel"
+            element={
+              <RoleGuard
+                userRoleId={userType}
+                allow={[1]}
+                isLoading={false}
+                unauthorizedRedirectTo=".."
+                unauthenticatedRedirectTo="/login">
+                <PanelPage />
+              </RoleGuard>
+            }
+          />
+          <Route
+            path="companies"
+            element={
+              <RoleGuard
+                userRoleId={userType}
+                allow={[1, 2]}
+                isLoading={false}
+                unauthorizedRedirectTo=".."
+                unauthenticatedRedirectTo="/login">
+                <CompaniesPage />
+              </RoleGuard>
+            }
+          />
+          <Route
+            path="users"
+            element={
+              <RoleGuard
+                userRoleId={userType}
+                allow={[1]}
+                isLoading={false}
+                unauthorizedRedirectTo=".."
+                unauthenticatedRedirectTo="/login">
+                <UsersPage />
+              </RoleGuard>
+            }
+          />
           <Route path="repository/:serviceId/:companyId" element={<RepositoryPage />} />
         </Route>
         <Route path="*" element={<PageNotFound />} />

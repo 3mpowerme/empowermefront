@@ -56,11 +56,21 @@ export default function DashboardTaxesAndAccountingPage() {
         console.log('link', link);
         console.log('companyId', companyId);
         if (link === 'accounting_wizard') {
-          await prefillInfoIfExist(`wizard_form/monthly-accounting/${companyId}`, companyId, {
-            email: email,
-            company_contact_email: email,
-            company_name: companyName,
-          });
+          await prefillInfoIfExist(
+            `wizard_form/monthly-accounting/${companyId}`,
+            companyId,
+            {
+              email: email,
+              company_contact_email: email,
+              company_name: companyName,
+            },
+            [
+              'company_name',
+              'company_tax_id',
+              'legal_representative_name',
+              'legal_representative_tax_id',
+            ]
+          );
 
           setServiceType('accounting');
           setView(alreadyRegistered ? PAY_AND_SCHEDULE_APPOINTMENT_VIEW : ACCOUNTING_WIZARD_VIEW);
@@ -68,20 +78,48 @@ export default function DashboardTaxesAndAccountingPage() {
         }
 
         if (link === 'audit_wizard') {
-          await prefillInfoIfExist(`wizard_form/company-audit-request/${companyId}`, companyId, {
-            contact_person_email: email,
-            company_name: companyName,
-          });
+          await prefillInfoIfExist(
+            `wizard_form/company-audit-request/${companyId}`,
+            companyId,
+            {
+              contact_person_email: email,
+              company_name: companyName,
+            },
+            [
+              'company_name',
+              'company_tax_id',
+              'contact_person_name',
+              'contact_person_email',
+              'contact_person_phone',
+              'company_tax_address',
+              'legal_representative_name',
+              'legal_representative_tax_id',
+            ]
+          );
 
           setServiceType('audit');
           //setView(PAY_AND_SCHEDULE_APPOINTMENT_VIEW);
           setView(alreadyRegistered ? PAY_AND_SCHEDULE_APPOINTMENT_VIEW : AUDIT_WIZARD_VIEW);
         }
         if (link === 'balance_wizard') {
-          await prefillInfoIfExist(`wizard_form/company-balance-request/${companyId}`, companyId, {
-            contact_person_email: email,
-            company_name: companyName,
-          });
+          await prefillInfoIfExist(
+            `wizard_form/company-balance-request/${companyId}`,
+            companyId,
+            {
+              contact_person_email: email,
+              company_name: companyName,
+            },
+            [
+              'company_name',
+              'company_tax_id',
+              'contact_person_name',
+              'contact_person_email',
+              'contact_person_phone',
+              'company_tax_address',
+              'legal_representative_name',
+              'legal_representative_tax_id',
+            ]
+          );
 
           setServiceType('balance');
           //setView(PAY_AND_SCHEDULE_APPOINTMENT_VIEW);
@@ -100,9 +138,16 @@ export default function DashboardTaxesAndAccountingPage() {
             `wizard_form/company-start-activities-request/${companyId}`,
             companyId,
             {
+              email: email,
               contact_person_email: email,
               company_name: companyName,
-            }
+            },
+            [
+              'company_name',
+              'company_tax_id',
+              'legal_representative_name',
+              'legal_representative_tax_id',
+            ]
           );
           setServiceType('start_activities');
           setView(alreadyRegistered ? PAY_AND_SCHEDULE_APPOINTMENT_VIEW : START_ACTIVITIES_WIZARD);
@@ -114,7 +159,23 @@ export default function DashboardTaxesAndAccountingPage() {
             {
               company_name: companyName,
             },
-            ['company_name', 'company_tax_id']
+            [
+              'company_name',
+              'company_tax_id',
+              'company_address',
+              'company_commune',
+              'company_region',
+              'legal_representative_name',
+              'legal_representative_tax_id',
+              'legal_representative_address',
+              'legal_representative_commune',
+              'legal_representative_region',
+              'legal_representative_profession',
+              'legal_representative_nationality',
+              'legal_representative_civil_status',
+              'legal_representative_email',
+              'legal_representative_phone',
+            ]
           );
           setServiceType('virtual_office');
           setView(
@@ -128,7 +189,23 @@ export default function DashboardTaxesAndAccountingPage() {
             {
               company_name: companyName,
             },
-            ['company_name', 'company_tax_id']
+            [
+              'company_name',
+              'company_tax_id',
+              'company_address',
+              'company_commune',
+              'company_region',
+              'legal_representative_name',
+              'legal_representative_tax_id',
+              'legal_representative_address',
+              'legal_representative_commune',
+              'legal_representative_region',
+              'legal_representative_profession',
+              'legal_representative_nationality',
+              'legal_representative_civil_status',
+              'legal_representative_email',
+              'legal_representative_phone',
+            ]
           );
           setServiceType('virtual_office_plus_ministorage');
           setView(

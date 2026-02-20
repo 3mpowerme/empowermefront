@@ -8,14 +8,14 @@ import { useAccount } from '../../../hooks/useAccount';
 const isNotificationRead = (n) => Boolean(n.read_at || n.readAt || n.read || n.isRead);
 
 export default function NotificationsPage() {
-  const { activeCompany } = useAccount();
+  const { account, activeCompany } = useAccount();
   const navigate = useNavigate();
   const [notifications, setNotifications] = useState([]);
   const [filter, setFilter] = useState('all');
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!activeCompany) {
+    if (account?.userType == 3 && !activeCompany) {
       setNotifications([]);
       return;
     }
@@ -25,7 +25,14 @@ export default function NotificationsPage() {
     async function loadAllNotifications() {
       try {
         setLoading(true);
-        const data = await privateService.get(`/company-notifications/${activeCompany}`);
+
+        let url = `/company-notifications/${activeCompany || account?.userId}`;
+        if (!activeCompany) {
+          url += `?isUser=1`;
+        }
+        console.log('HERE url', url);
+        const data = await privateService.get(url);
+
         if (cancelled) return;
         setNotifications(data?.notifications || []);
       } catch (e) {
@@ -60,7 +67,7 @@ export default function NotificationsPage() {
       notification?.metadata?.url ||
       '/dashboard';
 
-    if (activeCompany && notification?.id && !isNotificationRead(notification)) {
+    if (notification?.id && !isNotificationRead(notification)) {
       setNotifications((prev) =>
         prev.map((n) =>
           n.id === notification.id ? { ...n, read_at: n.read_at || new Date().toISOString() } : n
@@ -68,7 +75,7 @@ export default function NotificationsPage() {
       );
       try {
         await privateService.patch(
-          `/company-notifications/${activeCompany}/${notification.id}/read`
+          `/company-notifications/${activeCompany || account.userId}/${notification.id}/read${activeCompany ? '' : '?isUser=1'}`
         );
       } catch (e) {}
     }

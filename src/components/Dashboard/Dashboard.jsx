@@ -20,6 +20,7 @@ import { privateService } from '../../services/privateService';
 import { storage } from '../../utils/storage';
 import { useConceptualization } from '../../hooks/useConceptualization';
 import { useApp } from '../../hooks/useApp';
+import { getSubPathByServiceCode } from '../../utils/utils';
 
 export default function Dashboard({ menuItems: mi = [] }) {
   const menuItems = mi.map((it) => {
@@ -135,7 +136,9 @@ export default function Dashboard({ menuItems: mi = [] }) {
   }, [location.pathname, menuItems, openSectionId]);
 
   useEffect(() => {
-    if (!activeCompany) {
+    console.log('HERE activeCompany', activeCompany);
+    console.log('HERE account', account);
+    if (account?.userType == 3 && !activeCompany) {
       setNotifications([]);
       return;
     }
@@ -144,9 +147,12 @@ export default function Dashboard({ menuItems: mi = [] }) {
     async function loadNotifications() {
       try {
         setLoadingNotifications(true);
-        const data = await privateService.get(
-          `/company-notifications/${activeCompany}?onlyUnread=true&limit=10`
-        );
+        let url = `/company-notifications/${activeCompany || account?.userId}?onlyUnread=true&limit=10`;
+        if (!activeCompany) {
+          url += `&isUser=1`;
+        }
+        console.log('HERE url', url);
+        const data = await privateService.get(url);
         if (cancelled) return;
         setNotifications(data?.notifications || []);
       } catch (e) {
@@ -187,21 +193,34 @@ export default function Dashboard({ menuItems: mi = [] }) {
     let route = meta.route || meta.path || meta.url || '/dashboard';
 
     if (meta.type === 'document' && meta.documentId) {
-      const search = new URLSearchParams({ fileId: String(meta.documentId) }).toString();
-      route = `/dashboard/taxes_and_accounting/accounting?${search}`;
+      if (meta.isRepository) {
+        const search = new URLSearchParams({ fileId: String(meta.documentId) }).toString();
+        route = `/dashboard/repository/${meta.serviceCode}/${meta.companyId}?${search}`;
+      } else {
+        const search = new URLSearchParams({ fileId: String(meta.documentId) }).toString();
+        route = `/dashboard/${getSubPathByServiceCode(meta.serviceCode)}/${meta.serviceCode}?${search}`;
+      }
     } else if (meta.type === 'comment' && meta.documentId && meta.commentId) {
-      const search = new URLSearchParams({
-        fileId: String(meta.documentId),
-        highlightComment: String(meta.commentId),
-      }).toString();
-      route = `/dashboard/taxes_and_accounting/accounting?${search}`;
+      if (meta.isRepository) {
+        const search = new URLSearchParams({
+          fileId: String(meta.documentId),
+          highlightComment: String(meta.commentId),
+        }).toString();
+        route = `/dashboard/repository/${meta.serviceCode}/${meta.companyId}?${search}`;
+      } else {
+        const search = new URLSearchParams({
+          fileId: String(meta.documentId),
+          highlightComment: String(meta.commentId),
+        }).toString();
+        route = `/dashboard/${getSubPathByServiceCode(meta.serviceCode)}/${meta.serviceCode}?${search}`;
+      }
     }
 
-    if (activeCompany && notification?.id) {
+    if (notification?.id) {
       setNotifications((prev) => prev.filter((n) => n.id !== notification.id));
       try {
         await privateService.patch(
-          `/company-notifications/${activeCompany}/${notification.id}/read`
+          `/company-notifications/${activeCompany || account.userId}/${notification.id}/read${activeCompany ? '' : '?isUser=1'}`
         );
       } catch (e) {}
     }
