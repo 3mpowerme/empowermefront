@@ -23,7 +23,7 @@ export default function AccountGeneralProfileSection() {
     try {
       setIsLoading(true);
       // We allow empty string to support users with null/empty name.
-      const response = await privateService.update('/account/profile', { name: name || '' });
+      const response = await privateService.update('/account', { name: name || '' });
 
       if (response?.updated) {
         setAccount({ ...account, name: name || '' });
