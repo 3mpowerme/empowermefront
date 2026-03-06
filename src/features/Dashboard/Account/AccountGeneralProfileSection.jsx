@@ -11,11 +11,9 @@ export default function AccountGeneralProfileSection() {
   const { setToast, setIsLoading } = useApp();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [name, setName] = useState(account?.name || '');
-
   const email = useMemo(() => account?.email || '', [account?.email]);
 
   const handleOpenModal = () => {
-    setName(account?.name || '');
     setIsModalOpen(true);
   };
 
@@ -79,18 +77,6 @@ export default function AccountGeneralProfileSection() {
         onClose={() => setIsModalOpen(false)}
         title="Actualizar nombre"
         subtitle="Confirma para guardar los cambios de tu perfil">
-        <ModalBody>
-          <div className="flex flex-col gap-4">
-            <Input label="Correo electrónico" type="email" value={email} disabled readOnly />
-            <Input
-              label="Nombre"
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeHolder="Ingresa tu nombre"
-            />
-          </div>
-        </ModalBody>
         <ModalFooter className="w-full justify-end">
           <Button type="button" variant="secondary" onClick={() => setIsModalOpen(false)}>
             Cancelar

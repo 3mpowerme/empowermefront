@@ -11,7 +11,7 @@ export default function AccountInfo({ companyId, regions }) {
     <div className="flex flex-col gap-6">
       <AccountGeneralProfileSection />
 
-      {account?.userType === 3 && regions.length > 0 && (
+      {account?.userType === 3 && companyId && regions.length > 0 && (
         <WizardProvider
           stepsConfig={[
             {
