@@ -9,11 +9,10 @@ import Tabs from '../../../components/Tabs/Tabs';
 import { formatToDatetime } from '../../../utils/utils';
 
 const LogoHistory = ({ logos }) => {
-  console.log('logos', logos);
   return (
     <>
       {Array.isArray(logos) && logos.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
           {logos.map((item, i) => (
             <LogoCard key={item.history_id} item={item} optionNumber={i + 1} />
           ))}
@@ -47,14 +46,14 @@ export default function Logos({
   ];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 lg:px-10 py-5 space-y-6">
-      <div className="flex items-center justify-between gap-4">
-        <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Logos</h2>
-        {
+    <div className="w-full px-4 py-5 sm:px-6 lg:px-10 flex justify-center">
+      <div className="w-full max-w-7xl space-y-4 sm:space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Logos</h2>
           <Button
             onClick={handleCreateLogos}
             variant="wizard"
-            className="flex items-center gap-2 px-4 py-2"
+            className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2"
             disabled={loading}>
             {loading ? (
               <>
@@ -68,9 +67,10 @@ export default function Logos({
               </>
             )}
           </Button>
-        }
+        </div>
+
+        <Tabs tabs={tabs} initialTab={sub} />
       </div>
-      <Tabs tabs={tabs} initialTab={sub} />
     </div>
   );
 }
@@ -117,23 +117,34 @@ function PreviewPane({ label, url, onView }) {
   return (
     <div className="rounded-lg border border-gray-300 bg-gray-50 overflow-hidden flex flex-col">
       <div className="flex items-center justify-between gap-2 text-[10px] text-gray-600 px-2 py-1 border-b border-gray-200 bg-white">
-        <span className="font-medium text-gray-700">{label}</span>
+        <span className="font-medium text-gray-700 truncate">{label}</span>
         <div className="ml-auto flex items-center gap-2">
           {!url && <span className="text-[10px] text-red-500">sin imagen</span>}
         </div>
       </div>
-      <div className="aspect-[1.6] flex flex-col items-center justify-center text-[10px] text-gray-500 bg-gray-50">
+
+      <div className="relative aspect-[1.6] flex items-center justify-center text-[10px] text-gray-500 bg-gray-50">
         {url ? (
           <>
-            <img src={url} alt={`${label} tarjeta`} className="w-full h-full object-cover" />
-            <Button variant="wizard" className="flex py-2 mb-5" onClick={() => onView(url)}>
-              <span>
-                <Image size={20} />
-              </span>
-            </Button>
+            <img
+              src={url}
+              alt={`${label} tarjeta`}
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+            <div className="absolute bottom-3 right-3">
+              <Button
+                variant="wizard"
+                className="flex items-center gap-2 px-3 py-2"
+                onClick={() => onView(url)}>
+                <span className="inline-flex">
+                  <Image size={20} />
+                </span>
+                <span className="hidden sm:inline">Ver</span>
+              </Button>
+            </div>
           </>
         ) : (
-          <span className="flex items-center gap-1">
+          <span className="flex items-center gap-1 px-3">
             <ImageIcon className="w-4 h-4" /> preview no disponible
           </span>
         )}

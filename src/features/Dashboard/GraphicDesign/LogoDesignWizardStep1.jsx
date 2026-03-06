@@ -8,7 +8,6 @@ import { useConceptualization } from '../../../hooks/useConceptualization';
 const LogoDesignWizardStep1 = () => {
   const currentOptionRef = useRef({});
   const { setStepState } = useConceptualization();
-  console.log('setStepState', setStepState);
 
   const logoDesignFromStorage = storage.getItem('logo_design') || {};
   const { step1: { offeringServiceType: offeringServiceTypeFromStorage } = {} } =
@@ -30,18 +29,23 @@ const LogoDesignWizardStep1 = () => {
   }
 
   return (
-    <div className="flex flex-col gap-y-10 items-center w-xl">
-      <div>
-        <h1 className="font-bold text-4xl text-center mb-2">
-          ¿Qué tipo de producto o servicio ofrece tu negocio (o tu idea de negocio)?
-        </h1>
-        <p className="text-lg text-center">Elige solo una opción</p>
+    <div className="w-full px-4 py-6 sm:px-6 sm:py-10 flex justify-center">
+      <div className="w-full max-w-md sm:max-w-2xl lg:max-w-4xl flex flex-col gap-y-6 sm:gap-y-10 items-stretch sm:items-center">
+        <div className="w-full">
+          <h1 className="font-bold text-2xl sm:text-3xl lg:text-4xl text-center mb-2">
+            ¿Qué tipo de producto o servicio ofrece tu negocio (o tu idea de negocio)?
+          </h1>
+          <p className="text-base sm:text-lg text-center">Elige solo una opción</p>
+        </div>
+
+        <div className="w-full">
+          <ListSelector
+            initialValues={offeringServiceTypeFromStorage}
+            items={offeringServiceType}
+            onChange={handleCardChangeCompanyOffering}
+          />
+        </div>
       </div>
-      <ListSelector
-        initialValues={offeringServiceTypeFromStorage}
-        items={offeringServiceType}
-        onChange={handleCardChangeCompanyOffering}
-      />
     </div>
   );
 };
