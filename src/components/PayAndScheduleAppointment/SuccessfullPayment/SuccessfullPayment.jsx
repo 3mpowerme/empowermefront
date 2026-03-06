@@ -65,7 +65,7 @@ export default function SuccessfullPayment({ serviceCode, goTo, folio, count }) 
 
           <Button
             onClick={handleClick}
-            className="fixed bottom-20 right-20 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-full shadow-lg text-sm z-50">
+            className="fixed sm:top-4 top-1 sm:right-4 right-1 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-full shadow-lg text-sm z-50">
             <MessageCircle className="w-5 h-5 inline mr-2" />
             Orientación por WhatsApp
           </Button>

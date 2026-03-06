@@ -6,6 +6,44 @@ import { X } from 'lucide-react';
 import { useBuildCompany } from '../../hooks/useBuildCompany';
 import { dispatchCustomEvent } from '../../utils/utils';
 
+const WizardButtons = ({
+  className,
+  isLastStep,
+  isFirstStep,
+  shouldShowPreviousStep,
+  prevStep,
+  nextStep,
+  firstStepButtonText,
+  lastStepButtonText,
+  onComplete,
+}) => {
+  console.log('isLastStep', isLastStep);
+  return (
+    <div className={className}>
+      {!isFirstStep && shouldShowPreviousStep && (
+        <Button
+          onClick={prevStep}
+          disabled={isFirstStep}
+          className="w-full sm:w-auto justify-center">
+          Anterior
+        </Button>
+      )}
+      {!isLastStep ? (
+        <Button
+          id="wizard-continue-button"
+          onClick={nextStep}
+          className="w-full sm:w-auto justify-center">
+          {(isFirstStep && firstStepButtonText) || 'Continuar'}
+        </Button>
+      ) : (
+        <Button onClick={onComplete} className="w-full sm:w-auto justify-center">
+          {lastStepButtonText || 'Finalizar'}
+        </Button>
+      )}
+    </div>
+  );
+};
+
 export default function Wizard({
   steps,
   onComplete,
@@ -59,7 +97,7 @@ export default function Wizard({
     <div className={classNames('max-w-screen min-h-screen h-auto flex flex-col', className)}>
       {showProgress && (
         <div className="relative w-full">
-          <span className="absolute sm:left-18 left-5 top-5 text-xl font-bold text-black">
+          <span className="absolute sm:left-18 left-2 top-2 sm:top-5 text-xl font-bold text-black">
             {currentStep + 1}/{totalSteps}
           </span>
 
@@ -75,6 +113,21 @@ export default function Wizard({
           </div>
         </div>
       )}
+      {lastStepOnTheTop && isLastStep && (
+        <WizardButtons
+          className={
+            'flex flex-col sm:flex-row gap-2 sm:gap-6 sm:justify-end justify-center sm:pr-20 sm:w-full z-50 sm:relative fixed sm:top-10 bottom-5 sm:right-0 right-25'
+          }
+          isFirstStep={isFirstStep}
+          shouldShowPreviousStep={shouldShowPreviousStep}
+          prevStep={prevStep}
+          nextStep={nextStep}
+          firstStepButtonText={firstStepButtonText}
+          lastStepButtonText={lastStepButtonText}
+          onComplete={onComplete}
+          isLastStep={isLastStep}
+        />
+      )}
       {onClose && (
         <div className="absolute w-10 top-15 right-5 sm:top-20 sm:right-30 z-50">
           <button className="p-0 border-0 cursor-pointer" onClick={onClose}>
@@ -86,35 +139,18 @@ export default function Wizard({
       <div className="flex-1 w-full flex flex-col items-center justify-center py-5">
         <div className="max-w-6xl mx-auto">
           {steps[currentStep].component}
-          <div
-            className={classNames({
-              'flex flex-row gap-0 sm:gap-6 justify-center mx-5 sm:top-15 top-5 sm:left-50 left-30 absolute sm:w-full w-40 z-50':
-                lastStepOnTheTop && isLastStep,
-              'flex flex-col sm:flex-row gap-3 sm:gap-6 justify-center mx-5 mt-5 sm:mt-5 ': !(
-                lastStepOnTheTop && isLastStep
-              ),
-            })}>
-            {!isFirstStep && shouldShowPreviousStep && (
-              <Button
-                onClick={prevStep}
-                disabled={isFirstStep}
-                className="w-full sm:w-auto justify-center">
-                Anterior
-              </Button>
-            )}
-            {!isLastStep ? (
-              <Button
-                id="wizard-continue-button"
-                onClick={nextStep}
-                className="w-full sm:w-auto justify-center">
-                {(isFirstStep && firstStepButtonText) || 'Continuar'}
-              </Button>
-            ) : (
-              <Button onClick={onComplete} className="w-full sm:w-auto justify-center">
-                {lastStepButtonText || 'Finalizar'}
-              </Button>
-            )}
-          </div>
+
+          <WizardButtons
+            className="flex flex-col sm:flex-row gap-3 sm:gap-6 justify-center mx-5 mt-5 sm:mt-5"
+            isFirstStep={isFirstStep}
+            shouldShowPreviousStep={shouldShowPreviousStep}
+            prevStep={prevStep}
+            nextStep={nextStep}
+            firstStepButtonText={firstStepButtonText}
+            lastStepButtonText={lastStepButtonText}
+            onComplete={onComplete}
+            isLastStep={isLastStep}
+          />
         </div>
       </div>
     </div>

@@ -21,6 +21,7 @@ import { storage } from '../../utils/storage';
 import { useConceptualization } from '../../hooks/useConceptualization';
 import { useApp } from '../../hooks/useApp';
 import { getSubPathByServiceCode } from '../../utils/utils';
+import { useViewPort, MOBILE_WIDTH } from '../../hooks/useViewPort';
 
 export default function Dashboard({ menuItems: mi = [] }) {
   const menuItems = mi.map((it) => {
@@ -33,7 +34,13 @@ export default function Dashboard({ menuItems: mi = [] }) {
   const location = useLocation();
   const { t, i18n } = useTranslation();
 
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const width = useViewPort();
+  const isMobile = width < MOBILE_WIDTH;
+
+  const [isCollapsed, setIsCollapsed] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return window.innerWidth < MOBILE_WIDTH;
+  });
   const [mobileOpen, setMobileOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState('');
   const [openSectionId, setOpenSectionId] = useState(null);
@@ -76,6 +83,10 @@ export default function Dashboard({ menuItems: mi = [] }) {
     () => getInitials(activeCompanyName || account?.email || 'User'),
     [activeCompanyName]
   );
+
+  useEffect(() => {
+    if (isMobile) setIsCollapsed(true);
+  }, [isMobile]);
 
   useEffect(() => {
     function onDocPointerDown(e) {
@@ -230,13 +241,15 @@ export default function Dashboard({ menuItems: mi = [] }) {
   };
 
   const asideWidth = isCollapsed ? 'w-16' : 'w-[200px] sm:w-[280px]';
+  const isMobileSidebarOverlay = isMobile && !isCollapsed;
 
   return (
     <div className="min-h-screen bg-gray-100 flex">
       <aside
         className={classNames(
           'flex flex-col bg-black text-white transition-all duration-300 rounded-r-2xl z-20 print:hidden',
-          asideWidth
+          asideWidth,
+          isMobileSidebarOverlay && 'fixed left-0 top-0 bottom-0'
         )}
         aria-label="Sidebar principal">
         <div
