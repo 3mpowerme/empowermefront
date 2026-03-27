@@ -22,9 +22,11 @@ const SignUpPage = () => {
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors },
   } = useForm();
   const { isAuthenticated, auth } = useAuth();
+  const passwordValue = watch('password', '');
 
   const { setIsLoading, setToast } = useApp();
 
@@ -188,32 +190,38 @@ const SignUpPage = () => {
             <Input
               label="Correo electrónico*"
               type="email"
-              placeholder="Ingresa correo electrónico"
-              {...register('email', { required: 'El correo electrónico es obligatoria' })}
+              placeholder="Ingresa tu correo electrónico"
+              {...register('email', { required: 'El correo electrónico es obligatorio' })}
               error={errors.email?.message}
             />
             <Input
               label="Contraseña*"
               type="password"
-              placeholder="Ingresa contraseña"
+              placeholder="Crea una contraseña"
               {...register('password', {
                 required: 'La contraseña es obligatoria',
-                minLength: { value: 8, message: 'Mínimo 8 caracteres' },
+                minLength: { value: 8, message: 'Debe tener al menos 8 caracteres' },
+                maxLength: { value: 50, message: 'Debe tener como máximo 50 caracteres' },
+                pattern: {
+                  value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).*$/,
+                  message:
+                    'Debe incluir al menos una minúscula, una mayúscula, un número y un carácter especial',
+                },
               })}
               error={errors.password?.message}
-              tooltip="La contraseña debe tener al menos una minúscula, al menos una mayúscula, al menos un número y al menos un carácter especial"
+              tooltip="Debe tener entre 8 y 50 caracteres e incluir al menos una minúscula, una mayúscula, un número y un carácter especial"
             />
 
             <Input
               label="Confirmar contraseña*"
               type="password"
-              placeholder="Ingresa contraseña"
+              placeholder="Vuelve a escribir tu contraseña"
               {...register('passwordRepeat', {
-                required: 'La contraseña es obligatoria',
-                minLength: { value: 8, message: 'Mínimo 8 caracteres' },
+                required: 'Confirma tu contraseña',
+                validate: (value) => value === passwordValue || 'Las contraseñas no coinciden',
               })}
               error={errors.passwordRepeat?.message}
-              tooltip="La contraseña debe tener al menos una minúscula, al menos una mayúscula, al menos un número y al menos un carácter especial"
+              tooltip="Debe coincidir exactamente con la contraseña anterior"
             />
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 justify-between mt-2">
               <Link to="/login" state={{ from }} className="text-sm">
