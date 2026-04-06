@@ -119,6 +119,7 @@ const PayConceptualizationPage = ({ showWelcomeMessage = false }) => {
   const [selectedMethod, setSelectedMethod] = useState([]);
   const [clientSecret, setClientSecret] = useState('');
   const [paymentIntentId, setPaymentIntentId] = useState('');
+  const serviceOrderIdRef = useRef(null);
 
   const navigate = useNavigate();
 
@@ -184,6 +185,7 @@ const PayConceptualizationPage = ({ showWelcomeMessage = false }) => {
 
         privateService
           .create('/conceptualization', {
+            service_order_id: serviceOrderIdRef.current || undefined,
             offering_service_type_id: step2.offeringServiceType,
             about: step3.about,
             business_sector_id: isNumericId ? parsedId : 11,
@@ -301,16 +303,32 @@ const PayConceptualizationPage = ({ showWelcomeMessage = false }) => {
     const res = await privateService.create('/payments/service-order', payload);
 
     if (res?.serviceOrderId) {
-      // ref.current = { ...(ref.current || {}), serviceOrderId: res.serviceOrderId };
-      return res.serviceOrderId;
+      serviceOrderIdRef.current = res.serviceOrderId;
+      return {
+        serviceOrderId: res.serviceOrderId,
+        alreadyPaid: !!res.alreadyPaid,
+        reused: !!res.reused,
+      };
     }
     throw new Error('No se pudo crear la orden de servicio');
   };
 
   const startStripePayment = async () => {
     try {
-      const serviceOrderId = await ensureServiceOrder();
+      const { serviceOrderId, alreadyPaid } = await ensureServiceOrder();
       console.log('serviceOrderId', serviceOrderId);
+
+      if (alreadyPaid) {
+        setToast({
+          show: true,
+          message: 'Ya tienes una conceptualización pagada pendiente. Continuaremos sin cobrar de nuevo.',
+          button: {},
+          type: 'success',
+        });
+        setView(NEW_CONCEPTUALIZATION_VIEW);
+        return;
+      }
+
       const { clientSecret } = await privateService.create('/payments/create-intent', {
         serviceOrderId,
       });
