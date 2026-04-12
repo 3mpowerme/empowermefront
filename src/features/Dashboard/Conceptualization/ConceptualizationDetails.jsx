@@ -1,4 +1,5 @@
 import { ArrowBigLeft } from 'lucide-react';
+import { useState } from 'react';
 import Tabs from '../../../components/Tabs/Tabs';
 import { useSearchParams } from 'react-router';
 import BrandBook from './BrandBook';
@@ -7,6 +8,8 @@ import BusinessPlan from './BusinessPlan';
 import Mockups from './Mockups';
 import classNames from 'classnames';
 import BrandBookEmptyState from './BrandBookEmptyState';
+import Button from '../../../components/Button/Button';
+import { privateService } from '../../../services/privateService';
 
 const ConceptualizationDetails = ({
   hideTitle = false,
@@ -17,7 +20,26 @@ const ConceptualizationDetails = ({
 }) => {
   console.log('Conceptualization conceptualization', conceptualization);
   const [searchParams] = useSearchParams();
+  const [isDownloadingOfficialPdf, setIsDownloadingOfficialPdf] = useState(false);
   const sub = searchParams.get('sub');
+
+  const handleDownloadOfficialPdf = async () => {
+    if (!conceptualization?.conceptualization_id || isDownloadingOfficialPdf) return;
+    try {
+      setIsDownloadingOfficialPdf(true);
+      const response = await privateService.get(
+        `/conceptualization/${conceptualization.conceptualization_id}/official-pdf/download-url`
+      );
+      if (response?.download_url) {
+        window.open(response.download_url, '_blank', 'noopener,noreferrer');
+      }
+    } catch (error) {
+      console.error('Error downloading official conceptualization PDF', error);
+    } finally {
+      setIsDownloadingOfficialPdf(false);
+    }
+  };
+
   const tabs = [
     {
       id: 'brand-book',
@@ -85,14 +107,25 @@ const ConceptualizationDetails = ({
         'pl-10 mt-10 animate-slide-in': !hideTitle,
       })}>
       {!hideTitle && (
-        <h2 className="text-lg font-semibold print:hidden">
-          <span className="mr-2">
-            <button className="cursor-pointer" onClick={goBack}>
-              <ArrowBigLeft size={15} />
-            </button>
-          </span>
-          Resumen de su idea
-        </h2>
+        <div className="flex flex-col gap-3 print:hidden">
+          <h2 className="text-lg font-semibold">
+            <span className="mr-2">
+              <button className="cursor-pointer" onClick={goBack}>
+                <ArrowBigLeft size={15} />
+              </button>
+            </span>
+            Resumen de su idea
+          </h2>
+          <div>
+            <Button
+              type="button"
+              onClick={handleDownloadOfficialPdf}
+              disabled={isDownloadingOfficialPdf || !conceptualization?.conceptualization_id}
+            >
+              {isDownloadingOfficialPdf ? 'Descargando...' : 'Descargar PDF oficial'}
+            </Button>
+          </div>
+        </div>
       )}
       <Tabs tabs={tabs} initialTab={sub} />
     </div>
