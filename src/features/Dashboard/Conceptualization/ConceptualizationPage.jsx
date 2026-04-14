@@ -382,7 +382,7 @@ const ConceptualizationPage = ({ showWelcomeMessage = false }) => {
             {conceptualizations.length !== 0 && (
               <div className="w-full">
                 <ConceptualizationDetails
-                  hideTitle
+                  hideTitle={false}
                   companyName={companyName}
                   goBack={handleGoBack}
                   conceptualization={
