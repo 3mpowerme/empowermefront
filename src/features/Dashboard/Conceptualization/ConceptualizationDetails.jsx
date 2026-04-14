@@ -36,7 +36,7 @@ const ConceptualizationDetails = ({
       } catch (error) {
         const artifactStatus = error?.artifact?.status;
         if (artifactStatus === 'pending' || artifactStatus === 'failed') {
-          await privateService.post(
+          await privateService.create(
             `/conceptualization/${conceptualization.conceptualization_id}/official-pdf/generate`,
             {}
           );
@@ -126,20 +126,21 @@ const ConceptualizationDetails = ({
       })}>
       {!hideTitle && (
         <div className="flex flex-col gap-3 print:hidden">
-          <h2 className="text-lg font-semibold">
-            <span className="mr-2">
-              <button className="cursor-pointer" onClick={goBack}>
-                <ArrowBigLeft size={15} />
-              </button>
-            </span>
-            Resumen de su idea
-          </h2>
+          {false && (
+            <h2 className="text-lg font-semibold">
+              <span className="mr-2">
+                <button className="cursor-pointer" onClick={goBack}>
+                  <ArrowBigLeft size={15} />
+                </button>
+              </span>
+              Resumen de su idea
+            </h2>
+          )}
           <div>
             <Button
               type="button"
               onClick={handleDownloadOfficialPdf}
-              disabled={isDownloadingOfficialPdf || !conceptualization?.conceptualization_id}
-            >
+              disabled={isDownloadingOfficialPdf || !conceptualization?.conceptualization_id}>
               {isDownloadingOfficialPdf ? 'Descargando...' : 'Descargar PDF oficial'}
             </Button>
           </div>

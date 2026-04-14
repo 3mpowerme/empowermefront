@@ -33,7 +33,8 @@ export default function OfficialConceptualizationReportPage() {
         if (!cancelled) setConceptualization(response?.conceptualization || null);
       })
       .catch((err) => {
-        if (!cancelled) setError(err?.error || err?.message || 'No se pudo cargar la conceptualización');
+        if (!cancelled)
+          setError(err?.error || err?.message || 'No se pudo cargar la conceptualización');
       });
     return () => {
       cancelled = true;
@@ -51,7 +52,10 @@ export default function OfficialConceptualizationReportPage() {
   );
 
   const generatedAt = useMemo(() => {
-    const date = conceptualization?.updated_at || conceptualization?.conceptualization_created_at || conceptualization?.created_at;
+    const date =
+      conceptualization?.updated_at ||
+      conceptualization?.conceptualization_created_at ||
+      conceptualization?.created_at;
     if (!date) return null;
     try {
       return new Intl.DateTimeFormat('es-CL', {
@@ -85,13 +89,43 @@ export default function OfficialConceptualizationReportPage() {
 
   return (
     <div className="bg-white min-h-screen text-black">
+      <style>{`
+        .allow-overflow .recharts-wrapper { overflow: visible !important; }
+        .print-container .recharts-surface text { fill: #000000 !important; }
+        html:has(.print-container) { scroll-behavior: smooth; }
+        .section-anchor { scroll-margin-top: 96px; }
+        @page { margin: 16mm; }
+        @media print {
+          html, body { height: auto !important; overflow: visible !important; }
+          .print-container { background: #fff !important; color: #000 !important; }
+          .print-container * {
+            color: #000 !important;
+            box-shadow: none !important;
+            filter: none !important;
+            -webkit-filter: none !important;
+            backdrop-filter: none !important;
+            background: transparent !important;
+          }
+          .card-white { background: #ffffff !important; }
+          .print\\:hidden { display: none !important; }
+          .print\\:block { display: block !important; }
+          .avoid-break { break-inside: avoid; page-break-inside: avoid; }
+          .print\\:break-after-page { break-after: page; page-break-after: always; }
+          .rounded-3xl, .rounded-2xl, .rounded-xl, .rounded-lg { border-radius: 0 !important; }
+          .ring-1 { box-shadow: none !important; }
+        }
+      `}</style>
       <div className="max-w-6xl mx-auto px-6 py-10 space-y-10">
         <header className="border-b pb-6">
           <p className="text-sm uppercase tracking-[0.2em] text-gray-500">EmpowerMe</p>
           <h1 className="text-3xl font-bold mt-2">Reporte oficial de conceptualización</h1>
           <div className="mt-4 text-sm text-gray-700 space-y-1">
-            <p><strong>Idea:</strong> {conceptualization?.about || '—'}</p>
-            <p><strong>Fecha:</strong> {generatedAt || '—'}</p>
+            <p>
+              <strong>Idea:</strong> {conceptualization?.about || '—'}
+            </p>
+            <p>
+              <strong>Fecha:</strong> {generatedAt || '—'}
+            </p>
           </div>
         </header>
 

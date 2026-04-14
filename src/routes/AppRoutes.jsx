@@ -96,7 +96,10 @@ const AppRoutes = () => {
           />
           <Route path="conceptualization" element={<ConceptualizationPage />} />
           <Route path="conceptualization/pay" element={<PayConceptualizationPage />} />
-          <Route path="conceptualization/official-report" element={<OfficialConceptualizationReportPage />} />
+          <Route
+            path="conceptualization/official-report"
+            element={<OfficialConceptualizationReportPage />}
+          />
           <Route path="business_orientation" element={<BusinessOrientationPage />} />
           <Route path="graphic_design" element={<DashboardGraphicDesignPage />} />
           <Route
