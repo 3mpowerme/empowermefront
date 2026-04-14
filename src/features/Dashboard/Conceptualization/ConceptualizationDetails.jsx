@@ -27,9 +27,27 @@ const ConceptualizationDetails = ({
     if (!conceptualization?.conceptualization_id || isDownloadingOfficialPdf) return;
     try {
       setIsDownloadingOfficialPdf(true);
-      const response = await privateService.get(
-        `/conceptualization/${conceptualization.conceptualization_id}/official-pdf/download-url`
-      );
+
+      let response;
+      try {
+        response = await privateService.get(
+          `/conceptualization/${conceptualization.conceptualization_id}/official-pdf/download-url`
+        );
+      } catch (error) {
+        const artifactStatus = error?.artifact?.status;
+        if (artifactStatus === 'pending' || artifactStatus === 'failed') {
+          await privateService.post(
+            `/conceptualization/${conceptualization.conceptualization_id}/official-pdf/generate`,
+            {}
+          );
+          response = await privateService.get(
+            `/conceptualization/${conceptualization.conceptualization_id}/official-pdf/download-url`
+          );
+        } else {
+          throw error;
+        }
+      }
+
       if (response?.download_url) {
         window.open(response.download_url, '_blank', 'noopener,noreferrer');
       }
